@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Math Shop Master 🏪</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Baloo+2:wght@600;700;800&family=Fredoka+One&display=swap');
+
+:root {
+  --shop-bg: #FFF8F0;
+  --green: #4CAF50;
+  --yellow: #FFC107;
+  --red: #F44336;
+  --blue: #2196F3;
+  --purple: #9C27B0;
+  --orange: #FF9800;
+  --coin-color: #FFD700;
+  --text-dark: #3E2723;
+  --btn-bg: #FF6F00;
+  --accent: #FF4F7B;
+  --accent2: #FF9500;
+  --accent3: #00b4d8;
+  --accent4: #38c172;
+  --radius: 16px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: linear-gradient(135deg, #FFE8F5 0%, #E8F4FF 50%, #FFF5E0 100%);
+  margin: 0;
+  overflow: hidden;
+  user-select: none;
+}
+
+#gameContainer {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ─── SHOP SCENE ─── */
+#shopScene {
+  width: 100%; height: 100%;
+  position: relative;
+  background: linear-gradient(180deg, #87CEEB 0%, #E0F0FF 30%, #FFE4B5 30%, #DEB887 100%);
+}
+
+#wall {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 55%;
+  background: linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 50%, #FFDEAD 100%);
+  border-bottom: 4px solid #D2691E;
+}
+
+.wall-tile {
+  position: absolute;
+  width: 60px; height: 60px;
+  border: 2px solid rgba(210,105,30,0.2);
+  border-radius: 4px;
+}
+
+#timerContainer {
+  margin-left: auto; /* PUSHES TO RIGHT */
+}
+#shopSign {
+  position: absolute;
+  top: 12px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #FF6F00, #FF8F00);
+  color: white;
+  padding: 6px 24px;
+  border-radius: 30px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 12px rgba(255,111,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+  z-index: 20;
+  border: 2px solid #E65100;
+}
+
+.shelf {
+  position: absolute;
+  background: linear-gradient(180deg, #A0522D, #8B4513);
+  border-radius: 6px;
+  border-bottom: 8px solid #6B3410;
+  z-index: 2;
+
+  transform: scale(1.2);   /* 🔥 increase size */
+  transform-origin: top left;
+}
+
+#shelf1 { top: 120px; left: 20px; width: 160px; height: 20px; }
+#shelf2 { top: 190px; left: 20px; width: 160px; height: 20px; }
+#shelf3 { top: 120px; right: 50px; width: 160px; height: 20px; }
+#shelf4 { top: 190px; right: 50px; width: 160px; height: 20px; }
+
+.shelf-item {
+  position: absolute;
+  font-size: 28px;   /* 🔥 bigger items */
+  bottom: 5px;      /* adjust so they sit correctly */
+  animation: shelfBob 3s ease-in-out infinite;
+}
+@keyframes shelfBob {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+#floor {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 45%;
+  background: repeating-linear-gradient(90deg, #DEB887 0px, #DEB887 59px, #D2B48C 59px, #D2B48C 60px);
+  border-top: 4px solid #C19A6B;
+}
+
+#counter {
+  position: absolute;
+  bottom: 120px; left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  z-index: 2;
+}
+#counterTop {
+  background: linear-gradient(180deg, #A0522D 0%, #8B4513 100%);
+  height: 18px;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+  position: relative;
+  z-index:3;
+}
+#counterTop::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 10px; right: 10px;
+  height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+}
+#counterFront {
+  background: linear-gradient(180deg, #6B3410, #5D2E0C);
+  height: 60px;
+  border-radius: 0 0 8px 8px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  z-index:2;
+}
+
+#cashRegister {
+  position: absolute;
+  bottom: 125px; right: 320px;
+  width: 70px; height: 55px;
+  background: linear-gradient(135deg, #424242, #212121);
+  border-radius: 8px 8px 4px 4px;
+  z-index: 6;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+#cashRegister::before {
+  content: '💰';
+  position: absolute;
+  top: 8px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 22px;
+}
+#cashRegister::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 10px; right: 10px;
+  height: 8px;
+  background: #616161;
+  border-radius: 2px;
+}
+
+#counterItems {
+  position: absolute;
+  bottom: 190px; left: 50%;
+  transform: translateX(-50%);
+  width: 380px; height: 60px;
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 8px; z-index: 7;
+}
+
+.counter-item {
+  font-size: 28px;
+  animation: itemDrop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+@keyframes itemDrop {
+  0% { transform: translateY(-40px) scale(0.5); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.price-tag {
+  position: absolute;
+  top: -18px; left: 50%;
+  transform: translateX(-50%);
+  background: #FFD700; color: #3E2723;
+  font-size: 10px; font-weight: 900;
+  padding: 1px 5px; border-radius: 8px;
+  white-space: nowrap; border: 1px solid #FFA000;
+}
+
+#conveyorBelt {
+  position: absolute;
+  z-index:5;
+  bottom: 192px; left: 50%;
+  transform: translateX(-50%);
+  width: 380px; height: 12px;
+  background: repeating-linear-gradient(90deg, #455A64 0px, #455A64 18px, #37474F 18px, #37474F 20px);
+  border-radius: 6px; z-index: 4;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4); overflow: hidden;
+}
+#conveyorBelt::before {
+  content: '';
+  position: absolute; inset: 2px;
+  border-radius: 4px;
+  background: repeating-linear-gradient(90deg, #546E7A 0px, #546E7A 16px, #455A64 16px, #455A64 20px);
+  animation: beltMove 1s linear infinite;
+}
+@keyframes beltMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-20px); }
+}
+
+/* ─── CUSTOMER ─── */
+#customer {
+  position: absolute;
+  bottom: 120px; left: 80px;
+  width: 70px; z-index: 8;
+  transition: left 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.customer-body { display: flex; flex-direction: column; align-items: center; position: relative; }
+.customer-head {
+  width: 44px; height: 44px;
+  border-radius: 50%; background: #FFCC80;
+  border: 3px solid #FF9800;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.customer-torso { width: 38px; height: 40px; border-radius: 6px 6px 0 0; margin-top: 2px; }
+.customer-legs { display: flex; gap: 4px; }
+.leg {
+  width: 14px; height: 24px;
+  border-radius: 0 0 6px 6px;
+  background: #5D4037;
+  animation: walk 0.4s ease-in-out infinite alternate;
+}
+.leg:last-child { animation-direction: alternate-reverse; }
+@keyframes walk {
+  0% { transform: rotate(-8deg); }
+  100% { transform: rotate(8deg); }
+}
+#customer.idle .leg { animation: none; }
+
+#patienceBar {
+  position: absolute;
+  top: -22px; left: 50%;
+  transform: translateX(-50%);
+  width: 60px; height: 8px;
+  background: #ddd; border-radius: 4px; overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.2);
+}
+#patienceFill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  border-radius: 4px;
+  transition: width 0.1s linear, background 0.3s;
+}
+
+#speechBubble {
+  position: absolute;
+  top: -50px; left: 50px;
+  background: white; border: 2px solid #ddd;
+  border-radius: 12px; padding: 4px 10px;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  white-space: nowrap; display: none;
+}
+#speechBubble::before {
+  content: '';
+  position: absolute;
+  bottom: -8px; left: 14px;
+  border: 4px solid transparent;
+  border-top-color: white;
+  filter: drop-shadow(0 1px 0 #ddd);
+}
+
+/* ─── HUD ─── */
+#hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* KEY LINE */
+
+  z-index: 50;
+}
+.hud-item {
+  display: flex; align-items: center; gap: 6px;
+  color: #5D3A00; font-size: 16px; font-weight: 800;
+}
+#scoreDisplay { font-size: 22px; color: #E65100; }
+#levelDisplay { font-size: 18px; color: #0077B6; }
+#timerBarWrap {
+  width: 200px;
+  height: 10px;
+  margin-right: 15px;
+  background: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* THIS pushes timer to RIGHT */
+#hud > div:nth-child(3) {
+  margin-left: auto;
+}
+#timerBar {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  border-radius: 7px;
+  transition: width 0.1s linear, background 0.3s;
+}
+
+/* Lives in HUD */
+#livesDisplay { display: flex; gap: 3px; }
+.heart-icon { font-size: 18px; transition: all 0.3s; }
+.heart-icon.lost { filter: grayscale(1) opacity(0.3); }
+
+/* Pause btn */
+#pauseBtn {
+  background: #d4a24c;
+  border: 1px solid #FFD580;
+  border-radius: 6px; color: #5D3A00;
+  font-size: 16px; width: 30px; height: 30px;
+   margin-left: 15px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+/* ─── ORDER PANEL ─── */
+#orderPanel {
+  position: absolute;
+  top: 65px; left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  background: rgba(255,255,255,0.96);
+  border-radius: 16px; padding: 12px 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  z-index: 15; border: 3px solid #FF8F00;
+  display: none;
+}
+#orderTitle {
+  font-size: 13px; color: #795548; font-weight: 800;
+  text-align: center; margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+#itemsDisplay {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center; margin-bottom: 10px;
+}
+.item-group {
+  display: flex; flex-direction: column; align-items: center;
+  background: #FFF8E1; border-radius: 10px;
+  padding: 6px 10px; border: 2px solid #FFE082;
+  min-width: 70px;
+}
+.item-emojis { font-size: 20px; letter-spacing: 2px; }
+.item-price { font-size: 11px; color: #E65100; font-weight: 900; margin-top: 2px; }
+#mathExpr {
+  text-align: center;
+  font-family: 'Baloo 2', cursive;
+  font-size: 22px; font-weight: 800; color: #1A237E;
+  background: #E8EAF6; border-radius: 10px;
+  padding: 8px 16px; letter-spacing: 1px;
+}
+
+/* Power-ups bar in order panel */
+#powerUpsBar {
+  display: flex; gap: 6px; justify-content: center;
+  margin-top: 8px;
+}
+.powerup-btn {
+  background: white; border: 2px solid #e0c8a8;
+  border-radius: 8px; padding: 4px 8px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; display: flex; align-items: center; gap: 3px;
+  color: #2d2d2d;
+}
+.powerup-btn:hover:not(:disabled) { background: #fff3e0; border-color: #FF9500; }
+.powerup-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.powerup-count {
+  background: var(--accent); color: white;
+  border-radius: 50%; width: 15px; height: 15px;
+  font-size: 9px; display: flex; align-items: center; justify-content: center;
+}
+
+/* Hint box */
+#hintBox {
+  background: rgba(78,205,196,0.15);
+  border: 2px solid rgba(78,205,196,0.4);
+  border-radius: 8px; padding: 5px 10px;
+  font-size: 13px; font-weight: 700;
+  text-align: center; color: #0077a8;
+  margin-top: 6px; display: none;
+}
+
+/* ─── INPUT UI ─── */
+#inputUI {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(180deg, #FFF8E1, #FFF3CD);
+  border-top: 3px solid #FFD580;
+  display: none; z-index: 20; padding: 10px 16px;
+  box-shadow: 0 -4px 16px rgba(255,180,50,0.2);
+}
+#answerRow {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+#answerLabel {
+  color: #E65100; font-size: 14px; font-weight: 900;
+  white-space: nowrap; text-transform: uppercase;
+}
+#answerDisplay {
+  flex: 1; background: white;
+  border: 2px solid #FF8F00; border-radius: 8px;
+  color: #1A237E; font-size: 28px; font-weight: 900;
+  text-align: center; padding: 4px 12px;
+  font-family: 'Baloo 2', cursive; min-width: 100px; letter-spacing: 2px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+}
+#numpad {
+  display: flex; gap: 6px; align-items: center; justify-content: center;
+}
+.numkey {
+  width: 52px; height: 44px;
+  background: linear-gradient(135deg, #FF8F00, #FF6F00);
+  color: white; border: none; border-radius: 8px;
+  font-size: 20px; font-weight: 900; cursor: pointer;
+  font-family: 'Baloo 2', cursive;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 0 4px 0 #E65100;
+}
+.numkey:hover { filter: brightness(1.1); }
+.numkey:active { transform: translateY(3px); box-shadow: 0 1px 0 #E65100; }
+.numkey.del {
+  background: linear-gradient(135deg, #616161, #424242);
+  box-shadow: 0 4px 0 #212121; font-size: 14px;
+}
+.numkey.submit {
+  width: 80px;
+  background: linear-gradient(135deg, #4CAF50, #388E3C);
+  box-shadow: 0 4px 0 #2E7D32; font-size: 14px;
+}
+
+/* ─── COINS ─── */
+.coin-pop {
+  position: absolute; font-size: 22px; pointer-events: none;
+  z-index: 30; animation: coinFly 1.2s ease-out forwards;
+}
+@keyframes coinFly {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+}
+
+/* ─── BILL ANIMATION ─── */
+#billAnim {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: white; border: 3px dashed #FF8F00;
+  border-radius: 12px; padding: 16px 24px;
+  text-align: center; z-index: 25; pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-width: 160px;
+}
+#billAnim.show { transform: translate(-50%, -50%) scale(1); }
+#billAnim h3 { font-size: 14px; color: #795548; margin-bottom: 4px; }
+#billAnim .bill-amount { font-size: 36px; font-weight: 900; color: #2E7D32; font-family: 'Baloo 2', cursive; }
+
+/* ─── FEEDBACK ─── */
+#feedback {
+  position: absolute; top: 40%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px; font-weight: 900;
+  font-family: 'Baloo 2', cursive; pointer-events: none; z-index: 30;
+  text-shadow: 0 3px 12px rgba(0,0,0,0.4); display: none;
+  animation: feedbackPop 0.8s ease-out forwards;
+}
+@keyframes feedbackPop {
+  0% { transform: translate(-50%,-50%) scale(0.5); opacity: 0; }
+  40% { transform: translate(-50%,-50%) scale(1.2); opacity: 1; }
+  70% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%,-60%) scale(1); opacity: 0; }
+}
+
+/* ─── SCREENS ─── */
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 50;
+  background: linear-gradient(135deg, #FFF9F0 0%, #FFFDE7 40%, #F0F8FF 100%);
+}
+
+/* START SCREEN */
+#startScreen .logo {
+  font-family: 'Baloo 2', cursive; font-size: 52px; font-weight: 800;
+  color: #E65100;
+  text-shadow: 0 4px 16px rgba(255,111,0,0.15), 0 0 40px rgba(255,200,0,0.15);
+  margin-bottom: 8px; line-height: 1;
+}
+#startScreen .sub {
+  font-size: 18px; color: #6D4C41; margin-bottom: 24px; font-weight: 700;
+}
+#statsBar {
+  display: flex; gap: 20px; margin-bottom: 20px;
+}
+.stat-box {
+  background: rgba(255,240,200,0.9); border: 2px solid #FFD580;
+  border-radius: 12px; padding: 8px 20px; text-align: center; color: #5D3A00;
+}
+.stat-val { font-size: 28px; font-weight: 900; color: #E65100; font-family: 'Baloo 2', cursive; }
+.stat-lbl { font-size: 12px; color: #8D6E63; font-weight: 700; }
+
+.big-btn {
+  padding: 16px 48px;
+  background: linear-gradient(135deg, #FF8F00, #FF6F00);
+  color: white; border: none; border-radius: 50px;
+  font-size: 24px; font-weight: 900; font-family: 'Baloo 2', cursive;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #E65100, 0 8px 20px rgba(255,111,0,0.4);
+  transition: all 0.1s; letter-spacing: 1px;
+}
+.big-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.big-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #E65100; }
+
+.sm-btn {
+  padding: 10px 28px;
+  background: rgba(255,240,200,0.7); border: 2px solid #FFD580;
+  border-radius: 50px; color: #8D5A00; font-size: 14px; font-weight: 800;
+  cursor: pointer; margin-top: 10px; font-family: 'Nunito', sans-serif;
+  transition: all 0.15s;
+}
+.sm-btn:hover { background: rgba(255,220,100,0.6); }
+
+/* SETUP SCREEN */
+.setup-panel {
+  background: rgba(255,248,220,0.95);
+  border: 2px solid #FFD580;
+  border-radius: 20px; padding: 28px 32px;
+  width: 400px; display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 8px 32px rgba(255,150,0,0.15);
+}
+.setup-title {
+  font-family: 'Baloo 2', cursive; font-size: 28px; color: #E65100;
+  text-align: center;
+}
+.setup-step-label { font-size: 12px; color: #8D6E63; text-align: center; margin-top: -8px; }
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-label { font-weight: 700; font-size: 14px; color: #6D4C41; }
+.text-input {
+  background: white; border: 2px solid #FFD580;
+  border-radius: 10px; padding: 10px 14px;
+  color: #3E2723; font-family: 'Nunito', sans-serif;
+  font-size: 16px; font-weight: 700; outline: none;
+}
+.text-input:focus { border-color: #FF9500; }
+.theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.theme-btn {
+  padding: 10px 6px; border: 2px solid #FFD580;
+  border-radius: 10px; background: white;
+  color: #6D4C41; cursor: pointer; font-size: 12px; font-weight: 700;
+  transition: all 0.15s; text-align: center;
+}
+.theme-btn:hover, .theme-btn.selected {
+  border-color: #FF9500; background: rgba(255,149,0,0.12);
+  color: #E65100;
+}
+.theme-icon { font-size: 20px; display: block; margin-bottom: 3px; }
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mode-btn {
+  padding: 12px 8px; border: 2px solid #FFD580;
+  border-radius: 10px; background: white;
+  color: #6D4C41; cursor: pointer; font-size: 13px; font-weight: 700;
+  transition: all 0.15s; text-align: center;
+}
+.mode-btn.selected { border-color: #FF9500; background: rgba(255,149,0,0.12); color: #E65100; }
+.mode-badge { font-size: 9px; color: var(--accent); font-weight: 800; display: block; }
+.setup-btns { display: flex; gap: 10px; }
+.sec-btn {
+  padding: 12px 20px; border: 2px solid #FFD580;
+  border-radius: 50px; color: #8D6E63; font-size: 14px; font-weight: 800;
+  cursor: pointer; background: white; flex: 1;
+  font-family: 'Nunito', sans-serif;
+}
+.pri-btn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #FF8F00, #FF6F00);
+  border: none; border-radius: 50px; color: white;
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  flex: 2; font-family: 'Nunito', sans-serif;
+  box-shadow: 0 4px 0 #E65100;
+}
+
+/* PACK BAG */
+#packBag {
+  position: absolute; bottom: 120px; right: 280px;
+  font-size: 40px; z-index: 10; display: none;
+  animation: bagPop 0.6s ease-out;
+}
+@keyframes bagPop {
+  0% { transform: scale(0) rotate(-20deg); }
+  60% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* LEVEL UP */
+#levelUpBanner {
+  position: absolute; top: 30%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: linear-gradient(135deg, #7B1FA2, #4A148C);
+  color: white; padding: 16px 40px; border-radius: 50px;
+  font-family: 'Baloo 2', cursive; font-size: 32px; font-weight: 800;
+  z-index: 35; pointer-events: none; text-align: center;
+  border: 3px solid #CE93D8;
+  box-shadow: 0 0 40px rgba(123,31,162,0.6);
+}
+#levelUpBanner.show { animation: levelUp 2s ease-in-out forwards; }
+@keyframes levelUp {
+  0% { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+  20% { transform: translate(-50%,-50%) scale(1.1); opacity: 1; }
+  70% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%,-80%) scale(0.8); opacity: 0; }
+}
+
+/* COMBO */
+#comboDisplay {
+  position: absolute; top: 70px; right: 16px;
+  background: linear-gradient(135deg, #FF5722, #E64A19);
+  color: white; padding: 6px 14px; border-radius: 20px;
+  font-family: 'Baloo 2', cursive; font-size: 18px; font-weight: 800;
+  z-index: 22; display: none;
+  box-shadow: 0 4px 12px rgba(255,87,34,0.5);
+}
+
+/* STREAK */
+#streakFire {
+  position: absolute; top: 70px; left: 16px;
+  display: none; z-index: 22; font-size: 16px;
+  background: rgba(255,240,200,0.95); color: #E65100;
+  padding: 4px 10px; border-radius: 12px; font-weight: 800;
+  border: 2px solid #FFD580; box-shadow: 0 2px 8px rgba(255,150,0,0.2);
+}
+
+/* STARS */
+#starsRating {
+  position: absolute; top: 68px; left: 50%;
+  transform: translateX(-50%); display: none; z-index: 22;
+  font-size: 22px; animation: starsGlow 0.5s ease-out;
+}
+@keyframes starsGlow {
+  0% { transform: translateX(-50%) scale(0.5); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* GAME OVER SCREEN */
+#gameOverScreen .go-title {
+  font-family: 'Baloo 2', cursive; font-size: 48px; font-weight: 800;
+  color: #D32F2F; margin-bottom: 16px;
+}
+#gameOverScreen .go-score {
+  font-size: 24px; color: #E65100; margin-bottom: 8px; font-weight: 900;
+}
+
+/* PAUSE SCREEN */
+#pauseScreen {
+  background: rgba(255,248,220,0.97);
+}
+.pause-card {
+  background: white; border: 2px solid #FFD580;
+  border-radius: 20px; padding: 32px; width: 360px;
+  display: flex; flex-direction: column; gap: 14px; align-items: center;
+  box-shadow: 0 8px 32px rgba(255,150,0,0.2);
+}
+.pause-title {
+  font-family: 'Baloo 2', cursive; font-size: 36px; color: #E65100;
+}
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;
+}
+.s-item {
+  background: #FFF8E1; border-radius: 10px;
+  padding: 10px 12px; text-align: center;
+  border: 1px solid #FFD580;
+}
+.s-value { font-family: 'Baloo 2', cursive; font-size: 22px; color: #E65100; }
+.s-label { font-size: 11px; color: #8D6E63; font-weight: 700; text-transform: uppercase; }
+
+/* LEVEL COMPLETE SCREEN */
+#levelCompleteScreen {
+  background: rgba(255,248,220,0.97);
+}
+.complete-card {
+  background: white; border: 2px solid #FFD580;
+  border-radius: 20px; padding: 28px; width: 400px;
+  display: flex; flex-direction: column; gap: 14px; align-items: center;
+  box-shadow: 0 8px 32px rgba(255,150,0,0.2);
+}
+.complete-title {
+  font-family: 'Baloo 2', cursive; font-size: 42px;
+  background: linear-gradient(135deg, #FF6F00, #FF9500);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stars-display { display: flex; gap: 8px; font-size: 36px; }
+.star { opacity: 0.2; transition: all 0.4s; transform: scale(0.5); }
+.star.earned { opacity: 1; transform: scale(1.2); }
+.reward-breakdown {
+  width: 100%; background: #FFF8E1;
+  border-radius: 10px; padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  border: 1px solid #FFD580;
+}
+.reward-row { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; }
+.reward-row .r-label { color: #8D6E63; }
+.reward-row .r-value { color: #E65100; font-family: 'Baloo 2', cursive; font-size: 16px; }
+.reward-total { border-top: 1px solid #FFD580; padding-top: 8px; margin-top: 2px; }
+.reward-total .r-value { color: #FF6F00; font-size: 20px; }
+
+/* UPGRADE SCREEN */
+#upgradeScreen {
+  background: rgba(255,248,220,0.97);
+}
+.upgrade-card {
+  background: white; border: 2px solid #FFD580;
+  border-radius: 20px; padding: 24px; width: 460px;
+  max-height: 520px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 8px 32px rgba(0,180,216,0.1);
+}
+.upgrade-title { font-family: 'Baloo 2', cursive; font-size: 28px; color: #0077B6; text-align: center; }
+.upgrade-coins-disp {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: 'Baloo 2', cursive; font-size: 22px; color: #E65100;
+}
+.upgrades-list { display: flex; flex-direction: column; gap: 10px; }
+.upgrade-item {
+  display: flex; align-items: center; gap: 12px;
+  background: #FFF8E1; border: 2px solid #FFD580;
+  border-radius: 12px; padding: 12px 14px; transition: all 0.15s;
+}
+.upgrade-item:hover { border-color: #FF9500; }
+.upgrade-icon { font-size: 28px; flex-shrink: 0; }
+.upgrade-info { flex: 1; }
+.upgrade-name { font-weight: 800; font-size: 15px; color: #E65100; }
+.upgrade-desc { font-size: 12px; color: #8D6E63; }
+.upgrade-buy {
+  background: linear-gradient(135deg, #FF8F00, #E65100);
+  border: none; border-radius: 8px;
+  color: white; font-weight: 800; font-size: 13px;
+  padding: 8px 14px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.upgrade-buy:hover { filter: brightness(1.1); }
+.upgrade-buy:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+.upgrade-buy.owned {
+  background: rgba(56,193,114,0.15); color: #2E7D32;
+  cursor: default; border: 2px solid #4CAF50;
+}
+
+/* SETTINGS MODAL */
+.settings-backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 200; display: none; align-items: center; justify-content: center;
+}
+.settings-backdrop.open { display: flex; }
+.settings-modal {
+  background: #FFFDE7; border: 2px solid #FFD580;
+  border-radius: 20px; width: 360px; padding: 24px 22px;
+  display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 20px 60px rgba(255,150,0,0.2);
+  animation: modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalPop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.settings-title { font-family: 'Baloo 2', cursive; font-size: 24px; color: #E65100; text-align: center; }
+.settings-section { display: flex; flex-direction: column; gap: 8px; }
+.settings-section-label { font-size: 11px; font-weight: 800; color: #8D6E63; text-transform: uppercase; letter-spacing: 1px; }
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: white; border: 1px solid #FFD580;
+  border-radius: 10px; padding: 10px 14px;
+}
+.settings-row-label { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: #6D4C41; }
+.toggle-wrap { position: relative; width: 44px; height: 24px; cursor: pointer; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; }
+.toggle-track { position: absolute; inset: 0; background: #ddd; border-radius: 12px; transition: background 0.2s; }
+.toggle-wrap input:checked + .toggle-track { background: #4CAF50; }
+.toggle-thumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 18px; height: 18px; background: white; border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;
+}
+.toggle-wrap input:checked ~ .toggle-thumb { transform: translateX(20px); }
+.mode-pills { display: flex; gap: 6px; }
+.mode-pill {
+  padding: 5px 12px; border-radius: 20px; border: 2px solid #FFD580;
+  background: white; font-weight: 800; font-size: 12px;
+  cursor: pointer; color: #8D6E63; transition: all 0.15s;
+}
+.mode-pill.active { background: #FF9500; border-color: #FF9500; color: white; }
+.settings-divider { border: none; border-top: 1px solid #FFD580; }
+.settings-reset-btn {
+  width: 100%; padding: 10px;
+  background: rgba(255,79,123,0.08); border: 2px solid rgba(255,79,123,0.3);
+  border-radius: 10px; color: #C62828; font-weight: 800; font-size: 13px; cursor: pointer;
+}
+.settings-close-btn {
+  width: 100%; padding: 12px;
+  background: linear-gradient(135deg, #FF8F00, #E65100);
+  border: none; border-radius: 10px; color: white; font-weight: 800; font-size: 15px; cursor: pointer;
+}
+
+/* LEVEL SELECT */
+.level-cell {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:100%;aspect-ratio:1;border-radius:12px;font-weight:800;font-size:14px;
+  border:2px solid #FFD580;background:white;cursor:pointer;transition:all 0.15s;
+  gap:2px;
+}
+.level-cell.unlocked:hover{border-color:#FF9500;background:#FFF8E1;transform:scale(1.06);}
+.level-cell.locked{background:#F5F5F5;color:#bbb;border-color:#ddd;cursor:not-allowed;}
+.level-cell.completed{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);border-color:#4CAF50;color:#2E7D32;}
+.level-cell .lnum{font-family:'Baloo 2',cursive;font-size:18px;color:#E65100;}
+.level-cell.locked .lnum{color:#ccc;}
+.level-cell.completed .lnum{color:#2E7D32;}
+
+/* FREEZE OVERLAY */
+#freezeOverlay {
+  position: absolute; inset: 0;
+  background: rgba(78,205,196,0.1);
+  border: 4px solid rgba(78,205,196,0.4);
+  pointer-events: none; z-index: 35;
+  opacity: 0; transition: opacity 0.3s; display: none;
+}
+#freezeOverlay.active { opacity: 1; display: block; }
+
+/* DOUBLE COINS */
+#doubleCoinsIndicator {
+  position: absolute; top: 62px; right: 120px;
+  background: rgba(246,201,14,0.9); color: #1a0a2e;
+  border-radius: 20px; padding: 4px 10px;
+  font-weight: 800; font-size: 12px; z-index: 25; display: none;
+  animation: pulseScale 1s ease-in-out infinite;
+}
+#doubleCoinsIndicator.active { display: flex; align-items: center; gap: 3px; }
+@keyframes pulseScale {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* IDLE REMINDER */
+#idleReminder {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(245,166,35,0.9); color: #1a0a2e;
+  border-radius: 50px; padding: 10px 20px;
+  font-weight: 800; font-size: 15px; z-index: 55;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+#idleReminder.show { opacity: 1; }
+
+/* SHAKE */
+@keyframes screenShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-6px); }
+  30%, 70% { transform: translateX(6px); }
+}
+.shake { animation: screenShake 0.4s ease; }
+
+/* Next customer preview */
+#nextCustomerPreview {
+  position: absolute; bottom: 145px; right: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  z-index: 8; opacity: 0.55; transform: scale(0.72);
+}
+.next-label { font-size: 9px; color: #6D4C41; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<div id="gameContainer">
+
+  <!-- SHOP SCENE -->
+  <div id="shopScene">
+    <div id="wall">
+      <div class="wall-tile" style="top:40px;left:200px;"></div>
+      <div class="wall-tile" style="top:40px;left:280px;"></div>
+      <div class="wall-tile" style="top:40px;left:360px;"></div>
+      <div class="wall-tile" style="top:40px;left:440px;"></div>
+      <div class="wall-tile" style="top:40px;left:520px;"></div>
+      <div class="wall-tile" style="top:100px;left:200px;"></div>
+      <div class="wall-tile" style="top:100px;left:280px;"></div>
+      <div class="wall-tile" style="top:100px;left:360px;"></div>
+      <div class="wall-tile" style="top:100px;left:440px;"></div>
+      <div class="wall-tile" style="top:100px;left:520px;"></div>
+    </div>
+
+    <div id="shopSign">🏪 MATH SHOP MASTER</div>
+
+    <div class="shelf" id="shelf1"></div>
+    <div class="shelf" id="shelf2"></div>
+    <div class="shelf" id="shelf3"></div>
+    <div class="shelf" id="shelf4"></div>
+
+    <div id="floor"></div>
+    <div id="cashRegister"></div>
+    <div id="conveyorBelt"></div>
+    <div id="counterItems"></div>
+    <div id="counter">
+      <div id="counterTop"></div>
+      <div id="counterFront"></div>
+    </div>
+
+    <!-- Customer -->
+    <div id="customer">
+      <div class="customer-body">
+        <div id="patienceBar"><div id="patienceFill"></div></div>
+        <div id="speechBubble">🛒</div>
+        <div class="customer-head" id="customerFace">😊</div>
+        <div class="customer-torso" id="customerTorso" style="background:linear-gradient(135deg,#1976D2,#1565C0);"></div>
+        <div class="customer-legs">
+          <div class="leg"></div>
+          <div class="leg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Next Customer Preview -->
+    <div id="nextCustomerPreview">
+      <div class="next-label">NEXT</div>
+      <div id="nextFace" style="font-size:26px">😊</div>
+    </div>
+
+    <div id="packBag">🛍️</div>
+    <div id="freezeOverlay"></div>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-item">
+        <div id="livesDisplay"></div>
+      </div>
+      <div class="hud-item" style="gap:4px">
+        <span style="color:#E65100">🪙</span>
+        <span id="coinsDisplay" style="color:#E65100;font-size:18px">0</span>
+        <span id="scoreDisplay" style="color:#8D4000;font-size:14px;margin-left:4px">⭐0</span>
+      </div>
+      <div id="timerContainer">
+  <div id="timerBarWrap">
+    <div id="timerBar"></div>
+  </div>
+</div>
+      <div class="hud-item">
+        <span>🏆</span><span id="levelDisplay">LV 1</span>
+      </div>
+      <button id="pauseBtn" onclick="G.pause()">⏸</button>
+    </div>
+
+    <!-- Combo / Streak -->
+    <div id="comboDisplay">🔥 COMBO x<span id="comboNum">1</span></div>
+    <div id="streakFire">🔥 <span id="streakNum">0</span> STREAK</div>
+    <div id="doubleCoinsIndicator">🪙 2× COINS!</div>
+    <div id="idleReminder">👆 Solve it!</div>
+
+    <!-- Order Panel -->
+    <div id="orderPanel">
+      <div id="orderTitle">📋 CUSTOMER ORDER</div>
+      <div id="itemsDisplay"></div>
+      <div id="mathExpr"></div>
+      <div id="hintBox"></div>
+      <div id="powerUpsBar"></div>
+    </div>
+
+    <!-- Stars / Bill / Feedback -->
+    <div id="starsRating"></div>
+    <div id="billAnim"><h3>🧾 TOTAL BILL</h3><div class="bill-amount" id="billAmount"></div></div>
+    <div id="feedback"></div>
+    <div id="levelUpBanner">⬆️ LEVEL UP! 🎉</div>
+  </div>
+
+  <!-- Input UI -->
+  <div id="inputUI">
+    <div id="answerRow">
+      <div id="answerLabel">₹ Your Answer:</div>
+      <div id="answerDisplay">_</div>
+    </div>
+    <div id="numpad">
+      <button class="numkey" onclick="G.pressKey('7')">7</button>
+      <button class="numkey" onclick="G.pressKey('8')">8</button>
+      <button class="numkey" onclick="G.pressKey('9')">9</button>
+      <button class="numkey" onclick="G.pressKey('4')">4</button>
+      <button class="numkey" onclick="G.pressKey('5')">5</button>
+      <button class="numkey" onclick="G.pressKey('6')">6</button>
+      <button class="numkey" onclick="G.pressKey('1')">1</button>
+      <button class="numkey" onclick="G.pressKey('2')">2</button>
+      <button class="numkey" onclick="G.pressKey('3')">3</button>
+      <button class="numkey" onclick="G.pressKey('0')">0</button>
+      <button class="numkey del" onclick="G.pressKey('del')">⌫ DEL</button>
+      <button class="numkey submit" onclick="G.submitAnswer()">✓ OK</button>
+    </div>
+  </div>
+
+  <!-- LEVEL SELECT MODAL -->
+  <div class="settings-backdrop" id="levelSelectBackdrop" onclick="G.closeLevelSelect(event)" style="z-index:300">
+    <div class="settings-modal" style="width:420px;max-width:95vw">
+      <div class="settings-title">🗺️ All Levels</div>
+      <div id="levelSelectGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:4px 0"></div>
+      <button class="settings-close-btn" onclick="G.closeLevelSelectBtn()">✓ Close</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="settings-backdrop" id="settingsBackdrop" onclick="G.closeSettingsBackdrop(event)">
+    <div class="settings-modal">
+      <div class="settings-title">⚙️ Settings</div>
+      <div class="settings-section">
+        <div class="settings-section-label">Audio</div>
+        <div class="settings-row">
+          <div class="settings-row-label">🔊 Sound Effects</div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="toggleSound" checked onchange="G.toggleSound(this.checked)">
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-label">Difficulty</div>
+        <div class="settings-row">
+          <div class="settings-row-label">🎮 Mode</div>
+          <div class="mode-pills">
+            <button class="mode-pill active" id="pillNormal" onclick="G.setSettingsMode('normal')">🟢 Normal</button>
+            <button class="mode-pill" id="pillChallenge" onclick="G.setSettingsMode('challenge')">🔥 Hard</button>
+          </div>
+        </div>
+      </div>
+      <hr class="settings-divider">
+      <button class="settings-reset-btn" onclick="G.resetProgress()">🔄 Reset Progress</button>
+      <button class="settings-close-btn" onclick="G.closeSettings()">✓ Done</button>
+    </div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div id="startScreen" class="screen">
+    <div class="logo">🏪 Math Shop Master</div>
+    <div class="sub">Serve customers • Solve math • Earn coins!</div>
+    <div id="statsBar">
+      <div class="stat-box" onclick="G.openLevelSelect()" style="cursor:pointer;border-color:#FF9500" title="View all levels">
+        <div class="stat-val" id="totalLevelsStat">10</div>
+        <div class="stat-lbl">🗺️ LEVELS</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="hiScoreStat">0</div>
+        <div class="stat-lbl">HI SCORE</div>
+      </div>
+      <span id="bestLevelStat" style="display:none">1</span>
+    </div>
+    <button class="big-btn" onclick="G.goToSetup()">🛒 PLAY GAME</button>
+    <button class="sm-btn" onclick="G.openSettings()">⚙️ Settings</button>
+  </div>
+
+  <!-- SETUP SCREEN -->
+  <div id="setupScreen" class="screen" style="display:none">
+    <div class="setup-panel">
+      <div class="setup-title">👤 Setup Your Shop</div>
+      <div class="setup-step-label" id="setupStepLabel">Step 1 of 3</div>
+      <div id="setupStep1">
+        <div class="input-group">
+          <label class="input-label">Your Name</label>
+          <input class="text-input" id="playerNameInput" placeholder="Enter your name..." maxlength="16"/>
+        </div>
+        <div class="input-group" style="margin-top:10px">
+          <label class="input-label">Your Shop Name</label>
+          <input class="text-input" id="shopNameInput" placeholder="e.g. Super Snack Shack" maxlength="20"/>
+        </div>
+      </div>
+      <div id="setupStep2" style="display:none">
+        <div class="input-label" style="margin-bottom:8px">Pick a Theme 🎨</div>
+        <div class="theme-grid">
+          <div class="theme-btn selected" onclick="G.selectTheme('candy')" data-theme="candy"><span class="theme-icon">🍬</span>Candy</div>
+          <div class="theme-btn" onclick="G.selectTheme('pizza')" data-theme="pizza"><span class="theme-icon">🍕</span>Pizza</div>
+          <div class="theme-btn" onclick="G.selectTheme('fruit')" data-theme="fruit"><span class="theme-icon">🍎</span>Fruit</div>
+          <div class="theme-btn" onclick="G.selectTheme('bake')" data-theme="bake"><span class="theme-icon">🥐</span>Bakery</div>
+          <div class="theme-btn" onclick="G.selectTheme('toys')" data-theme="toys"><span class="theme-icon">🎮</span>Toys</div>
+          <div class="theme-btn" onclick="G.selectTheme('ice')" data-theme="ice"><span class="theme-icon">🍦</span>Ice Cream</div>
+        </div>
+      </div>
+      <div id="setupStep3" style="display:none">
+        <div class="input-label" style="margin-bottom:8px">Game Mode</div>
+        <div class="mode-grid">
+          <div class="mode-btn selected" onclick="G.selectMode('normal')" data-mode="normal">🟢 Normal<span class="mode-badge">Balanced fun</span></div>
+          <div class="mode-btn" onclick="G.selectMode('challenge')" data-mode="challenge">🔥 Challenge<span class="mode-badge">Harder + more coins!</span></div>
+        </div>
+      </div>
+      <div class="setup-btns" style="margin-top:8px">
+        <button class="sec-btn" id="setupBackBtn" onclick="G.setupBack()">← Back</button>
+        <button class="pri-btn" id="setupNextBtn" onclick="G.setupNext()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAUSE SCREEN -->
+  <div id="pauseScreen" class="screen" style="display:none">
+    <div class="pause-card">
+      <div class="pause-title">⏸ Paused</div>
+      <div class="stats-grid">
+        <div class="s-item"><div class="s-value" id="pauseCoins">0</div><div class="s-label">Coins</div></div>
+        <div class="s-item"><div class="s-value" id="pauseLevel">1</div><div class="s-label">Level</div></div>
+        <div class="s-item"><div class="s-value" id="pauseAcc">100%</div><div class="s-label">Accuracy</div></div>
+        <div class="s-item"><div class="s-value" id="pauseCombo">×1</div><div class="s-label">Best Combo</div></div>
+      </div>
+      <button class="big-btn" onclick="G.resume()" style="font-size:18px;padding:12px 36px">▶ Resume</button>
+      <button class="sm-btn" onclick="G.goToStart()">🏠 Main Menu</button>
+    </div>
+  </div>
+
+  <!-- LEVEL COMPLETE SCREEN -->
+  <div id="levelCompleteScreen" class="screen" style="display:none">
+    <div class="complete-card">
+      <div class="complete-title">Level Up! 🎉</div>
+      <div class="stars-display">
+        <span class="star" id="cstar1">⭐</span>
+        <span class="star" id="cstar2">⭐</span>
+        <span class="star" id="cstar3">⭐</span>
+      </div>
+      <div class="reward-breakdown">
+        <div class="reward-row"><span class="r-label">Customers Served</span><span class="r-value" id="lcCustomers">20</span></div>
+        <div class="reward-row"><span class="r-label">Accuracy</span><span class="r-value" id="lcAccuracy">100%</span></div>
+        <div class="reward-row"><span class="r-label">Best Combo</span><span class="r-value" id="lcCombo">×1</span></div>
+        <div class="reward-row reward-total"><span class="r-label">💰 Coins This Level</span><span class="r-value" id="lcCoins">0</span></div>
+      </div>
+      <div style="display:flex;gap:10px;width:100%">
+        <button class="sec-btn" onclick="G.goToUpgrades()" style="flex:1">🛒 Upgrades</button>
+        <button class="pri-btn" onclick="G.nextLevel()" style="flex:2">Next Level →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPGRADE SCREEN -->
+  <div id="upgradeScreen" class="screen" style="display:none">
+    <div class="upgrade-card">
+      <div class="upgrade-title">🛒 Shop Upgrades</div>
+      <div class="upgrade-coins-disp">🪙 <span id="upgradeCoinsDisplay">0</span> coins</div>
+      <div class="upgrades-list" id="upgradesList"></div>
+      <button class="pri-btn" onclick="G.closeUpgrades()" style="margin-top:4px">✓ Done!</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div id="gameOverScreen" class="screen" style="display:none">
+    <div style="font-size:60px">😢</div>
+    <div class="go-title">Game Over!</div>
+    <div class="go-score">Score: <span id="finalScore" style="color:#E65100">0</span></div>
+    <div class="go-score" style="font-size:18px;color:#0077B6">Level: <span id="finalLevel">1</span></div>
+    <div class="go-score" style="font-size:18px;color:#2E7D32">Coins: 💰<span id="finalCoins">0</span></div>
+    <div class="go-score" style="font-size:16px;color:#6D4C41">Accuracy: <span id="finalAcc">0%</span></div>
+    <br>
+    <button class="big-btn" onclick="G.goToStart()">🏠 Play Again</button>
+  </div>
+
+</div><!-- end gameContainer -->
+
+<script>
+const G = (() => {
+
+// ── THEMES ──
+const THEMES = {
+  candy: { items:[{emoji:'🍬',name:'Candy',price:5},{emoji:'🍭',name:'Lolly',price:8},{emoji:'🍫',name:'Choc',price:12},{emoji:'🧁',name:'Cupcake',price:15},{emoji:'🍩',name:'Donut',price:10}], deco:['🍬','🍭','🍫','🧁','🍩','🍪','🍰','🎂'] },
+  pizza: { items:[{emoji:'🍕',name:'Pizza',price:20},{emoji:'🥤',name:'Drink',price:8},{emoji:'🧀',name:'Cheese',price:6},{emoji:'🫑',name:'Pepper',price:5},{emoji:'🍄',name:'Mushroom',price:7}], deco:['🍕','🫙','🧄','🍅','🥫','🧂','🧅','🫒'] },
+  fruit: { items:[{emoji:'🍎',name:'Apple',price:6},{emoji:'🍌',name:'Banana',price:4},{emoji:'🍊',name:'Orange',price:7},{emoji:'🍇',name:'Grapes',price:10},{emoji:'🍓',name:'Berry',price:9}], deco:['🍎','🍌','🍊','🍇','🍓','🍋','🍑','🥭'] },
+  bake:  { items:[{emoji:'🥐',name:'Croissant',price:12},{emoji:'🍞',name:'Bread',price:8},{emoji:'🥖',name:'Baguette',price:10},{emoji:'🥧',name:'Pie',price:18},{emoji:'🍰',name:'Cake',price:22}], deco:['🥐','🍞','🥖','🥧','🍰','🧇','🥞','🫓'] },
+  toys:  { items:[{emoji:'🎮',name:'Game',price:25},{emoji:'🧸',name:'Bear',price:15},{emoji:'🪀',name:'Yoyo',price:8},{emoji:'🎲',name:'Dice',price:6},{emoji:'🎯',name:'Dart',price:10}], deco:['🎮','🧸','🪀','🎲','🎯','🎪','🎠','🎨'] },
+  ice:   { items:[{emoji:'🍦',name:'Ice Cream',price:10},{emoji:'🍧',name:'Shaved Ice',price:12},{emoji:'🍨',name:'Ice Cup',price:15},{emoji:'🧊',name:'Ice Block',price:5},{emoji:'🥤',name:'Smoothie',price:14}], deco:['🍦','🍧','🍨','🧊','🥤','🍡','🍮','🫙'] },
+};
+
+const CUSTOMERS = [
+  { face:'😊', color:'#1976D2', skin:'#FFCC80', border:'#FF9800' },
+  { face:'🤩', color:'#388E3C', skin:'#FFAB91', border:'#FF5722' },
+  { face:'😄', color:'#7B1FA2', skin:'#F8BBD0', border:'#E91E63' },
+  { face:'🙂', color:'#F57F17', skin:'#B2DFDB', border:'#009688' },
+  { face:'😃', color:'#C62828', skin:'#DCEDC8', border:'#8BC34A' },
+  { face:'🧒', color:'#0288D1', skin:'#FFE0B2', border:'#FF9800' },
+  { face:'👧', color:'#880E4F', skin:'#FCE4EC', border:'#E91E63' },
+];
+
+// ── STATE ──
+let state = {
+  screen: 'start',
+  playerName: 'Player', shopName: 'My Shop',
+  theme: 'candy', mode: 'normal',
+  level: 1, bestLevel: 1, hiScore: 0,
+  score: 0, coins: 0, lives: 3,
+  combo: 0, bestCombo: 0, streak: 0,
+  totalAnswered: 0, totalCorrect: 0,
+  customersThisLevel: 0, customersPerLevel: 8,
+  paused: false, phase: 'idle',
+  inputVal: '', currentAnswer: null, currentExpr: '',
+  timerInterval: null, timeLeft: 20, maxTime: 20,
+  patienceInterval: null,
+  freezeActive: false, freezeTimer: null,
+  doubleCoins: 0,
+  powerUps: { freeze: 2, hint: 2, double: 1 },
+  upgrades: {},
+  levelCoinsStart: 0,
+  setupStep: 1,
+  soundOn: true,
+  idleTimer: null,
+  answerTimeStart: 0,
+  currentQuestion: null,
+  totalLevels: 10,
+};
+
+// ── SOUND ──
+let audioCtx = null;
+function getAC() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playTone(freq, dur, type='sine', vol=0.18) {
+  if (!state.soundOn) return;
+  try {
+    const ctx = getAC(), osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+function playCorrect() { playTone(523,0.1); setTimeout(()=>playTone(659,0.1),100); setTimeout(()=>playTone(784,0.2),200); }
+function playWrong() { playTone(200,0.15,'sawtooth',0.1); setTimeout(()=>playTone(150,0.2,'sawtooth',0.08),150); }
+function playKey() { playTone(440,0.04,'sine',0.06); }
+function playLevelUp() { [523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.15,'sine',0.2),i*100)); }
+
+// ── SCREENS ──
+function showScreen(id) {
+  ['startScreen','setupScreen','gameOverScreen','pauseScreen','levelCompleteScreen','upgradeScreen']
+    .forEach(s => { const el=document.getElementById(s); if(el) el.style.display='none'; });
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'flex';
+  state.screen = id;
+}
+
+// ── SETTINGS ──
+function openSettings() {
+  document.getElementById('toggleSound').checked = state.soundOn;
+  document.getElementById('pillNormal').classList.toggle('active', state.mode==='normal');
+  document.getElementById('pillChallenge').classList.toggle('active', state.mode==='challenge');
+  document.getElementById('settingsBackdrop').classList.add('open');
+}
+function closeSettings() { document.getElementById('settingsBackdrop').classList.remove('open'); }
+function closeSettingsBackdrop(e) { if (e.target===document.getElementById('settingsBackdrop')) closeSettings(); }
+function toggleSound(on) { state.soundOn = on; }
+function setSettingsMode(m) {
+  state.mode = m;
+  document.getElementById('pillNormal').classList.toggle('active', m==='normal');
+  document.getElementById('pillChallenge').classList.toggle('active', m==='challenge');
+}
+function resetProgress() {
+  if (!confirm('Reset all progress?')) return;
+  state.bestLevel = 1; state.hiScore = 0;
+  document.getElementById('bestLevelStat').textContent = '1';
+  document.getElementById('hiScoreStat').textContent = '0';
+  closeSettings();
+}
+
+// ── SETUP ──
+function goToSetup() {
+  state.setupStep = 1;
+  renderSetupStep();
+  showScreen('setupScreen');
+}
+function renderSetupStep() {
+  const labels = ['Step 1 of 3: Your Info','Step 2 of 3: Shop Theme','Step 3 of 3: Game Mode'];
+  document.getElementById('setupStepLabel').textContent = labels[state.setupStep-1];
+  ['setupStep1','setupStep2','setupStep3'].forEach((id,i) => {
+    document.getElementById(id).style.display = (i===state.setupStep-1) ? '' : 'none';
+  });
+  document.getElementById('setupBackBtn').style.display = state.setupStep===1 ? 'none' : '';
+  document.getElementById('setupNextBtn').textContent = state.setupStep===3 ? '🚀 Start!' : 'Next →';
+}
+function selectTheme(t) {
+  state.theme = t;
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('selected', b.dataset.theme===t));
+}
+function selectMode(m) {
+  state.mode = m;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('selected', b.dataset.mode===m));
+}
+function setupBack() {
+  if (state.setupStep > 1) { state.setupStep--; renderSetupStep(); }
+  else goToStart();
+}
+function setupNext() {
+  if (state.setupStep===1) {
+    state.playerName = document.getElementById('playerNameInput').value.trim() || 'Player';
+    state.shopName = document.getElementById('shopNameInput').value.trim() || 'My Shop';
+    state.setupStep = 2; renderSetupStep();
+  } else if (state.setupStep===2) {
+    state.setupStep = 3; renderSetupStep();
+  } else {
+    startGame();
+  }
+}
+
+// ── UPGRADES ──
+const UPGRADES_DEF = [
+  { id:'extraLife', name:'❤️ Extra Life', desc:'Gain +1 life (max 5)', cost:80, effect:()=>{ state.lives=Math.min(state.lives+1,5); renderLives(); }, once:false },
+  { id:'freezeUp', name:'❄️ Freeze ×3', desc:'Add 3 Freeze power-ups', cost:60, effect:()=>{ state.powerUps.freeze+=3; renderPowerUps(); }, once:false },
+  { id:'hintUp', name:'💡 Hints ×3', desc:'Add 3 Hint power-ups', cost:50, effect:()=>{ state.powerUps.hint+=3; renderPowerUps(); }, once:false },
+  { id:'doubleUp', name:'🪙 Double Coins ×2', desc:'Add 2 Double-Coin uses', cost:70, effect:()=>{ state.powerUps.double+=2; renderPowerUps(); }, once:false },
+  { id:'timerBoost', name:'⏱️ Slower Timer', desc:'+2s on every level timer', cost:100, effect:()=>{ state.maxTime=Math.min(state.maxTime+2,26); }, once:true },
+];
+
+// ── MATH ENGINE (v4 style) ──
+const PATTERNS = [
+  (t) => { const [a,b,c]=genNums(t,3); return { expr:`${a} × ${b} + ${c}`, ans:a*b+c, hint:`${a}×${b}=${a*b}, +${c}` }; },
+  (t) => { const [a,b,c,d]=genNums(t,4,true); return { expr:`(${a}×${b}) + (${c}×${d})`, ans:a*b+c*d, hint:`${a}×${b}=${a*b}, ${c}×${d}=${c*d}` }; },
+  (t) => { let a,b,c; do{[a,b,c]=genNums(t,3);}while(a*b<=c); return { expr:`${a} × ${b} − ${c}`, ans:a*b-c, hint:`${a}×${b}=${a*b}, −${c}` }; },
+  (t) => {
+    if(t<2) return PATTERNS[0](t);
+    let a,b,c,d,ans,tries=0;
+    do { [a,b,c,d]=genNums(t,4); d=[2,3,4,5][Math.floor(Math.random()*4)]; const s=a*b+c; ans=s/d; tries++; }
+    while(!Number.isInteger(ans)||ans<=0||tries>30);
+    return { expr:`(${a}×${b}+${c})÷${d}`, ans, hint:`${a}×${b}+${c}=${a*b+c}, ÷${d}` };
+  },
+];
+function genNums(tier,count,pairs) {
+  // Harder ranges: tier1=[8,18], tier2=[12,28], tier3=[15,40]
+  const [lo,hi]=[[8,18],[12,28],[15,40]][Math.min(tier-1,2)];
+  return Array.from({length:count},(_,i)=>{
+    if(pairs&&i%2===1) return rnd(2,Math.min(8,hi));
+    return rnd(2,Math.min(hi,15));
+  });
+}
+
+// ── LEVEL SELECT ──
+function openLevelSelect() {
+  const grid=document.getElementById('levelSelectGrid');
+  grid.innerHTML='';
+  for(let i=1;i<=state.totalLevels;i++){
+    const cell=document.createElement('div');
+    const unlocked=i<=state.bestLevel;
+    const completed=i<state.bestLevel;
+    cell.className='level-cell '+(completed?'completed':unlocked?'unlocked':'locked');
+    cell.innerHTML=`<span class="lnum">${i}</span><span style="font-size:11px">${completed?'✅':unlocked?'▶':'🔒'}</span>`;
+    if(unlocked) cell.onclick=()=>{closeLevelSelectBtn();};
+    grid.appendChild(cell);
+  }
+  document.getElementById('levelSelectBackdrop').classList.add('open');
+}
+function closeLevelSelect(e){if(e.target===document.getElementById('levelSelectBackdrop'))closeLevelSelectBtn();}
+function closeLevelSelectBtn(){document.getElementById('levelSelectBackdrop').classList.remove('open');}
+function rnd(lo,hi) { return Math.floor(Math.random()*(hi-lo+1))+lo; }
+let lastPatIdx = -1;
+function generateQuestion() {
+  const tier = Math.min(Math.floor((state.level-1)/3)+1,3);
+  const avail = tier<2?[0,1,2]:[0,1,2,3];
+  let pIdx;
+  do { pIdx=avail[Math.floor(Math.random()*avail.length)]; } while(pIdx===lastPatIdx&&avail.length>1);
+  lastPatIdx = pIdx;
+  return PATTERNS[pIdx](tier);
+}
+
+// ── SHELF DECO ──
+function buildShelfDeco() {
+  const theme = THEMES[state.theme];
+  const deco = [...theme.deco,...theme.deco];
+  const shelves = ['shelf1','shelf2','shelf3','shelf4'];
+  shelves.forEach((id,si) => {
+    const shelf = document.getElementById(id);
+    if (!shelf) return;
+    // Remove old items but keep shelf structure
+    shelf.querySelectorAll('.shelf-item').forEach(e=>e.remove());
+    for(let i=0;i<4;i++) {
+      const s = document.createElement('span');
+      s.className='shelf-item';
+      s.textContent = deco[(si*4+i)%deco.length];
+      s.style.left=(10+i*30)+'px';
+      s.style.animationDelay=(i*0.5)+'s';
+      shelf.appendChild(s);
+    }
+  });
+  document.getElementById('shopSign').textContent = '🏪 ' + state.shopName;
+}
+
+// ── LIVES ──
+function renderLives() {
+  const d = document.getElementById('livesDisplay');
+  d.innerHTML='';
+  const max = Math.max(state.lives,3);
+  for(let i=0;i<max;i++) {
+    const h=document.createElement('span');
+    h.className='heart-icon'+(i>=state.lives?' lost':'');
+    h.textContent='❤️'; d.appendChild(h);
+  }
+}
+function loseLife() {
+  state.lives=Math.max(0,state.lives-1);
+  renderLives();
+}
+
+// ── HUD ──
+function updateHUD() {
+  document.getElementById('coinsDisplay').textContent = state.coins;
+  document.getElementById('scoreDisplay').textContent = '⭐'+state.score;
+  document.getElementById('levelDisplay').textContent = 
+  'LV ' + state.level + '/' + state.totalLevels;
+  if(state.level>state.bestLevel) {
+    state.bestLevel=state.level;
+    document.getElementById('bestLevelStat').textContent=state.bestLevel;
+  }
+}
+
+// ── POWER-UPS ──
+function renderPowerUps() {
+  const bar = document.getElementById('powerUpsBar');
+  bar.innerHTML='';
+  [{key:'freeze',emoji:'❄️',label:'Freeze',fn:useFreeze},{key:'hint',emoji:'💡',label:'Hint',fn:useHint},{key:'double',emoji:'🪙',label:'2×',fn:useDouble}]
+  .forEach(pu => {
+    const btn=document.createElement('button');
+    btn.className='powerup-btn';
+    btn.disabled=state.powerUps[pu.key]<=0;
+    btn.innerHTML=`${pu.emoji} ${pu.label} <span class="powerup-count">${state.powerUps[pu.key]}</span>`;
+    btn.onclick=pu.fn; bar.appendChild(btn);
+  });
+}
+function useFreeze() {
+  if(state.powerUps.freeze<=0||state.freezeActive) return;
+  state.powerUps.freeze--;
+  state.freezeActive=true;
+  document.getElementById('freezeOverlay').classList.add('active');
+  // Pause timer
+  clearInterval(state.timerInterval);
+  state.freezeTimer=setTimeout(()=>{
+    state.freezeActive=false;
+    document.getElementById('freezeOverlay').classList.remove('active');
+    if(state.phase==='answering') resumeTimer();
+  },3500);
+  renderPowerUps();
+}
+function useHint() {
+  if(state.powerUps.hint<=0||!state.currentQuestion) return;
+  state.powerUps.hint--;
+  const hb=document.getElementById('hintBox');
+  hb.textContent='💡 '+state.currentQuestion.hint;
+  hb.style.display='block';
+  setTimeout(()=>hb.style.display='none',4000);
+  renderPowerUps();
+}
+function useDouble() {
+  if(state.powerUps.double<=0) return;
+  state.powerUps.double--;
+  state.doubleCoins=2;
+  document.getElementById('doubleCoinsIndicator').classList.add('active');
+  renderPowerUps();
+}
+
+// ── GAME START ──
+function startGame() {
+  state.level=1; state.score=0; state.coins=0; state.lives=3;
+  state.combo=0; state.bestCombo=0; state.streak=0;
+  state.totalAnswered=0; state.totalCorrect=0;
+  state.customersThisLevel=0; state.phase='idle';
+  state.powerUps={freeze:2,hint:2,double:1}; state.upgrades={};
+  state.maxTime=state.mode==='challenge'?14:20;
+  state.doubleCoins=0; state.levelCoinsStart=0; state.paused=false;
+  buildShelfDeco();
+  showScreen(''); // hide all overlays, show game behind
+  // Show game scene by hiding start screen only
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('setupScreen').style.display='none';
+  renderLives(); updateHUD(); renderPowerUps();
+  document.getElementById('orderPanel').style.display='none';
+  document.getElementById('inputUI').style.display='none';
+  document.getElementById('comboDisplay').style.display='none';
+  document.getElementById('streakFire').style.display='none';
+  document.getElementById('starsRating').style.display='none';
+  document.getElementById('packBag').style.display='none';
+  document.getElementById('billAnim').classList.remove('show');
+  state.screen='game';
+  setTimeout(()=>nextCustomer(),600);
+}
+
+// ── CUSTOMER ──
+let currentOrder=null;
+function nextCustomer() {
+  if(state.phase==='gameover'||state.paused) return;
+  state.phase='serving';
+  state.inputVal='';
+  document.getElementById('answerDisplay').textContent='_';
+  document.getElementById('orderPanel').style.display='none';
+  document.getElementById('inputUI').style.display='none';
+  document.getElementById('counterItems').innerHTML='';
+  document.getElementById('packBag').style.display='none';
+  document.getElementById('billAnim').classList.remove('show');
+  document.getElementById('starsRating').style.display='none';
+  document.getElementById('hintBox').style.display='none';
+  clearIdleTimer();
+
+  const cust = CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)];
+  document.getElementById('customerFace').textContent=cust.face;
+  document.getElementById('customerTorso').style.background=`linear-gradient(135deg,${cust.color},${cust.color}CC)`;
+  document.querySelector('.customer-head').style.background=cust.skin;
+  document.querySelector('.customer-head').style.borderColor=cust.border;
+
+  // Next customer preview
+  const nextCust = CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)];
+  document.getElementById('nextFace').textContent=nextCust.face;
+
+  const $c=document.getElementById('customer');
+  $c.style.transition= 'none';
+  $c.style.left='-80px';
+  $c.classList.remove('idle');
+  const $sb=document.getElementById('speechBubble');
+  $sb.style.display='none';
+  document.getElementById('patienceFill').style.width='100%';
+  document.getElementById('patienceFill').style.background='linear-gradient(90deg,#4CAF50,#8BC34A)';
+
+  setTimeout(()=>{
+    $c.style.left='250px';
+    setTimeout(()=>{
+      $c.classList.add('idle');
+      $sb.textContent=['🛒','👋','😊','🤔'][Math.floor(Math.random()*4)];
+      $sb.style.display='block';
+      currentOrder=buildOrder(state.level);
+      setTimeout(()=>showOrder(),600);
+    },1300);
+  },100);
+}
+
+function buildOrder(level) {
+  const theme=THEMES[state.theme];
+  const numTypes=Math.min(1+Math.floor(level/4),3);
+  const shuffled=[...theme.items].sort(()=>Math.random()-0.5).slice(0,numTypes);
+  const items=shuffled.map(it=>({...it,qty:rnd(1,level<3?3:level<6?4:5)}));
+  // 🔥 CREATE EQUATION FROM ITEMS (SYNCED)
+let exprParts = [];
+let total = 0;
+
+items.forEach(item => {
+  const part = `(${item.price}×${item.qty})`;
+  exprParts.push(part);
+  total += item.price * item.qty;
+});
+
+const expr = exprParts.join(' + ');
+
+// store hint also (optional but good)
+state.currentQuestion = {
+  expr,
+  ans: total,
+  hint: exprParts.join(' + ')
+};
+
+return {
+  items,
+  expr,
+  answer: total
+};
+}
+
+function showOrder() {
+  if(!currentOrder) return;
+  document.getElementById('speechBubble').textContent='🤔';
+  document.getElementById('orderPanel').style.display='block';
+  const $items=document.getElementById('itemsDisplay');
+  $items.innerHTML='';
+  currentOrder.items.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='item-group';
+    div.innerHTML=`<div class="item-emojis">${item.emoji.repeat(Math.min(item.qty,4))}</div><div class="item-price">₹${item.price} each ×${item.qty}</div>`;
+    $items.appendChild(div);
+  });
+  document.getElementById('mathExpr').textContent = 'Total: ' + currentOrder.expr + ' = ?';
+  renderPowerUps();
+  setTimeout(()=>{
+    animateItemsToCounter(currentOrder.items);
+    setTimeout(()=>startAnswerPhase(),1200);
+  },600);
+}
+
+function animateItemsToCounter(items) {
+  const $ci=document.getElementById('counterItems');
+  $ci.innerHTML='';
+  let delay=0;
+  items.forEach(item=>{
+    for(let i=0;i<Math.min(item.qty,4);i++) {
+      setTimeout(()=>{
+        const el=document.createElement('div');
+        el.className='counter-item';
+        el.innerHTML=`${item.emoji}<span class="price-tag">₹${item.price}</span>`;
+        $ci.appendChild(el);
+        if(navigator.vibrate) navigator.vibrate(30);
+      },delay);
+      delay+=150;
+    }
+  });
+}
+
+// ── TIMER ──
+let timerTimeLeft=20;
+let timerTotal=20;
+function startAnswerPhase() {
+  if(state.paused) return;
+  state.phase='answering';
+  document.getElementById('inputUI').style.display='block';
+  state.answerTimeStart=Date.now();
+  timerTotal=Math.max(8,state.maxTime-Math.floor(state.level*0.5));
+  timerTimeLeft=timerTotal;
+  runTimer();
+  resetIdleTimer();
+}
+function runTimer() {
+  clearInterval(state.timerInterval);
+  const $tb=document.getElementById('timerBar');
+  const $pf=document.getElementById('patienceFill');
+  const $face=document.getElementById('customerFace');
+  state.timerInterval=setInterval(()=>{
+    if(state.paused||state.freezeActive) return;
+    timerTimeLeft-=0.1;
+    const pct=Math.max(0,(timerTimeLeft/timerTotal)*100);
+    $tb.style.width=pct+'%';
+    $tb.style.background=pct>60?'linear-gradient(90deg,#4CAF50,#8BC34A)':pct>30?'linear-gradient(90deg,#FFC107,#FF9800)':'linear-gradient(90deg,#F44336,#FF5722)';
+    $pf.style.width=pct+'%';
+    $pf.style.background=pct>60?'linear-gradient(90deg,#4CAF50,#8BC34A)':pct>30?'linear-gradient(90deg,#FFC107,#FF9800)':'linear-gradient(90deg,#F44336,#FF5722)';
+    if(pct<30) $face.textContent='😤';
+    else if(pct<60) $face.textContent='😐';
+    if(timerTimeLeft<=0) { clearInterval(state.timerInterval); timeUp(); }
+  },100);
+}
+function resumeTimer() {
+  if(state.phase==='answering') runTimer();
+}
+
+function timeUp() {
+  if(state.phase!=='answering') return;
+  state.phase='result';
+  clearInterval(state.timerInterval); clearIdleTimer();
+  state.combo=0; state.streak=0;
+  document.getElementById('comboDisplay').style.display='none';
+  document.getElementById('streakFire').style.display='none';
+  document.getElementById('customerFace').textContent='😡';
+  document.getElementById('speechBubble').textContent='😠';
+  showFeedback('⏰ TIME UP!','#FF5252');
+  customerLeave(false);
+  state.totalAnswered++;
+  loseLife();
+  setTimeout(()=>{
+    document.getElementById('inputUI').style.display='none';
+    if(state.lives<=0){gameOver();return;}
+    setTimeout(()=>nextCustomer(),1500);
+  },1200);
+}
+
+// ── INPUT ──
+function pressKey(k) {
+  if(state.phase!=='answering') return;
+  playKey();
+  if(k==='del') { state.inputVal=state.inputVal.slice(0,-1); }
+  else { if(state.inputVal.length>=6) return; state.inputVal+=k; }
+  document.getElementById('answerDisplay').textContent=state.inputVal||'_';
+  clearIdleTimer(); resetIdleTimer();
+}
+document.addEventListener('keydown',e=>{
+  if(state.screen!=='game') return;
+  if(e.key>='0'&&e.key<='9') pressKey(e.key);
+  else if(e.key==='Backspace') pressKey('del');
+  else if(e.key==='Enter') submitAnswer();
+});
+
+function submitAnswer() {
+  if(state.phase!=='answering'||!state.inputVal) return;
+  clearInterval(state.timerInterval); clearIdleTimer();
+  state.phase='result';
+  const userAns=parseInt(state.inputVal);
+  const correct=userAns===currentOrder.answer;
+  const timeTaken=(Date.now()-state.answerTimeStart)/1000;
+  const timeRatio=timeTaken/Math.max(8,state.maxTime-state.level*0.5);
+  document.getElementById('inputUI').style.display='none';
+  state.totalAnswered++;
+
+  if(correct) {
+    state.combo++; state.streak++;
+    state.totalCorrect++;
+    if(state.combo>state.bestCombo) state.bestCombo=state.combo;
+    playCorrect();
+
+    let pts=100+state.level*20;
+    if(timeRatio<0.4) pts+=60; else if(timeRatio<0.7) pts+=30;
+    if(state.combo>1) pts=Math.floor(pts*(1+state.combo*0.1));
+    state.score+=pts;
+
+    const dMult=state.doubleCoins>0?2:1;
+    const coinsEarned=Math.round((10+state.level*3+(state.combo>1?state.combo*2:0))*dMult);
+    state.coins+=coinsEarned;
+    if(state.score>state.hiScore){state.hiScore=state.score; document.getElementById('hiScoreStat').textContent=state.hiScore;}
+    if(state.doubleCoins>0){state.doubleCoins--;if(state.doubleCoins===0)document.getElementById('doubleCoinsIndicator').classList.remove('active');}
+
+    if(timeRatio<0.4){document.getElementById('customerFace').textContent='🤩';document.getElementById('speechBubble').textContent='💯';}
+    else{document.getElementById('customerFace').textContent='😊';document.getElementById('speechBubble').textContent='👍';}
+
+    if(state.combo>=2){document.getElementById('comboDisplay').style.display='block';document.getElementById('comboNum').textContent=state.combo;}
+    if(state.streak>=2){document.getElementById('streakFire').style.display='block';document.getElementById('streakNum').textContent=state.streak;}
+
+    let stars='⭐⭐⭐';
+    if(timeRatio>0.7) stars='⭐⭐';
+    if(timeRatio>0.9) stars='⭐';
+    const $sr=document.getElementById('starsRating');
+    $sr.textContent=stars+(state.combo>1?` COMBO ×${state.combo}!`:'');
+    $sr.style.display='block';
+
+    document.getElementById('billAmount').textContent=`₹${currentOrder.answer}`;
+    setTimeout(()=>{document.getElementById('billAnim').classList.add('show');},100);
+    setTimeout(()=>{ spawnCoins(Math.min(coinsEarned,8)); setTimeout(()=>document.getElementById('billAnim').classList.remove('show'),1200);},400);
+    setTimeout(()=>{
+      document.getElementById('counterItems').innerHTML='';
+      document.getElementById('packBag').style.display='block';
+      document.getElementById('packBag').style.animation='none';
+      void document.getElementById('packBag').offsetWidth;
+      document.getElementById('packBag').style.animation='bagPop 0.6s ease-out';
+    },800);
+
+    showFeedback(`+${pts} ✓`,'#4CAF50');
+    customerLeave(true); updateHUD();
+
+    state.customersThisLevel++;
+    if(state.customersThisLevel>=state.customersPerLevel){
+      setTimeout(()=>showLevelComplete(),2000);
+    } else {
+      const newLevel=Math.floor((state.totalCorrect)/4)+1;
+      if(newLevel>state.level){
+        state.level=newLevel;
+        state.maxTime=Math.max(10,20-Math.floor(state.level*0.3));
+        showLevelUp();
+        if(state.level%2===0){const bt=['freeze','hint'];state.powerUps[bt[Math.floor(Math.random()*bt.length)]]++;}
+      }
+      setTimeout(()=>nextCustomer(),2400);
+    }
+  } else {
+    state.combo=0; state.streak=0;
+    document.getElementById('comboDisplay').style.display='none';
+    document.getElementById('streakFire').style.display='none';
+    playWrong();
+    document.getElementById('customerFace').textContent='😡';
+    document.getElementById('speechBubble').textContent='😠';
+    showFeedback(`✗ Was ₹${currentOrder.answer}`,'#FF5252');
+    customerLeave(false);
+    loseLife(); updateHUD();
+    if(state.lives<=0){setTimeout(()=>gameOver(),1500);return;}
+    setTimeout(()=>nextCustomer(),2000);
+    document.getElementById('gameContainer').classList.add('shake');
+    setTimeout(()=>document.getElementById('gameContainer').classList.remove('shake'),400);
+  }
+}
+
+// ── VISUAL FX ──
+function showFeedback(text,color) {
+  const $f=document.getElementById('feedback');
+  $f.textContent=text; $f.style.color=color; $f.style.display='block';
+  $f.style.animation='none'; void $f.offsetWidth;
+  $f.style.animation='feedbackPop 0.8s ease-out forwards';
+  setTimeout(()=>$f.style.display='none',850);
+}
+
+function spawnCoins(n) {
+  const rect=document.getElementById('cashRegister').getBoundingClientRect();
+  const gr=document.getElementById('gameContainer').getBoundingClientRect();
+  for(let i=0;i<n;i++) {
+    setTimeout(()=>{
+      const c=document.createElement('div');
+      c.className='coin-pop'; c.textContent='💰';
+      c.style.left=(rect.left-gr.left+Math.random()*40-20)+'px';
+      c.style.top=(rect.top-gr.top+Math.random()*20)+'px';
+      document.getElementById('gameContainer').appendChild(c);
+      setTimeout(()=>c.remove(),1300);
+    },i*100);
+  }
+}
+
+function customerLeave(happy) {
+  setTimeout(()=>{
+    const $c=document.getElementById('customer');
+    $c.classList.remove('idle');
+    $c.style.transition='left 1s ease-in';
+    $c.style.left = happy ? (window.innerWidth + 100) + 'px' : '-100px';
+    document.getElementById('speechBubble').style.display='none';
+    setTimeout(()=>{ $c.style.transition='none'; $c.style.left='120px'; },1100);
+  },happy?1600:800);
+}
+
+function showLevelUp() {
+  playLevelUp();
+  const $lu=document.getElementById('levelUpBanner');
+  $lu.textContent=`⬆️ LEVEL ${state.level}! 🎉`;
+  $lu.classList.remove('show'); void $lu.offsetWidth; $lu.classList.add('show');
+  setTimeout(()=>$lu.classList.remove('show'),2100);
+}
+
+// ── PAUSE / RESUME ──
+function pause() {
+  if(state.phase==='idle'||state.phase==='gameover') return;
+  state.paused=true;
+  clearInterval(state.timerInterval); clearIdleTimer();
+  document.getElementById('pauseCoins').textContent=state.coins;
+  document.getElementById('pauseLevel').textContent=state.level;
+  const acc=state.totalAnswered?Math.round((state.totalCorrect/state.totalAnswered)*100):100;
+  document.getElementById('pauseAcc').textContent=acc+'%';
+  document.getElementById('pauseCombo').textContent='×'+state.bestCombo;
+  showScreen('pauseScreen');
+}
+function resume() {
+  state.paused=false;
+  showScreen('');
+  document.getElementById('pauseScreen').style.display='none';
+  state.screen='game';
+  if(state.phase==='answering'&&!state.freezeActive) resumeTimer();
+}
+
+// ── LEVEL COMPLETE ──
+function showLevelComplete() {
+  clearInterval(state.timerInterval); clearIdleTimer();
+  const acc=state.totalAnswered?Math.round((state.totalCorrect/state.totalAnswered)*100):100;
+  const levelCoins=state.coins-state.levelCoinsStart;
+  const stars=acc>=90?3:acc>=70?2:1;
+  document.getElementById('lcCustomers').textContent=state.customersThisLevel;
+  document.getElementById('lcAccuracy').textContent=acc+'%';
+  document.getElementById('lcCombo').textContent='×'+state.bestCombo;
+  document.getElementById('lcCoins').textContent=levelCoins;
+  for(let i=1;i<=3;i++){
+    const s=document.getElementById('cstar'+i);
+    s.classList.remove('earned');
+    setTimeout(()=>{if(i<=stars)s.classList.add('earned');},i*300);
+  }
+  showScreen('levelCompleteScreen');
+}
+
+function nextLevel() {
+  if (state.level < state.totalLevels) {
+  state.level++;
+} else {
+  gameOver(); // or show "You completed all levels"
+  return;
+}
+  playLevelUp();
+  state.customersThisLevel=0;
+  state.levelCoinsStart=state.coins;
+  state.maxTime=Math.max(10,state.maxTime-1);
+  if(state.level%2===0){const bt=['freeze','hint'];state.powerUps[bt[Math.floor(Math.random()*bt.length)]]++;}
+  showScreen(''); state.screen='game';
+  renderPowerUps(); updateHUD();
+  setTimeout(()=>nextCustomer(),600);
+}
+
+// ── UPGRADES ──
+function goToUpgrades() { renderUpgrades(); showScreen('upgradeScreen'); }
+function renderUpgrades() {
+  document.getElementById('upgradeCoinsDisplay').textContent=state.coins;
+  const list=document.getElementById('upgradesList');
+  list.innerHTML='';
+  UPGRADES_DEF.forEach(upg=>{
+    const item=document.createElement('div'); item.className='upgrade-item';
+    const owned=upg.once&&state.upgrades[upg.id];
+    const canAfford=state.coins>=upg.cost;
+    item.innerHTML=`<span class="upgrade-icon">${upg.name.split(' ')[0]}</span><div class="upgrade-info"><div class="upgrade-name">${upg.name.slice(2)}</div><div class="upgrade-desc">${upg.desc}</div></div><button class="upgrade-buy ${owned?'owned':''}" ${owned||!canAfford?'disabled':''} data-id="${upg.id}">${owned?'✓ Owned':'₹'+upg.cost}</button>`;
+    if(!owned) item.querySelector('.upgrade-buy').onclick=()=>buyUpgrade(upg.id);
+    list.appendChild(item);
+  });
+}
+function buyUpgrade(id) {
+  const upg=UPGRADES_DEF.find(u=>u.id===id);
+  if(!upg||state.coins<upg.cost) return;
+  state.coins-=upg.cost; upg.effect();
+  if(upg.once) state.upgrades[id]=true;
+  renderUpgrades(); updateHUD();
+}
+function closeUpgrades() { showScreen('levelCompleteScreen'); }
+
+// ── IDLE TIMER ──
+function resetIdleTimer() {
+  clearIdleTimer();
+  if(state.phase!=='answering') return;
+  state.idleTimer=setTimeout(()=>{
+    const ir=document.getElementById('idleReminder');
+    ir.classList.add('show');
+    setTimeout(()=>ir.classList.remove('show'),2500);
+  },5000);
+}
+function clearIdleTimer() {
+  clearTimeout(state.idleTimer);
+  document.getElementById('idleReminder').classList.remove('show');
+}
+
+// ── GAME OVER ──
+function gameOver() {
+  state.phase='gameover';
+  clearInterval(state.timerInterval); clearIdleTimer();
+  document.getElementById('inputUI').style.display='none';
+  document.getElementById('orderPanel').style.display='none';
+  if(state.score>state.hiScore){state.hiScore=state.score;document.getElementById('hiScoreStat').textContent=state.hiScore;}
+  const acc=state.totalAnswered?Math.round((state.totalCorrect/state.totalAnswered)*100):0;
+  document.getElementById('finalScore').textContent=state.score.toLocaleString();
+  document.getElementById('finalLevel').textContent=state.level;
+  document.getElementById('finalCoins').textContent=state.coins;
+  document.getElementById('finalAcc').textContent=acc+'%';
+  setTimeout(()=>showScreen('gameOverScreen'),600);
+}
+
+// ── GO HOME ──
+function goToStart() {
+  clearInterval(state.timerInterval); clearIdleTimer();
+  state.phase='idle'; state.paused=false;
+  document.getElementById('inputUI').style.display='none';
+  document.getElementById('orderPanel').style.display='none';
+  document.getElementById('bestLevelStat').textContent=state.bestLevel;
+  document.getElementById('hiScoreStat').textContent=state.hiScore;
+  showScreen('startScreen');
+}
+
+// ── TAB VISIBILITY ──
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&state.screen==='game'&&state.phase==='answering'&&!state.paused) pause();
+});
+
+// ── INIT ──
+renderLives(); updateHUD();
+
+return {
+  goToSetup,selectTheme,selectMode,setupBack,setupNext,
+  startGame,pause,resume,goToStart,
+  goToUpgrades,closeUpgrades,nextLevel,
+  pressKey,submitAnswer,
+  openSettings,closeSettings,closeSettingsBackdrop,
+  toggleSound,setSettingsMode,resetProgress,
+  openLevelSelect,closeLevelSelect,closeLevelSelectBtn,
+};
+
+})();
+</script>
+</body>
+</html>
