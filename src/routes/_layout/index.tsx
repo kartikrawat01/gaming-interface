@@ -128,6 +128,39 @@ if (_event !== 'SIGNED_IN') {
 }
       // ✅ USER LOGGED IN
       if (session?.user) {
+        try {
+
+  const rewardResponse = await fetch(
+    'https://wallet-api-backend-production.up.railway.app/wallet/daily-login',
+    {
+      method: 'POST',
+
+      headers: {
+        Authorization:
+          `Bearer ${session.access_token}`,
+
+        'Content-Type':
+          'application/json',
+      },
+    }
+  );
+
+  const rewardData =
+    await rewardResponse.json();
+
+  console.log(
+    'Daily login reward:',
+    rewardData
+  );
+
+} catch (err) {
+
+  console.error(
+    'Daily login failed:',
+    err
+  );
+
+}
 
         // CHECK existing session
         const existingSession =
@@ -436,9 +469,9 @@ const updateWalletFromGame = async (coins: number, level?: number) => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        games,
+        amount: coins,
+        description: "Game reward",
         level,
-        rewardType: "GAME_REWARD"
       }),
     });
 
@@ -657,7 +690,7 @@ useEffect(() => {
       <div className="flex">
 
         {/* Sidebar — mobile drawer */}
-        {/* <AnimatePresence>
+        <AnimatePresence>
           {mobileOpen && (
             <>
               <motion.div
@@ -666,7 +699,7 @@ useEffect(() => {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-black/60 lg:hidden"
                 onClick={() => setMobileOpen(false)}
-              /> */}
+              />
               <motion.div
                 initial={{ x: -320 }}
                 animate={{ x: 0 }}
@@ -676,9 +709,9 @@ useEffect(() => {
               >
                 
               </motion.div>
-            {/* </> */}
-          {/* )} */}
-        {/* </AnimatePresence> */}
+            </>
+          )} 
+        </AnimatePresence>
 
         {/* Main */}
         <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -1315,6 +1348,7 @@ function SidePanel() {
   );
 }
 function AuthModal({ onClose, setUser }: any) {
+  console.log("AUTH MODAL RENDERED");
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
@@ -1323,126 +1357,111 @@ function AuthModal({ onClose, setUser }: any) {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleAuth = async () => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      if (isSignup) {
-        if (password !== confirmPassword) {
-          alert("Passwords do not match");
-          setLoading(false);
-          return;
-        }
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { name } },
-        });
-        if (error) alert(error.message);
-        else alert("Signup successful! Check email.");
+  if (loading) return;   // 🔥 spam click rok diya
+
+  setLoading(true);
+
+  try {
+    if (isSignup) {
+      if (password !== confirmPassword) {
+  alert("Passwords do not match");
+  setLoading(false);
+  return;
+}
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+        },
+      });
+
+      if (error) alert(error.message);
+      else alert("Signup successful! Check email.");
+      onClose();
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) alert(error.message);
+      else {
+        setUser(data.user);
         onClose();
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) alert(error.message);
-        else {
-          setUser(data.user);
-          onClose();
-        }
       }
-    } finally {
-      setLoading(false);
     }
-  };
+  } finally {
+    setLoading(false);   // 🔥 important (always run hoga)
+  }
+};
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        className="bg-white p-6 rounded-xl w-80 shadow-xl"
-        onMouseDown={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-lg font-bold mb-4">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-xl w-80 space-y-3">
+        <h2 className="text-lg font-bold">
           {isSignup ? "Sign Up" : "Login"}
         </h2>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleAuth();
-          }}
-          className="space-y-3"
-        >
-          {isSignup && (
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              className="w-full border border-gray-300 p-2 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            />
-          )}
-
+        {isSignup && (
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            className="w-full border border-gray-300 p-2 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border p-2 rounded text-black"
           />
+        )}
 
+        <input
+  type="email"
+  placeholder="Email"
+  value={email}
+  onChange={(e) => {
+    console.log("EMAIL TYPING:", e.target.value);
+    setEmail(e.target.value);
+  }}/>
+
+        <input
+  type="password"
+  placeholder="Password"
+  value={password}
+  onChange={(e) => {
+    console.log("PASSWORD TYPING:", e.target.value);
+    setPassword(e.target.value);
+  }}/>
+
+        {isSignup && (
           <input
             type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={isSignup ? "new-password" : "current-password"}
-            className="w-full border border-gray-300 p-2 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full border p-2 rounded text-black"
           />
+        )}
 
-          {isSignup && (
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              autoComplete="new-password"
-              className="w-full border border-gray-300 p-2 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            />
-          )}
+        <button
+  onClick={handleAuth}
+  disabled={loading}
+  className="w-full bg-primary text-white p-2 rounded disabled:opacity-50"
+>
+  {loading ? "Processing..." : isSignup ? "Register" : "Login"}
+</button>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-yellow-400 text-gray-900 font-semibold p-2 rounded-lg hover:bg-yellow-500 transition disabled:opacity-50"
-          >
-            {loading ? "Processing..." : isSignup ? "Register" : "Login"}
-          </button>
-        </form>
+        <button
+          onClick={() => setIsSignup(!isSignup)}
+          className="text-sm text-blue-500"
+        >
+          {isSignup ? "Already have account? Login" : "Create account"}
+        </button>
 
-        <div className="flex justify-between mt-3">
-          <button
-            onClick={() => setIsSignup(!isSignup)}
-            className="text-sm text-blue-500 hover:underline"
-          >
-            {isSignup ? "Already have account? Login" : "Create account"}
-          </button>
-          <button
-            onClick={onClose}
-            className="text-sm text-gray-500 hover:underline"
-          >
-            Close
-          </button>
-        </div>
+        <button onClick={onClose} className="text-sm text-gray-500">
+          Close
+        </button>
       </div>
+  
+    
     </div>
   );
 }
