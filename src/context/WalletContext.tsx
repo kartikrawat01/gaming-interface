@@ -6,7 +6,7 @@ import {
   ReactNode,
 } from "react";
 
-import { io } from "socket.io-client";
+//import { io } from "socket.io-client";
 
 // =========================
 // TYPES
@@ -72,14 +72,14 @@ export function WalletProvider({
     // =========================
     // SOCKET CONNECT
     // =========================
-const socket = io(
-  "https://wallet-api-backend-production.up.railway.app",
-  {
-    transports: ["websocket", "polling"], // polling as fallback
-    timeout: 5000,                        // don't hang forever
-    reconnectionAttempts: 2,              // limit retries
-  }
-);
+// const socket = io(
+//   "https://wallet-api-backend-production.up.railway.app",
+//   {
+//     transports: ["websocket", "polling"], // polling as fallback
+//     timeout: 5000,                        // don't hang forever
+//     reconnectionAttempts: 2,              // limit retries
+//   }
+// );
 
     // =========================
     // USER ID
@@ -92,31 +92,31 @@ const socket = io(
     // =========================
     // JOIN WALLET ROOM
     // =========================
-    if (userId) {
-        socket.emit(
-      "join-wallet",
-      userId
-    );
-}
+//     if (userId) {
+//         socket.emit(
+//       "join-wallet",
+//       userId
+//     );
+// }
 
     // =========================
     // LIVE UPDATE
     // =========================
-    socket.on(
-      "wallet-updated",
-      (data) => {
+    // socket.on(
+    //   "wallet-updated",
+    //   (data) => {
 
-        console.log(
-          "GLOBAL WALLET:",
-          data
-        );
+    //     console.log(
+    //       "GLOBAL WALLET:",
+    //       data
+    //     );
 
-        setCoins(
-          data.balance
-        );
+    //     setCoins(
+    //       data.balance
+    //     );
 
-      }
-    );
+    //   }
+    // );
 
     // =========================
     // MULTI TAB SYNC
@@ -147,7 +147,7 @@ const socket = io(
     // =========================
     return () => {
 
-      socket.disconnect();
+      //socket.disconnect();
 
       window.removeEventListener(
         "storage",
