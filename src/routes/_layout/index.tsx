@@ -571,7 +571,7 @@ setZipStats({
   loadStats();
 
   window.addEventListener("focus", loadStats);
-  // window.addEventListener("storage", loadStats);
+  window.addEventListener("storage", loadStats);
 
   const handleMessage = (event: MessageEvent) => {
     if (event.data.type === "GAME_REWARD") {
@@ -632,7 +632,7 @@ if (event.data.type === "ZIP_MASTER_UPDATE") {
 
   return () => {
     window.removeEventListener("focus", loadStats);
-    // window.removeEventListener("storage", loadStats);
+    window.removeEventListener("storage", loadStats);
     window.removeEventListener("message", handleMessage);
   };
 }, []);
@@ -690,7 +690,7 @@ useEffect(() => {
       <div className="flex">
 
         {/* Sidebar — mobile drawer */}
-        {/* <AnimatePresence>
+        <AnimatePresence>
           {mobileOpen && (
             <>
               <motion.div
@@ -699,7 +699,7 @@ useEffect(() => {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-black/60 lg:hidden"
                 onClick={() => setMobileOpen(false)}
-              /> */}
+              />
               <motion.div
                 initial={{ x: -320 }}
                 animate={{ x: 0 }}
@@ -709,9 +709,9 @@ useEffect(() => {
               >
                 
               </motion.div>
-            {/* </> */}
-          {/* )} */}
-        {/* </AnimatePresence> */}
+            </>
+          )} 
+        </AnimatePresence>
 
         {/* Main */}
         <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -1348,6 +1348,7 @@ function SidePanel() {
   );
 }
 function AuthModal({ onClose, setUser }: any) {
+  console.log("AUTH MODAL RENDERED");
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
@@ -1396,65 +1397,68 @@ function AuthModal({ onClose, setUser }: any) {
   }
 };
 
-return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl w-80 space-y-3">
+  return (
+<div
+  className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center"
+  style={{ pointerEvents: "auto" }}
+  onClick={onClose}
+>
+      <div
+  className="relative z-[9999] bg-white p-6 rounded-xl w-80 space-y-3"
+  onClick={(e) => e.stopPropagation()}
+>
         <h2 className="text-lg font-bold">
           {isSignup ? "Sign Up" : "Login"}
         </h2>
 
-        <form
-          onSubmit={(e) => { e.preventDefault(); handleAuth(); }}
-          className="space-y-3"
-          autoComplete="on"
-        >
-          {isSignup && (
-            <input
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border p-2 rounded"
-              autoComplete="name"
-            />
-          )}
-
+        {isSignup && (
           <input
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border p-2 rounded"
-            autoComplete="email"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border p-2 rounded text-black"
           />
+        )}
 
+   <input
+  type="email"
+  placeholder="Email"
+  value={email}
+  onChange={(e) => {
+    console.log("EMAIL TYPING:", e.target.value);
+    setEmail(e.target.value);
+  }}
+  className="w-full border p-2 rounded bg-white text-black caret-black outline-none"
+/>
+
+  <input
+  type="password"
+  placeholder="Password"
+  value={password}
+  onChange={(e) => {
+    console.log("PASSWORD TYPING:", e.target.value);
+    setPassword(e.target.value);
+  }}
+  className="w-full border p-2 rounded bg-white text-black caret-black outline-none"
+/>
+
+        {isSignup && (
           <input
             type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border p-2 rounded"
-            autoComplete={isSignup ? "new-password" : "current-password"}
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full border p-2 rounded text-black"
           />
+        )}
 
-          {isSignup && (
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full border p-2 rounded"
-              autoComplete="new-password"
-            />
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white p-2 rounded disabled:opacity-50"
-          >
-            {loading ? "Processing..." : isSignup ? "Register" : "Login"}
-          </button>
-        </form>
+        <button
+  onClick={handleAuth}
+  disabled={loading}
+  className="w-full bg-primary text-white p-2 rounded disabled:opacity-50"
+>
+  {loading ? "Processing..." : isSignup ? "Register" : "Login"}
+</button>
 
         <button
           onClick={() => setIsSignup(!isSignup)}
@@ -1467,6 +1471,8 @@ return (
           Close
         </button>
       </div>
+  
+    
     </div>
   );
 }
