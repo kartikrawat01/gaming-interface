@@ -1397,7 +1397,10 @@ function AuthModal({ onClose, setUser }: any) {
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center"
       style={{ zIndex: 999999, pointerEvents: "auto" }}
-      onClick={onClose}
+      onClick={(e) => {
+        // Only close if clicking the backdrop itself, not the modal card
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div
         style={{
@@ -1413,7 +1416,6 @@ function AuthModal({ onClose, setUser }: any) {
           boxShadow: "0 25px 50px rgba(0,0,0,0.4)",
           pointerEvents: "auto",
         }}
-        onClick={(e) => e.stopPropagation()}
       >
         <h2 style={{ color: "#000", fontWeight: 700, fontSize: "18px", margin: 0 }}>
           {isSignup ? "Sign Up" : "Login"}
