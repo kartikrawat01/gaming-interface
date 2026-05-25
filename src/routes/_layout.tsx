@@ -32,7 +32,7 @@ function LayoutPage() {
   const location = useLocation();
 
   return (
-    <div className="flex h-screen bg-[#dfeef7] text-gray-900 overflow-hidden">
+    <div className="flex h-screen bg-[#dfeef7] text-gray-900 overflow-auto">
       {/* LEFT SIDEBAR */}
       <aside className="w-72 min-h-screen shrink-0 bg-gradient-to-b from-indigo-500 to-purple-600 border-r border-white/10 p-5 flex flex-col">
 
