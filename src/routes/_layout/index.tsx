@@ -1,677 +1,1537 @@
-// ============================================================
-// CodeArena Dashboard — index.tsx replacement
-// Drop into: src/routes/_layout/index.tsx
-// ============================================================
-
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../../supabaseClient";
-import { useWallet } from "../../context/WalletContext";
-import { User } from "@supabase/supabase-js";
+import { useNavigate } from "@tanstack/react-router";
+import { supabase } from "../../supabaseClient"; // path check kar lena
 import {
-  Play, Lock, Clock, Flame, Bell, Search, TrendingUp,
-  Award, Target, ChevronRight, X,
-  LogOut, LogIn, UserPlus, Trophy,
+  useWallet
+} from "../../context/WalletContext";
+import {
+  LayoutDashboard,
+  Gamepad2,
+  TrendingUp,
+  Trophy,
+  Award,
+  Settings,
+  Search,
+  Bell,
+  Flame,
+  Play,
+  Lock,
+  Clock,
+  Zap,
+  Code2,
+  Menu,
+  X,
+  ChevronRight,
+  Target,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_layout/")({
   component: Dashboard,
 });
 
-// ─── Types ───────────────────────────────────────────────────
 type Difficulty = "Beginner" | "Intermediate" | "Advanced";
+
 type Game = {
-  title: string; icon: string; difficulty: Difficulty;
-  progress: number; coins: number; time: string;
-  locked?: boolean; accent: string; url: string;
+  title: string;
+  icon: string;
+  difficulty: Difficulty;
+  progress: number;
+  xp: number;
+  time: string;
+  locked?: boolean;
+  accent: string;
 };
 
-// ─── Static Data ─────────────────────────────────────────────
-const GAMES: Game[] = [
-  { title: "Logic Maze",         icon: "🧩", difficulty: "Beginner",     progress: 72, coins: 120, time: "10 min", accent: "from-cyan-400/30 to-blue-500/20",     url: "/logic_maze.html"      },
-  { title: "Brain Blast",        icon: "➗", difficulty: "Beginner",     progress: 50, coins: 140, time: "8 min",  accent: "from-yellow-400/30 to-orange-400/20",  url: "/brain_blast.html"     },
-  { title: "Trivia",             icon: "🧪", difficulty: "Intermediate", progress: 28, coins: 220, time: "15 min", accent: "from-green-400/30 to-emerald-500/20",  url: "/trivia.html"          },
-  { title: "Zip",                icon: "📚", difficulty: "Beginner",     progress: 90, coins: 130, time: "7 min",  accent: "from-pink-400/30 to-rose-500/20",     url: "/zip_master.html"      },
-  { title: "Stop Motion Studio", icon: "🎨", difficulty: "Intermediate", progress: 35, coins: 180, time: "12 min", accent: "from-violet-400/30 to-purple-500/20", url: "/stop_motion.html"     },
-  { title: "Piano",              icon: "🎹", difficulty: "Advanced",     progress: 10, coins: 300, time: "20 min", accent: "from-indigo-400/30 to-sky-500/20",    url: "/piano.html"           },
-  { title: "Math Shop Game",     icon: "🛒", difficulty: "Intermediate", progress: 15, coins: 260, time: "18 min", accent: "from-blue-400/30 to-cyan-500/20",     url: "/math_shop_final.html" },
-  { title: "Quantum Rush",       icon: "🚀", difficulty: "Advanced",     progress: 0,  coins: 400, time: "25 min", accent: "from-teal-400/30 to-green-500/20",    url: "", locked: true         },
+const games: Game[] = [
+  { title: "Logic Maze", icon: "🧩", difficulty: "Beginner", progress: 72, xp: 120, time: "10 min", accent: "from-secondary/30 to-primary/10" },
+  { title: "Brain Blast", icon: "🔁", difficulty: "Intermediate", progress: 45, xp: 150, time: "12 min", accent: "from-indigo-500/20 to-indigo-500/5" },
+  { title: "Trivia", icon: "🐛", difficulty: "Intermediate", progress: 30, xp: 220, time: "18 min", accent: "from-violet-500/20 to-violet-500/5" },
+  { title: "Zip", icon: "⚔️", difficulty: "Intermediate", progress: 100, xp: 240, time: "20 min", accent: "from-emerald-500/20 to-emerald-500/5" },
+  { title: "Stop Motion Studio", icon: "📦", difficulty: "Beginner", progress: 88, xp: 130, time: "8 min", accent: "from-secondary/30 to-primary/10" },
+  { title: "Piano", icon: "🎯", difficulty: "Intermediate", progress: 12, xp: 260, time: "22 min", accent: "from-indigo-500/20 to-indigo-500/5" },
+  { title: "Math Shop Game", icon: "⚡", difficulty: "Advanced", progress: 0, xp: 380, time: "30 min", locked: true, accent: "from-rose-500/20 to-rose-500/5" },
+  { title: "AI Escape", icon: "🤖", difficulty: "Advanced", progress: 0, xp: 420, time: "35 min", locked: true, accent: "from-violet-500/20 to-violet-500/5" },
 ];
 
-const DIFF_STYLE: Record<Difficulty, string> = {
-  Beginner:     "bg-green-100 text-green-700 border-green-200",
-  Intermediate: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  Advanced:     "bg-red-100 text-red-700 border-red-200",
+// const sidebarItems = [
+//   { label: "Dashboard", icon: LayoutDashboard, key: "dashboard" },
+//   { label: "Categories", icon: Gamepad2, key: "categories" },
+//   { label: "Progress", icon: TrendingUp, key: "progress" },
+//   { label: "Leaderboard", icon: Trophy, key: "leaderboard" },
+//   { label: "Achievements", icon: Award, key: "achievements" },
+//   { label: "Settings", icon: Settings, key: "settings" },
+// ];
+
+const difficultyStyles: Record<Difficulty, string> = {
+  Beginner: "bg-success/20 text-success border-success/30",
+  Intermediate: "bg-warning/20 text-warning border-warning/30",
+  Advanced: "bg-danger/20 text-danger border-danger/30",
 };
 
-const WEEK_DATA = [40, 65, 30, 80, 55, 90, 72];
-const WEEK_DAYS = ["M","T","W","T","F","S","S"];
-const MISSIONS  = [
-  { label: "Play 3 games today",     progress: 66, reward: 80  },
-  { label: "Reach a new high score", progress: 40, reward: 150 },
-  { label: "Complete Zip level",     progress: 90, reward: 60  },
-];
-const ACHIEVEMENTS = [
-  { icon: "🏅", label: "First Function", time: "2h ago"    },
-  { icon: "🎯", label: "Perfect Run",    time: "Yesterday" },
-  { icon: "🔥", label: "7-day Streak",   time: "Today"     },
-];
-const LEADERS = [
-  { rank: 1, name: "Priya S.", coins: 2840, seed: "Priya" },
-  { rank: 2, name: "Alex C.",  coins: 2310, seed: "Alex"  },
-  { rank: 3, name: "Rohan M.", coins: 1990, seed: "Rohan" },
-];
-
-// ─── Dashboard ───────────────────────────────────────────────
 function Dashboard() {
-  const { coins }                     = useWallet();
-  const [user, setUser]               = useState<User | null>(null);
-  const [search, setSearch]           = useState("");
-  const [showAuth, setShowAuth]       = useState(false);
-  const [authMode, setAuthMode]       = useState<"login"|"signup">("login");
-  const [notifOpen, setNotifOpen]     = useState(false);
-  const [lmProgress, setLmProgress]   = useState(72);
-  const streak                        = 7;
-  //const sessionTimerRef               = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigate = useNavigate();
+  const [active, setActive] = useState("dashboard");
+  const [user, setUser] = useState<any>(null);
+const [showAuth, setShowAuth] = useState(false);
+const [sessionTimer, setSessionTimer] =
+  useState<any>(null);
+useEffect(() => {
+  const handleUnload = async () => {
 
-  // ── FIXED: single getUser call, no extra getSession ──
-  useEffect(() => {
+  const sessionId =
+    localStorage.getItem(
+      'platformSessionId'
+    );
 
-  // current session load
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    setUser(session?.user ?? null);
+  if (!sessionId) return;
+
+  localStorage.removeItem(
+    'platformSessionId'
+  );
+};
+  supabase.auth.getUser().then(({ data }) => {
+    console.log("Logged in user:", data.user);
+    setUser(data.user);
+    supabase.auth.getSession().then(({ data }) => {
+  console.log("SESSION:", data.session);
+  console.log("ACCESS TOKEN:", data.session?.access_token);
+});
   });
 
-  // auth listener
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    console.log("AUTH EVENT:", _event);
-    console.log("SESSION:", session);
-    setUser(session?.user ?? null);
-  });
+  const { data: listener } =
+  supabase.auth.onAuthStateChange(
+    async (_event, session) => {
+      setUser(session?.user || null);
+
+// ✅ logout UI instantly update
+if (_event === 'SIGNED_OUT') {
+
+  setUser(null);
+
+  localStorage.removeItem(
+    'platformSessionId'
+  );
+
+  localStorage.removeItem(
+    'sessionRewardGiven'
+  );
+
+  return;
+}
+
+// ✅ sirf login logic niche chalega
+if (_event !== 'SIGNED_IN') {
+  return;
+}
+      // ✅ USER LOGGED IN
+      if (session?.user) {
+        // Connect socket now that user is authenticated
+        localStorage.setItem("user_id", session.user.id);
+        connectSocket(session.user.id);
+        try {
+
+  const rewardResponse = await fetch(
+    'https://wallet-api-backend-production.up.railway.app/wallet/daily-login',
+    {
+      method: 'POST',
+
+      headers: {
+        Authorization:
+          `Bearer ${session.access_token}`,
+
+        'Content-Type':
+          'application/json',
+      },
+    }
+  );
+
+  const rewardData =
+    await rewardResponse.json();
+
+  console.log(
+    'Daily login reward:',
+    rewardData
+  );
+
+} catch (err) {
+
+  console.error(
+    'Daily login failed:',
+    err
+  );
+
+}
+
+        // CHECK existing session
+        const existingSession =
+          localStorage.getItem(
+            'platformSessionId'
+          );
+
+        // 🚫 already running
+        if (existingSession) {
+
+          console.log(
+            'Session already active:',
+            existingSession
+          );
+
+          return;
+        }
+
+        try {
+
+          const token =
+            session.access_token;
+
+          const response =
+            await fetch(
+              'https://wallet-api-backend-production.up.railway.app/session/start',
+              {
+                method: 'POST',
+
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+
+                  'Content-Type':
+                    'application/json',
+                },
+              }
+            );
+
+          const data =
+            await response.json();
+
+          console.log(
+            'Platform Session Started:',
+            data
+          );
+
+          // SAVE SESSION ID
+          localStorage.setItem(
+            'platformSessionId',
+            data.session.id
+          );
+          localStorage.removeItem(
+  'sessionRewardGiven'
+);
+
+// start2MinRewardTimer();
+
+          // AUTO END AFTER 30 MIN
+          const timer = setTimeout(
+            async () => {
+
+              try {
+
+                const currentSessionId =
+                  localStorage.getItem(
+                    'platformSessionId'
+                  );
+                  // reset reward flag
+
+
+                if (!currentSessionId) {
+                  return;
+                }
+
+                const session =
+                  await supabase.auth.getSession();
+
+                const token =
+                  session.data.session
+                  ?.access_token;
+
+                if (!token) {
+                  return;
+                }
+
+                const res = await fetch(
+                  'https://wallet-api-backend-production.up.railway.app/session/end',
+                  {
+                    method: 'POST',
+
+                    headers: {
+                      Authorization:
+                        `Bearer ${token}`,
+
+                      'Content-Type':
+                        'application/json',
+                    },
+
+                    body: JSON.stringify({
+                      sessionId:
+                        currentSessionId,
+                    }),
+                  }
+                );
+
+                const result =
+                  await res.json();
+
+                console.log(
+                  'Session auto ended:',
+                  result
+                );
+                
+                localStorage.removeItem(
+                  'platformSessionId'
+                );
+                localStorage.removeItem(
+  'sessionRewardGiven'
+);
+
+                fetchWallet();
+
+              } catch (err) {
+
+                console.error(
+                  'Auto session end failed:',
+                  err
+                );
+              }
+
+            },
+
+            30 * 60 * 1000
+          );
+
+          setSessionTimer(timer);
+          
+        } catch (err) {
+
+          console.error(
+            'Session start failed:',
+            err
+          );
+        }
+      }
+    }
+  );
+    window.addEventListener(
+  'beforeunload',
+  handleUnload
+);
 
   return () => {
-    subscription.unsubscribe();
+
+  listener.subscription.unsubscribe();
+
+  window.removeEventListener(
+    'beforeunload',
+    handleUnload
+  );
+
+  if (sessionTimer) {
+    clearTimeout(sessionTimer);
+  }
+};
+}, []);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [logicMazeStats, setLogicMazeStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+  });
+  const [brainBlastStats, setBrainBlastStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+const [triviaStats, setTriviaStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+const [zipStats, setZipStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+  const {
+  coins: walletCoins,
+  setCoins: setWalletCoins,
+  connectSocket,
+} = useWallet();
+  const [searchTerm, setSearchTerm] = useState("");
+//   const start2MinRewardTimer = async () => {
+
+//   console.log("2 min timer started");
+
+//   setTimeout(async () => {
+
+//     try {
+
+//       const rewarded =
+//         localStorage.getItem(
+//           'sessionRewardGiven'
+//         );
+
+//       if (rewarded === 'true') {
+//         console.log("Already rewarded");
+//         return;
+//       }
+
+//       const currentSessionId =
+//         localStorage.getItem(
+//           'platformSessionId'
+//         );
+
+//       if (!currentSessionId) {
+//         console.log("No session found");
+//         return;
+//       }
+
+//       const session =
+//         await supabase.auth.getSession();
+
+//       const token =
+//         session.data.session
+//         ?.access_token;
+
+//       if (!token) {
+//         console.log("No token");
+//         return;
+//       }
+
+//       console.log("Calling reward API...");
+
+//       const rewardRes = await fetch(
+//         'https://wallet-api-backend-production.up.railway.app/wallet/earn/event',
+//         {
+//           method: 'POST',
+
+//           headers: {
+//             Authorization:
+//               `Bearer ${token}`,
+
+//             'Content-Type':
+//               'application/json',
+//           },
+
+//           body: JSON.stringify({
+//             amount: 10,
+//             description:
+//               '2 minute session reward',
+//           }),
+//         }
+//       );
+
+//       const rewardData =
+//         await rewardRes.json();
+
+//       console.log(
+//         '2 min reward success:',
+//         rewardData
+//       );
+
+//       localStorage.setItem(
+//         'sessionRewardGiven',
+//         'true'
+//       );
+
+//       // ✅ instant UI update
+//       setWalletCoins(
+//         Number(rewardData.balance) || 0
+//       );
+
+//       // ✅ backend sync
+//       fetchWallet();
+
+//     } catch (err) {
+
+//       console.error(
+//         '2 min reward failed:',
+//         err
+//       );
+//     }
+
+//   }, 2 * 60 * 1000);
+// };
+const updateWalletFromGame = async (coins: number, level?: number) => {
+  try {
+    console.log("Updating wallet...");
+    console.log("Coins:", coins);
+
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+
+    if (!token) return;
+
+    const res = await fetch("https://wallet-api-backend-production.up.railway.app/wallet/earn/event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        amount: coins,
+        description: "Game reward",
+        level,
+      }),
+    });
+
+    const data = await res.json();
+
+console.log("Wallet API Response:", data);
+
+setWalletCoins(Number(data.balance) || 0);
+
+    // ✅ backup sync from backend
+    fetchWallet();
+
+  } catch (err) {
+    console.error("Wallet update failed:", err);
+  }
+};
+
+  const fetchWallet = useCallback(async () => {
+  try {
+    const session = await supabase.auth.getSession();
+
+    console.log("SESSION:", session);
+
+    const token = session.data.session?.access_token;
+
+    console.log("TOKEN:", token);
+
+    if (!token) {
+      console.log("No token found");
+      return;
+    }
+
+    const res = await fetch("https://wallet-api-backend-production.up.railway.app/wallet/balance", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    console.log("Wallet API Response:", data);
+
+    setWalletCoins(Number(data.balance) || 0);
+
+  } catch (err) {
+    console.error("Fetch wallet failed:", err);
+  }
+}, [setWalletCoins]);
+
+  useEffect(() => {
+  const loadStats = () => {
+    const progress = Number(localStorage.getItem("logicMazeProgress")) || 0;
+    const coins = Number(localStorage.getItem("logicMazeCoins")) || 0;
+    const completed = Number(localStorage.getItem("logicMazeCompleted")) || 0;
+    const time = Number(localStorage.getItem("logicMazeTime")) || 0;
+    const bbProgress = Number(localStorage.getItem("brainBlastProgress")) || 0;
+const bbCoins = Number(localStorage.getItem("brainBlastCoins")) || 0;
+const bbCompleted = Number(localStorage.getItem("brainBlastCompleted")) || 0;
+const bbTime = Number(localStorage.getItem("brainBlastTime")) || 0;
+const triviaProgress = Number(localStorage.getItem("triviaProgress")) || 0;
+const triviaCoins = Number(localStorage.getItem("triviaCoins")) || 0;
+const triviaCompleted = Number(localStorage.getItem("triviaCompleted")) || 0;
+const triviaTime = Number(localStorage.getItem("triviaTime")) || 0;
+const zipProgress = Number(localStorage.getItem("zipProgress")) || 0;
+const zipCoins = Number(localStorage.getItem("zipCoins")) || 0;
+const zipCompleted = Number(localStorage.getItem("zipCompleted")) || 0;
+const zipTime = Number(localStorage.getItem("zipTime")) || 0;
+
+    setLogicMazeStats({
+      progress,
+      coins,
+      completed,
+      time: `${time} min`,
+    });
+    setBrainBlastStats({
+  progress: bbProgress,
+  coins: bbCoins,
+  completed: bbCompleted,
+  time: `${bbTime} min`,
+});
+
+
+setTriviaStats({
+  progress: triviaProgress,
+  coins: triviaCoins,
+  completed: triviaCompleted,
+  time: `${triviaTime} min`,
+});
+setZipStats({
+  progress: zipProgress,
+  coins: zipCoins,
+  completed: zipCompleted,
+  time: `${zipTime} min`,
+});
   };
 
-}, []);
+  loadStats();
 
-  // ── LocalStorage sync for game stats ──
-  useEffect(() => {
-    const sync = () => {
-      const p = Number(localStorage.getItem("logicMazeProgress"));
-      if (p > 0) setLmProgress(p);
-    };
-    sync();
-    window.addEventListener("storage", sync);
-    window.addEventListener("focus",   sync);
-    return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener("focus",   sync);
-    };
-  }, []);
+  window.addEventListener("focus", loadStats);
+  window.addEventListener("storage", loadStats);
 
-  // ── Session helpers ──
-  // const startPlatformSession = useCallback(async (token: string) => {
-  //   if (localStorage.getItem("platformSessionId")) return;
-  //   try {
-  //     const res  = await fetch("http://localhost:3000/session/start", {
-  //       method: "POST",
-  //       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-  //     });
-  //     const data = await res.json();
-  //     localStorage.setItem("platformSessionId", data.session.id);
-  //     localStorage.removeItem("sessionRewardGiven");
+  const handleMessage = (event: MessageEvent) => {
+    if (event.data.type === "GAME_REWARD") {
+  console.log("Reward received:", event.data);
 
-  //     // 2-min reward
-  //     setTimeout(async () => {
-  //       if (localStorage.getItem("sessionRewardGiven")) return;
-  //       const s = await supabase.auth.getSession();
-  //       const t = s.data.session?.access_token; if (!t) return;
-  //       await fetch("http://localhost:3000/wallet/earn/event", {
-  //         method: "POST",
-  //         headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
-  //         body: JSON.stringify({ amount: 10, description: "2-min session reward", game: "platform" }),
-  //       });
-  //       localStorage.setItem("sessionRewardGiven", "1");
-  //     }, 2 * 60 * 1000);
-
-  //     // Auto-end 30 min
-  //     sessionTimerRef.current = setTimeout(async () => {
-  //       const sid = localStorage.getItem("platformSessionId"); if (!sid) return;
-  //       const s   = await supabase.auth.getSession(); const t = s.data.session?.access_token; if (!t) return;
-  //       await fetch("http://localhost:3000/session/end", {
-  //         method: "POST",
-  //         headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
-  //         body: JSON.stringify({ sessionId: sid }),
-  //       });
-  //       localStorage.removeItem("platformSessionId");
-  //       localStorage.removeItem("sessionRewardGiven");
-  //     }, 30 * 60 * 1000);
-  //   } catch (e) { console.warn("Session start failed:", e); }
-  // }, []);
-
-  const handleLogout = useCallback(async () => {
-    // const sid = localStorage.getItem("platformSessionId");
-    // if (sid) {
-    //   const s = await supabase.auth.getSession(); const t = s.data.session?.access_token;
-    //   if (t) await fetch("http://localhost:3000/session/end", {
-    //     method: "POST",
-    //     headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
-    //     body: JSON.stringify({ sessionId: sid }),
-    //   }).catch(() => {});
-    //   localStorage.removeItem("platformSessionId");
-    // }
-    await supabase.auth.signOut();
-  }, []);
-
-  const openGame = useCallback((url: string) => {
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
-  }, []);
-
-  // ── Derived ──
-  const filteredGames = GAMES
-    .map(g => g.title === "Logic Maze" ? { ...g, progress: lmProgress } : g)
-    .filter(g => g.title.toLowerCase().includes(search.toLowerCase()));
-
-  const totalPlayed = GAMES.filter(g => g.progress > 0 && !g.locked).length;
-  const avgProgress = Math.round(
-    GAMES.filter(g => !g.locked).reduce((a, g) => a + g.progress, 0) /
-    GAMES.filter(g => !g.locked).length
+  updateWalletFromGame(
+    Number(event.data.coins || 0),
+    event.data.level
   );
-  const userName = user?.user_metadata?.name || user?.email?.split("@")[0] || "Player";
+}
+  if (event.data) {
+
+  // LOGIC MAZE
+  if (event.data.type === "GAME_PROGRESS_UPDATE") {
+    setLogicMazeStats({
+      progress: event.data.progress,
+      coins: event.data.coins,
+      completed: event.data.completed || 0,
+      time: `${event.data.time} min`,
+    });
+  }
+
+  // BRAIN BLAST
+  if (event.data.type === "BRAIN_BLAST_UPDATE") {
+    setBrainBlastStats({
+      progress: event.data.progress,
+      coins: event.data.coins,
+      completed: event.data.completed || 0,
+      time: `${event.data.time} min`,
+    });
+  }
+
+  if (event.data.type === "TRIVIA_UPDATE") {
+  setTriviaStats({
+    progress: event.data.progress,
+    coins: event.data.coins,
+    completed: event.data.completed || 0,
+    time: `${event.data.time} min`,
+  });
+}
+  // ZIP MASTER (NEW)
+if (event.data.type === "ZIP_MASTER_UPDATE") {
+  const data = event.data.payload;
+
+  setZipStats({
+    progress: (data.stars.filter((s: number) => s > 0).length / 25) * 100,
+    coins: data.coins,
+    completed: data.stars.filter((s: number) => s > 0).length,
+    time: `${data.time || 0} min`,
+  });
+  fetchWallet();
+  
+}
+}
+  };
+
+  window.addEventListener("message", handleMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadStats);
+    window.removeEventListener("storage", loadStats);
+    window.removeEventListener("message", handleMessage);
+  };
+}, []);
+useEffect(() => {
+
+  if (!user) return;
+
+  fetchWallet();
+
+  const existingSession =
+    localStorage.getItem(
+      'platformSessionId'
+    );
+
+  const rewarded =
+    localStorage.getItem(
+      'sessionRewardGiven'
+    );
+
+  // ✅ page refresh ke baad bhi timer continue
+  // if (
+  //   existingSession &&
+  //   rewarded !== 'true'
+  // ) {
+  //   start2MinRewardTimer();
+  // }
+
+}, [user]);
 
   return (
-    <div className="min-h-screen bg-[#dfeef7] text-gray-900">
-
-      {/* ── Sticky Header ── */}
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-sm border-b border-gray-200/80 px-5 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">Dashboard</h2>
-          <span className="text-[11px] bg-indigo-100 text-indigo-600 font-semibold px-2 py-0.5 rounded-full">Beta</span>
+    <div className="min-h-screen text-foreground bg-background">
+      {showAuth && (
+  <AuthModal
+    onClose={() => setShowAuth(false)}
+    setUser={setUser}
+  />
+)}
+      {/* Mobile top bar */}
+      <div className="lg:hidden sticky top-0 z-40 glass flex items-center justify-between px-4 h-14 border-b border-border">
+        <div className="flex items-center gap-2">
+          <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/15 text-primary">
+            <Code2 className="h-4 w-4" />
+          </div>
+          {/* <span className="font-display font-bold text-base">CodeArena</span> */}
         </div>
-
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* Search */}
-          <div className="relative hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search games…"
-              autoComplete="off"
-              className="h-9 w-48 rounded-xl border border-gray-200 bg-white pl-8 pr-3 text-sm outline-none focus:border-indigo-400 transition"
-            />
-          </div>
-
-          {/* Wallet */}
-          <div className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-amber-50 border border-amber-200 shrink-0">
-            <span>🪙</span>
-            <span className="font-bold text-amber-700 text-sm">{coins.toLocaleString()}</span>
-          </div>
-
-          {/* Streak */}
-          <div className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-orange-50 border border-orange-200 shrink-0">
-            <Flame className="h-4 w-4 text-orange-500" />
-            <span className="font-bold text-orange-600 text-sm">{streak}</span>
-          </div>
-
-          {/* Notifications */}
-          <div className="relative shrink-0">
-            <button
-              onClick={() => setNotifOpen(p => !p)}
-              className="relative h-9 w-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:border-indigo-300 transition"
-            >
-              <Bell className="h-4 w-4 text-gray-600" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500" />
-            </button>
-            <AnimatePresence>
-              {notifOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-11 w-68 bg-white rounded-2xl border border-gray-200 shadow-xl p-4 z-50"
-                >
-                  <p className="font-semibold text-sm mb-2">Notifications</p>
-                  {[
-                    { icon: "🏆", msg: "Unlocked 'Perfect Run' achievement!" },
-                    { icon: "🪙", msg: "Earned 80 coins from Logic Maze." },
-                    { icon: "🔥", msg: "7-day streak! Keep it going!" },
-                  ].map((n, i) => (
-                    <div key={i} className="flex items-start gap-2 py-2 border-t border-gray-100 first:border-0">
-                      <span className="text-base mt-0.5">{n.icon}</span>
-                      <p className="text-xs text-gray-600">{n.msg}</p>
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Auth button */}
-          {user
-            ? (
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium hover:bg-red-100 transition shrink-0"
-              >
-                <LogOut className="h-4 w-4" /> Logout
-              </button>
-            ) : (
-              <button
-                onClick={() => { setAuthMode("login"); setShowAuth(true); }}
-                className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition shrink-0"
-              >
-                <LogIn className="h-4 w-4" /> Login
-              </button>
-            )
-          }
-        </div>
-      </header>
-
-      {/* ── Main Body ── */}
-      <div className="p-5 max-w-7xl mx-auto">
-
-        {/* Hero Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="mb-7 rounded-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-400 p-6 text-white relative overflow-hidden"
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 rounded-lg hover:bg-surface-elevated transition"
+          aria-label="Open menu"
         >
-          <div className="absolute inset-0 opacity-10 pointer-events-none"
-            style={{ backgroundImage: "radial-gradient(circle at 80% 20%, white, transparent 60%)" }} />
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <p className="text-indigo-100 text-sm font-medium mb-1">Welcome back 👋</p>
-              <h1 className="text-2xl sm:text-3xl font-bold">{userName}</h1>
-              <p className="text-indigo-100 text-sm mt-1">
-                You're on a <span className="font-bold text-yellow-300">{streak}-day streak</span> — keep playing!
-              </p>
-            </div>
-            <div className="flex gap-3 flex-wrap">
-              {[
-                { label: "Coins",  value: coins.toLocaleString(), icon: "🪙" },
-                { label: "Games",  value: totalPlayed,            icon: "🎮" },
-                { label: "Avg %",  value: `${avgProgress}%`,      icon: "📈" },
-              ].map(s => (
-                <div key={s.label} className="bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3 text-center min-w-[80px]">
-                  <div className="text-xl">{s.icon}</div>
-                  <div className="text-lg font-bold">{s.value}</div>
-                  <div className="text-[11px] text-indigo-100">{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Two-column grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-6">
-
-          {/* Left — Games */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Featured Games</h2>
-              <a href="/categories" className="text-sm text-indigo-600 font-medium flex items-center gap-1 hover:underline">
-                View all <ChevronRight className="h-4 w-4" />
-              </a>
-            </div>
-
-            {/* Mobile search */}
-            <div className="relative sm:hidden mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search games…"
-                autoComplete="off"
-                className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm outline-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {filteredGames.length === 0 && (
-                <div className="col-span-full text-center py-12 text-gray-400">No games found 🔍</div>
-              )}
-              {filteredGames.map((game, i) => (
-                <GameCard key={game.title} game={game} index={i} onPlay={openGame} />
-              ))}
-            </div>
-          </div>
-
-          {/* Right — Sidebar */}
-          <aside className="space-y-5">
-
-            {/* Daily Missions */}
-            <SideCard title="Daily Missions" icon={<Target className="h-4 w-4 text-indigo-500" />} badge="3 / 5">
-              <ul className="space-y-3">
-                {MISSIONS.map((m, i) => (
-                  <li key={m.label}>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-gray-700">{m.label}</span>
-                      <span className="text-gray-400">+{m.reward} 🪙</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${m.progress}%` }}
-                        transition={{ duration: 0.8, delay: 0.2 + i * 0.1 }}
-                        className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-purple-400"
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </SideCard>
-
-            {/* Weekly Progress */}
-            <SideCard title="Weekly Progress" icon={<TrendingUp className="h-4 w-4 text-indigo-500" />} badge="+18%">
-              <div className="flex items-end justify-between gap-1.5 h-20">
-                {WEEK_DATA.map((v, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${v}%` }}
-                    transition={{ duration: 0.6, delay: 0.3 + i * 0.05, ease: "easeOut" }}
-                    className="flex-1 rounded-md bg-gradient-to-t from-indigo-400/60 to-purple-400/80"
-                  />
-                ))}
-              </div>
-              <div className="mt-2 flex justify-between text-[10px] text-gray-400">
-                {WEEK_DAYS.map((d, i) => <span key={i}>{d}</span>)}
-              </div>
-            </SideCard>
-
-            {/* Achievements */}
-            <SideCard title="Recent Achievements" icon={<Award className="h-4 w-4 text-indigo-500" />}>
-              <ul className="space-y-2">
-                {ACHIEVEMENTS.map(a => (
-                  <li key={a.label} className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                    <div className="h-8 w-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-base shadow-sm">{a.icon}</div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{a.label}</p>
-                      <p className="text-[11px] text-gray-400">{a.time}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </SideCard>
-
-            {/* Leaderboard teaser */}
-            <SideCard title="Leaderboard" icon={<Trophy className="h-4 w-4 text-indigo-500" />}>
-              {LEADERS.map(p => (
-                <div key={p.rank} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
-                  <span className="text-base">{p.rank === 1 ? "🥇" : p.rank === 2 ? "🥈" : "🥉"}</span>
-                  <img src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${p.seed}`} className="h-7 w-7 rounded-full border border-gray-200" alt="" />
-                  <span className="flex-1 text-sm font-medium text-gray-700">{p.name}</span>
-                  <span className="text-xs text-amber-600 font-bold">🪙 {p.coins.toLocaleString()}</span>
-                </div>
-              ))}
-              <a href="/leaderboard" className="mt-2 flex items-center justify-center gap-1 text-xs text-indigo-600 font-medium hover:underline">
-                Full leaderboard <ChevronRight className="h-3 w-3" />
-              </a>
-            </SideCard>
-
-          </aside>
-        </div>
+          <Menu className="h-5 w-5" />
+        </button>
       </div>
 
-      {/* Auth Modal */}
-      
-        {showAuth && (
-          <AuthModal
-            mode={authMode}
-            onToggleMode={() => setAuthMode(m => m === "login" ? "signup" : "login")}
-            onClose={() => setShowAuth(false)}
-            setUser={setUser}
-          />
-        )}
-    
+      <div className="flex">
+
+        {/* Sidebar — mobile drawer */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 bg-black/60 lg:hidden"
+                onClick={() => setMobileOpen(false)}
+              />
+              <motion.div
+                initial={{ x: -320 }}
+                animate={{ x: 0 }}
+                exit={{ x: -320 }}
+                transition={{ type: "spring", damping: 26, stiffness: 220 }}
+                className="fixed left-0 top-0 bottom-0 z-50 lg:hidden"
+              >
+                
+              </motion.div>
+            </>
+          )} 
+        </AnimatePresence>
+
+        {/* Main */}
+        <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+          <div className="mx-auto max-w-7xl space-y-8">
+            <Header
+  walletCoins={walletCoins}
+  searchTerm={searchTerm}
+  setSearchTerm={setSearchTerm}
+  user={user}
+  setShowAuth={setShowAuth}
+  sessionTimer={sessionTimer}
+/>
+            <Hero />
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-8">
+<GamesSection
+  logicMazeStats={logicMazeStats}
+  brainBlastStats={brainBlastStats}
+  triviaStats={triviaStats}
+  zipStats={zipStats}
+  searchTerm={searchTerm}
+/>
+              <SidePanel />
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
 
-// ─── Game Card ───────────────────────────────────────────────
-function GameCard({ game, index, onPlay }: { game: Game; index: number; onPlay: (url: string) => void }) {
+/* ───────────────────────── Sidebar ───────────────────────── */
+
+function Sidebar({
+  walletCoins,
+  active,
+  setActive,
+  navigate,
+  className = "",
+  onClose,
+}: {
+  walletCoins: number;
+  active: string;
+  setActive: (k: string) => void;
+  className?: string;
+  navigate: any;
+  onClose?: () => void;
+}) {
+  return (
+    <motion.aside
+      initial={{ x: -20, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className={`${className} sticky top-0 h-screen w-72 shrink-0 flex-col bg-white text-white border-r border-border p-5`}
+    >
+      {/* Logo */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-glow">
+            <Code2 className="h-5 w-5 text-white" />
+          </div>
+          {/* <div className="leading-tight">
+            <div className="font-display font-bold text-lg">CodeArena</div>
+            <div className="text-[11px] text-white/70">Play. Code. Level up.</div>
+          </div> */}
+        </div>
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg hover:bg-surface-elevated">
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Nav */}
+      {/* <nav className="flex-1 space-y-1">
+        {sidebarItems.map((item, i) => {
+          const isActive = active === item.key;
+          const Icon = item.icon;
+          return (
+            <motion.button
+              key={item.key}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.05 * i, duration: 0.3 }}
+              onClick={() => {
+  setActive(item.key);
+
+  if (item.key === "categories") {
+    navigate({ to: "/categories" });
+  }
+}}
+              className={`relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive
+                  ? "text-white"
+                  : "text-white/70 hover:text-white"
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="active-pill"
+                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/20 to-secondary/10 border border-primary/20"
+                  transition={{ type: "spring", damping: 24, stiffness: 240 }}
+                />
+              )}
+              <Icon className="relative h-4.5 w-4.5 shrink-0" />
+              <span className="relative">{item.label}</span>
+              {isActive && <ChevronRight className="relative ml-auto h-4 w-4 text-primary" />}
+            </motion.button>
+          );
+        })}
+      </nav> */}
+
+      {/* Profile / XP card */}
+      {/* <div className="mt-6 space-y-0"> */}
+        {/* <div className="mt-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 text-white"> */}
+  
+  {/* Top Profile */}
+  {/* <div className="flex items-center gap-3">
+    <img
+      src="https://api.dicebear.com/7.x/adventurer/svg?seed=Alex"
+      alt="avatar"
+      className="h-10 w-10 rounded-full border-2 border-white"
+    /> */}
+    {/* <div> */}
+      {/* <div className="text-sm font-semibold">Alex Chen</div>
+      <div className="text-xs bg-yellow-300 text-black px-2 py-0.5 rounded-full inline-block mt-1">
+        Level 12
+      </div> */}
+    {/* </div> */}
+
+  
+  {/* Button */}
+  {/* <button className="mt-4 w-full bg-yellow-300 text-black text-sm font-semibold py-2 rounded-lg hover:scale-105 transition">
+    Upgrade to Pro
+  </button> */}
+
+    </motion.aside>
+  )
+}
+
+/* ───────────────────────── Header ───────────────────────── */
+
+function Header({ walletCoins, searchTerm, setSearchTerm, user, setShowAuth, sessionTimer }: any) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+    >
+      <div className="min-w-0">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+  Welcome back,{" "}
+  <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+    {user?.user_metadata?.name || user?.email || "Player"}
+  </span>
+</h1>
+        <p className="text-sm text-muted-foreground mt-1">Ready to crack today's challenge?</p>
+      </div>
+
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="relative flex-1 md:flex-none md:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+  type="text"
+  placeholder="Search games..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  className="w-full h-10 pl-9 pr-3 rounded-lg bg-card border border-border shadow-soft text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition"
+/>
+        </div>
+
+        <div className="flex items-center gap-1.5 h-10 px-3 rounded-lg bg-card border border-border shadow-soft">
+          <Flame className="h-4 w-4 text-orange-400" />
+          <span className="text-sm font-semibold">7</span>
+          <span className="hidden sm:inline text-xs text-muted-foreground">day streak</span>
+        </div>
+        <div className="flex items-center gap-2 h-10 px-4 rounded-lg bg-yellow-400/20 border border-yellow-400/30">
+          <span>🪙</span>
+          <span className="font-bold text-white-300">{walletCoins}</span>
+        </div>
+
+        <button className="relative h-10 w-10 grid place-items-center rounded-lg bg-card border border-border shadow-soft hover:border-primary/40 transition">
+          <Bell className="h-4 w-4" />
+          <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary animate-pulse-glow" />
+        </button>
+
+<div className="relative">
+  {user ? (
+    <>
+      {/* Username Button */}
+      <button
+        onClick={() => setShowDropdown((prev: boolean) => !prev)}
+        className="h-10 px-4 flex items-center rounded-lg bg-card border border-border cursor-pointer"
+      >
+        <span className="text-sm font-medium">
+          {user.user_metadata?.name || user.email}
+        </span>
+      </button>
+
+      {/* Click Dropdown */}
+      {showDropdown && (
+        <div className="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-50">
+          <button
+            onClick={async () => {
+              const sessionId =
+  localStorage.getItem(
+    'platformSessionId'
+  );
+
+const session =
+  await supabase.auth.getSession();
+
+const token =
+  session.data.session
+  ?.access_token;
+
+if (sessionId && token) {
+
+  await fetch(
+    'https://wallet-api-backend-production.up.railway.app/session/end',
+    {
+      method: 'POST',
+
+      headers: {
+        Authorization:
+          `Bearer ${token}`,
+
+        'Content-Type':
+          'application/json',
+      },
+
+      body: JSON.stringify({
+        sessionId,
+      }),
+    }
+  );
+
+  localStorage.removeItem(
+    'platformSessionId'
+  );
+  localStorage.removeItem(
+  'sessionRewardGiven'
+);
+}
+if (sessionTimer) {
+  clearTimeout(sessionTimer);
+}
+await supabase.auth.signOut();
+
+setShowDropdown(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+          >
+            Logout
+          </button>
+        </div>
+      )}
+    </>
+  ) : (
+    <button
+      onClick={() => setShowAuth(true)}
+      className="h-10 px-3 rounded-lg bg-primary text-white text-sm"
+    >
+      Login
+    </button>
+  )}
+</div>
+      </div>
+    </motion.header>
+  );
+}
+/* ───────────────────────── Hero ───────────────────────── */
+
+function Hero() {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className="relative overflow-hidden rounded-2xl border border-border bg-hero-grad text-white shadow-soft"
+    >
+      <div className="absolute inset-0 bg-hero-grad pointer-events-none" />
+      {/* floating code symbols */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {["{ }", "</>", "()", "[ ]", "==", "=>"].map((s, i) => (
+          <motion.span
+            key={i}
+            className="absolute font-mono text-primary/20 font-bold select-none"
+            style={{
+              left: `${10 + i * 15}%`,
+              top: `${15 + (i % 3) * 25}%`,
+              fontSize: `${14 + (i % 3) * 6}px`,
+            }}
+            animate={{ y: [0, -14, 0], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
+          >
+            {s}
+          </motion.span>
+        ))}
+      </div>
+
+      <div className="relative p-6 sm:p-10 grid md:grid-cols-[1fr_auto] gap-6 items-center">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-primary font-medium">
+            <Sparkles className="h-3 w-3" /> Daily Challenge live
+          </div>
+          <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
+            Learn Coding Through Games
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-white/80 max-w-lg">
+            Solve challenges, build logic, level up. Each game teaches a new programming concept.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm shadow-glow transition"
+            >
+              <Play className="h-4 w-4 fill-current" /> Continue Playing
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="inline-flex items-center gap-2 h-11 px-5 rounded-lg bg-white/20 border border-white/30 text-white backdrop-blur font-semibold text-sm hover:border-primary/40 transition"
+            >
+              Explore Games <ChevronRight className="h-4 w-4" />
+            </motion.button>
+          </div>
+        </div>
+
+        <div className="hidden md:block">
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="relative w-44 h-44 rounded-2xl bg-gradient-to-br from-primary/30 to-secondary/30 border border-primary/30 grid place-items-center shadow-glow"
+          >
+            <div className="absolute inset-3 rounded-xl border border-primary/20" />
+            <Code2 className="h-16 w-16 text-primary" />
+          </motion.div>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+/* ───────────────────────── Games Section ───────────────────────── */
+
+function GamesSection({
+  logicMazeStats,
+  brainBlastStats,
+  triviaStats,
+  zipStats,
+  searchTerm,
+}: any) {
+const filteredGames = games.filter((g) =>
+  g.title.toLowerCase().includes(searchTerm.toLowerCase())
+);
+  return (
+    <section>
+      <div className="flex items-end justify-between mb-5">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold">Popular Games</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">Pick a challenge and start coding</p>
+        </div>
+        <button className="hidden sm:inline-flex items-center gap-1 text-sm text-primary hover:underline underline-offset-4">
+          View all <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+
+  {filteredGames.length === 0 ? (
+    <div className="col-span-full text-center py-10 text-gray-500 text-lg font-medium">
+      No games found
+    </div>
+  ) : (
+    filteredGames.map((g, i) => {
+     const updatedGame =
+  g.title === "Logic Maze"
+    ? {
+        ...g,
+        progress: logicMazeStats.progress,
+        xp: logicMazeStats.coins,
+        time: logicMazeStats.time,
+      }
+    : g.title === "Brain Blast"
+    ? {
+        ...g,
+        progress: brainBlastStats.progress,
+        xp: brainBlastStats.coins,
+        time: brainBlastStats.time,
+      }
+    : g.title === "Trivia"
+? {
+    ...g,
+    progress: triviaStats.progress,
+    xp: triviaStats.coins,
+    time: triviaStats.time,
+  }: g.title === "Zip"
+? {
+    ...g,
+    progress: zipStats.progress,
+    xp: zipStats.coins,
+    time: zipStats.time,
+  }:g
+
+      return <GameCard key={g.title} game={updatedGame} index={i} />;
+    })
+  )}
+
+</div>
+          
+    </section>
+  );
+}
+
+function GameCard({ game, index }: { game: Game; index: number }) {
   const locked = !!game.locked;
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      whileHover={!locked ? { y: -3 } : {}}
-      className={`rounded-2xl border border-gray-200/80 bg-white/90 backdrop-blur-sm shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden ${locked ? "opacity-70" : "cursor-pointer"}`}
-      onClick={() => !locked && onPlay(game.url)}
+      transition={{ duration: 0.4, delay: index * 0.05, ease: "easeOut" }}
+      whileHover={!locked ? { y: -4 } : {}}
+
+      onClick={() => {
+    if (game.title === "Logic Maze") {
+      window.open("/logic_maze.html", "_blank");
+    }
+    if (game.title === "Brain Blast") {
+    window.open("/brain_blast.html", "_blank");
+  }
+  if (game.title === "Trivia") {
+  window.open("/trivia.html", "_blank");
+}
+// ✅ NEW GAMES
+  if (game.title === "Zip") {
+    window.open("/zip_master.html", "_blank");
+  }
+
+  if (game.title === "Stop Motion Studio") {
+    window.open("/stop_motion.html", "_blank");
+  }
+
+  if (game.title === "Piano") {
+    window.open("/piano.html", "_blank");
+  }
+  if (game.title === "Math Shop Game") {
+  window.open("/math_shop_final.html", "_blank");
+}
+  }}
+
+      className={`group relative flex flex-col h-full rounded-2xl border border-border bg-card overflow-hidden shadow-card transition-colors ${
+        !locked ? "hover:border-primary/40" : "opacity-75"
+      }`}
     >
-      {/* Thumbnail */}
-      <div className={`h-28 relative bg-gradient-to-br ${game.accent} flex items-center justify-center`}>
-        <span className="text-5xl select-none">{game.icon}</span>
-        <span className={`absolute top-2 left-2 text-[10px] px-2 py-0.5 rounded-md border font-semibold ${DIFF_STYLE[game.difficulty]}`}>
+      {/* gradient header */}
+      <div className={`relative h-28 bg-gradient-to-br ${game.accent} border-b border-border overflow-hidden`}>
+        <div className="absolute inset-0 grid place-items-center text-5xl">
+          <motion.span
+            whileHover={{ scale: 1.15, rotate: 6 }}
+            transition={{ type: "spring", damping: 14 }}
+          >
+            {game.icon}
+          </motion.span>
+        </div>
+        <span
+          className={`absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border ${difficultyStyles[game.difficulty]}`}
+        >
           {game.difficulty}
         </span>
         {locked && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center gap-1.5 text-sm font-semibold text-gray-600">
-            <Lock className="h-4 w-4" /> Locked
+          <div className="absolute inset-0 grid place-items-center bg-muted/60 backdrop-blur-sm">
+            <div className="grid place-items-center h-10 w-10 rounded-full bg-surface-elevated border border-border">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+            </div>
           </div>
         )}
       </div>
 
-      {/* Body */}
-      <div className="p-4">
-        <h3 className="font-bold text-gray-800 truncate text-sm">{game.title}</h3>
+      <div className="flex flex-col flex-1 p-4 gap-3">
+        <h3 className="font-display font-semibold text-base leading-tight">{game.title}</h3>
 
-        {/* Progress bar */}
-        <div className="mt-3">
-          <div className="flex justify-between text-[11px] text-gray-500 mb-1">
-            <span>Progress</span><span>{game.progress}%</span>
+        {/* Progress */}
+        <div>
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+            <span>Progress</span>
+            <span className="text-foreground font-medium">{game.progress}%</span>
           </div>
-          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               whileInView={{ width: `${game.progress}%` }}
               viewport={{ once: true }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className={`h-full rounded-full ${game.progress >= 100 ? "bg-green-400" : "bg-gradient-to-r from-indigo-400 to-purple-400"}`}
+              transition={{ duration: 1, ease: "easeOut", delay: 0.2 + index * 0.04 }}
+              className={`h-full rounded-full ${game.progress === 100 ? "bg-success" : "bg-gradient-to-r from-primary to-secondary"}`}
             />
           </div>
         </div>
 
         {/* Meta */}
-        <div className="flex justify-between text-xs text-gray-500 mt-3">
-          <span>🪙 {game.coins}</span>
-          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{game.time}</span>
+        <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto pt-1">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">🪙</span>
+            <span className="font-medium text-foreground">{game.xp}</span> Coins
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5" />
+            {game.time}
+          </div>
         </div>
 
-        {/* Play button — onClick handled on article, this is visual only */}
-        <div
-          className={`mt-3 w-full h-9 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition select-none ${
+        <motion.button
+          whileHover={!locked ? { scale: 1.02 } : {}}
+          whileTap={!locked ? { scale: 0.98 } : {}}
+          disabled={locked}
+          className={`mt-2 inline-flex items-center justify-center gap-2 h-10 rounded-lg text-sm font-semibold transition ${
             locked
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-yellow-400 text-gray-900 hover:bg-yellow-500 cursor-pointer"
+              ? "bg-surface-elevated text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground hover:opacity-90 hover:bg-primary hover:text-primary-foreground"
           }`}
-          onClick={e => { e.stopPropagation(); if (!locked) onPlay(game.url); }}
         >
-          {locked ? "Locked" : <><Play className="h-3.5 w-3.5 fill-current" /> Play Now</>}
-        </div>
+          {locked ? (<><Lock className="h-3.5 w-3.5" /> Locked</>) : (<><Play className="h-3.5 w-3.5 fill-current" /> Play</>)}
+        </motion.button>
       </div>
     </motion.article>
   );
 }
 
-// ─── Side Card ───────────────────────────────────────────────
-function SideCard({ title, icon, badge, children }: { title: string; icon: React.ReactNode; badge?: string; children: React.ReactNode }) {
+/* ───────────────────────── Side Panel ───────────────────────── */
+
+function SidePanel() {
+  const missions = [
+    { label: "Solve 3 puzzles", progress: 66, reward: 80 },
+    { label: "Reach Level 13", progress: 40, reward: 150 },
+    { label: "Win 1 duel", progress: 0, reward: 60 },
+  ];
+  const achievements = [
+    { icon: "🏅", label: "First Function", time: "2h ago" },
+    { icon: "🎯", label: "Perfect Run", time: "Yesterday" },
+    { icon: "🔥", label: "7-day Streak", time: "Today" },
+  ];
+  const week = [40, 65, 30, 80, 55, 90, 72];
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="rounded-2xl bg-white border border-gray-200/80 shadow-sm p-5"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-sm text-gray-800 flex items-center gap-2">{icon}{title}</h3>
-        {badge && <span className="text-[11px] text-indigo-500 font-medium">{badge}</span>}
-      </div>
-      {children}
-    </motion.div>
+    <aside className="space-y-5">
+      {/* Daily missions */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+        className="rounded-2xl bg-surface border border-border p-5 shadow-card"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display font-semibold text-base flex items-center gap-2">
+            <Target className="h-4 w-4 text-primary" /> Daily Missions
+          </h3>
+          <span className="text-[11px] text-muted-foreground">3 / 5</span>
+        </div>
+        <ul className="space-y-3.5">
+          {missions.map((m, i) => (
+            <li key={m.label}>
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="text-foreground">{m.label}</span>
+                <span className="text-muted-foreground">+{m.reward} Coins</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${m.progress}%` }}
+                  transition={{ duration: 0.9, delay: 0.3 + i * 0.1 }}
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </motion.div>
+
+      {/* Weekly progress */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
+        className="rounded-2xl bg-surface border border-border p-5 shadow-card"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display font-semibold text-base flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" /> Weekly Progress
+          </h3>
+          <span className="text-[11px] text-emerald-400 font-medium">+18%</span>
+        </div>
+        <div className="flex items-end justify-between gap-1.5 h-24">
+          {week.map((v, i) => (
+            <motion.div
+              key={i}
+              initial={{ height: 0 }}
+              animate={{ height: `${v}%` }}
+              transition={{ duration: 0.7, delay: 0.4 + i * 0.05, ease: "easeOut" }}
+              className="flex-1 rounded-md bg-gradient-to-t from-primary/40 to-secondary/60"
+            />
+          ))}
+        </div>
+        <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
+          {["M","T","W","T","F","S","S"].map((d, i) => <span key={i}>{d}</span>)}
+        </div>
+      </motion.div>
+
+      {/* Recent achievements */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
+        className="rounded-2xl bg-surface border border-border p-5 shadow-card"
+      >
+        <h3 className="font-display font-semibold text-base flex items-center gap-2 mb-4">
+          <Award className="h-4 w-4 text-primary" /> Recent Achievements
+        </h3>
+        <ul className="space-y-2.5">
+          {achievements.map((a) => (
+            <li key={a.label} className="flex items-center gap-3 p-2.5 rounded-lg bg-surface-elevated/60 border border-border/60">
+              <div className="grid h-8 w-8 place-items-center rounded-md bg-muted text-base">{a.icon}</div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium truncate">{a.label}</div>
+                <div className="text-[11px] text-muted-foreground">{a.time}</div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </motion.div>
+    </aside>
   );
 }
+function AuthModal({ onClose, setUser }: any) {
+  const [loading, setLoading] = useState(false);
+  const [isSignup, setIsSignup] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-// ─── Auth Modal — NO <form> tag, no browser autofill interference ──
-function AuthModal({ mode, onToggleMode, onClose, setUser }: {
-  mode: "login" | "signup";
-  onToggleMode: () => void;
-  onClose: () => void;
-  setUser: (u: any) => void;
-}) {
-  const isSignup = mode === "signup";
-  const [loading, setLoading]     = useState(false);
-  const [name, setName]           = useState("");
-  const [email, setEmail]         = useState("");
-  const [password, setPassword]   = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
-  const [error, setError]         = useState("");
-
-  // Reset fields on mode switch
-  useEffect(() => { setError(""); setName(""); setEmail(""); setPassword(""); setConfirmPw(""); }, [mode]);
-
-  const handleSubmit = useCallback(async () => {
+  const handleAuth = async () => {
     if (loading) return;
-    setError("");
     setLoading(true);
     try {
       if (isSignup) {
-        if (password !== confirmPw) {
-          setError("Passwords don't match");
-          setLoading(false);
+        if (password !== confirmPassword) {
+          alert("Passwords do not match");
           return;
         }
-        const { error: e } = await supabase.auth.signUp({
-          email, password, options: { data: { name } },
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name } },
         });
-        if (e) setError(e.message);
-        else { alert("Signup successful! Check your email."); onClose(); }
+        if (error) alert(error.message);
+        else alert("Signup successful! Check your email.");
+        onClose();
       } else {
-        const { error: e } = await supabase.auth.signInWithPassword({ email, password });
-        if (e) setError(e.message);
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) alert(error.message);
         else {
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-
-          setUser(session?.user ?? null);
-
+          setUser(data.user);
           onClose();
         }
       }
     } finally {
       setLoading(false);
     }
-  }, [loading, isSignup, email, password, confirmPw, name, onClose, setUser]);
+  };
 
-  // Allow Enter key submit
-  const onKey = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSubmit();
-  }, [handleSubmit]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+  return createPortal(
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center"
+      style={{ zIndex: 999999, pointerEvents: "auto" }}
+      onClick={onClose}
     >
-      <motion.div
-        initial={{ scale: 0.92, y: 16 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.92, y: 16 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 relative pointer-events-auto"
-        onClick={e => e.stopPropagation()}
+      <div
+        style={{
+          zIndex: 9999999,
+          position: "relative",
+          background: "#ffffff",
+          padding: "24px",
+          borderRadius: "12px",
+          width: "320px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          boxShadow: "0 25px 50px rgba(0,0,0,0.4)",
+          pointerEvents: "auto",
+        }}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Close */}
+        <h2 style={{ color: "#000", fontWeight: 700, fontSize: "18px", margin: 0 }}>
+          {isSignup ? "Sign Up" : "Login"}
+        </h2>
+
+        {isSignup && (
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoComplete="name"
+            style={{
+              width: "100%",
+              border: "1px solid #ccc",
+              padding: "8px",
+              borderRadius: "6px",
+              background: "#fff",
+              color: "#000",
+              fontSize: "14px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        )}
+
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          autoFocus
+          style={{
+            width: "100%",
+            border: "1px solid #ccc",
+            padding: "8px",
+            borderRadius: "6px",
+            background: "#fff",
+            color: "#000",
+            fontSize: "14px",
+            outline: "none",
+            boxSizing: "border-box",
+          }}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          style={{
+            width: "100%",
+            border: "1px solid #ccc",
+            padding: "8px",
+            borderRadius: "6px",
+            background: "#fff",
+            color: "#000",
+            fontSize: "14px",
+            outline: "none",
+            boxSizing: "border-box",
+          }}
+        />
+
+        {isSignup && (
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            style={{
+              width: "100%",
+              border: "1px solid #ccc",
+              padding: "8px",
+              borderRadius: "6px",
+              background: "#fff",
+              color: "#000",
+              fontSize: "14px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
+          />
+        )}
+
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
+          onClick={handleAuth}
+          disabled={loading}
+          style={{
+            width: "100%",
+            background: loading ? "#94a3b8" : "#2563eb",
+            color: "#fff",
+            padding: "10px",
+            borderRadius: "6px",
+            border: "none",
+            fontWeight: 600,
+            fontSize: "14px",
+            cursor: loading ? "not-allowed" : "pointer",
+          }}
         >
-          <X className="h-4 w-4 text-gray-600" />
+          {loading ? "Processing..." : isSignup ? "Register" : "Login"}
         </button>
 
-        <div className="mb-5">
-          <h2 className="text-xl font-bold text-gray-900">{isSignup ? "Create Account" : "Welcome Back"}</h2>
-          <p className="text-sm text-gray-500 mt-1">{isSignup ? "Join CodeArena and start learning" : "Login to continue your journey"}</p>
-        </div>
+        <button
+          onClick={() => setIsSignup(!isSignup)}
+          style={{ background: "none", border: "none", color: "#2563eb", fontSize: "13px", cursor: "pointer", textAlign: "left" }}
+        >
+          {isSignup ? "Already have account? Login" : "Create account"}
+        </button>
 
-        {/* ⚠️ NO <form> tag — prevents browser freeze & DOM warning */}
-        <div className="space-y-3" onKeyDown={onKey}>
-          {isSignup && (
-            <input
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Your name"
-              autoComplete="name"
-              className="w-full h-11 rounded-xl border border-gray-200 px-4 text-sm outline-none focus:border-indigo-400 transition"
-            />
-          )}
-          <input
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="Email address"
-            type="email"
-            autoComplete="off"
-            spellCheck={false}
-            className="w-full h-11 rounded-xl border border-gray-200 px-4 text-sm outline-none focus:border-indigo-400 transition"
-          />
-          <input
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder="Password"
-            type="password"
-            autoComplete="off"
-            spellCheck={false}
-            className="w-full h-11 rounded-xl border border-gray-200 px-4 text-sm outline-none focus:border-indigo-400 transition"
-          />
-          {isSignup && (
-            <input
-              value={confirmPw}
-              onChange={e => setConfirmPw(e.target.value)}
-              placeholder="Confirm password"
-              type="password"
-              autoComplete="new-password"
-              className="w-full h-11 rounded-xl border border-gray-200 px-4 text-sm outline-none focus:border-indigo-400 transition"
-            />
-          )}
-
-          {error && (
-            <p className="text-xs text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">{error}</p>
-          )}
-
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full h-11 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 disabled:opacity-60 transition flex items-center justify-center gap-2"
-          >
-            {loading
-              ? "Processing…"
-              : isSignup
-                ? <><UserPlus className="h-4 w-4" /> Register</>
-                : <><LogIn className="h-4 w-4" /> Login</>
-            }
-          </button>
-
-          <p className="text-center text-xs text-gray-500 pt-1">
-            {isSignup ? "Already have an account? " : "Don't have an account? "}
-            <button onClick={onToggleMode} className="text-indigo-600 font-medium hover:underline">
-              {isSignup ? "Login" : "Sign up"}
-            </button>
-          </p>
-        </div>
-      </motion.div>
-    </motion.div>
+        <button
+          onClick={onClose}
+          style={{ background: "none", border: "none", color: "#64748b", fontSize: "13px", cursor: "pointer", textAlign: "left" }}
+        >
+          Close
+        </button>
+      </div>
+    </div>,
+    document.body
   );
 }
