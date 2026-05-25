@@ -128,6 +128,9 @@ if (_event !== 'SIGNED_IN') {
 }
       // ✅ USER LOGGED IN
       if (session?.user) {
+        // Connect socket now that user is authenticated
+        localStorage.setItem("user_id", session.user.id);
+        connectSocket(session.user.id);
         try {
 
   const rewardResponse = await fetch(
@@ -353,7 +356,11 @@ const [zipStats, setZipStats] = useState({
   completed: 0,
   time: "0 min",
 });
-const { coins: walletCoins, setCoins: setWalletCoins, connectSocket } = useWallet();
+  const {
+  coins: walletCoins,
+  setCoins: setWalletCoins,
+  connectSocket,
+} = useWallet();
   const [searchTerm, setSearchTerm] = useState("");
 //   const start2MinRewardTimer = async () => {
 
@@ -1386,17 +1393,28 @@ function AuthModal({ onClose, setUser }: any) {
   };
 
   return (
-    // Backdrop — click outside to close
     <div
-      className="fixed inset-0 z-[99999] bg-black/60 flex items-center justify-center"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center"
+      style={{ zIndex: 999999, pointerEvents: "auto" }}
       onClick={onClose}
     >
-      {/* Modal card — stop click from closing */}
       <div
-        className="relative bg-white p-6 rounded-xl w-80 space-y-3 shadow-xl"
+        style={{
+          zIndex: 9999999,
+          position: "relative",
+          background: "#ffffff",
+          padding: "24px",
+          borderRadius: "12px",
+          width: "320px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          boxShadow: "0 25px 50px rgba(0,0,0,0.4)",
+          pointerEvents: "auto",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-bold text-black">
+        <h2 style={{ color: "#000", fontWeight: 700, fontSize: "18px", margin: 0 }}>
           {isSignup ? "Sign Up" : "Login"}
         </h2>
 
@@ -1406,8 +1424,18 @@ function AuthModal({ onClose, setUser }: any) {
             placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded bg-white text-black focus:outline-none focus:border-blue-500"
             autoComplete="name"
+            style={{
+              width: "100%",
+              border: "1px solid #ccc",
+              padding: "8px",
+              borderRadius: "6px",
+              background: "#fff",
+              color: "#000",
+              fontSize: "14px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
           />
         )}
 
@@ -1416,9 +1444,19 @@ function AuthModal({ onClose, setUser }: any) {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-300 p-2 rounded bg-white text-black focus:outline-none focus:border-blue-500"
           autoComplete="email"
           autoFocus
+          style={{
+            width: "100%",
+            border: "1px solid #ccc",
+            padding: "8px",
+            borderRadius: "6px",
+            background: "#fff",
+            color: "#000",
+            fontSize: "14px",
+            outline: "none",
+            boxSizing: "border-box",
+          }}
         />
 
         <input
@@ -1426,8 +1464,18 @@ function AuthModal({ onClose, setUser }: any) {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-300 p-2 rounded bg-white text-black focus:outline-none focus:border-blue-500"
           autoComplete="current-password"
+          style={{
+            width: "100%",
+            border: "1px solid #ccc",
+            padding: "8px",
+            borderRadius: "6px",
+            background: "#fff",
+            color: "#000",
+            fontSize: "14px",
+            outline: "none",
+            boxSizing: "border-box",
+          }}
         />
 
         {isSignup && (
@@ -1436,26 +1484,49 @@ function AuthModal({ onClose, setUser }: any) {
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded bg-white text-black focus:outline-none focus:border-blue-500"
+            style={{
+              width: "100%",
+              border: "1px solid #ccc",
+              padding: "8px",
+              borderRadius: "6px",
+              background: "#fff",
+              color: "#000",
+              fontSize: "14px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
           />
         )}
 
         <button
           onClick={handleAuth}
           disabled={loading}
-          className="w-full bg-blue-600 text-white p-2 rounded font-semibold disabled:opacity-50 hover:bg-blue-700 transition"
+          style={{
+            width: "100%",
+            background: loading ? "#94a3b8" : "#2563eb",
+            color: "#fff",
+            padding: "10px",
+            borderRadius: "6px",
+            border: "none",
+            fontWeight: 600,
+            fontSize: "14px",
+            cursor: loading ? "not-allowed" : "pointer",
+          }}
         >
           {loading ? "Processing..." : isSignup ? "Register" : "Login"}
         </button>
 
         <button
           onClick={() => setIsSignup(!isSignup)}
-          className="text-sm text-blue-500 block"
+          style={{ background: "none", border: "none", color: "#2563eb", fontSize: "13px", cursor: "pointer", textAlign: "left" }}
         >
           {isSignup ? "Already have account? Login" : "Create account"}
         </button>
 
-        <button onClick={onClose} className="text-sm text-gray-500 block">
+        <button
+          onClick={onClose}
+          style={{ background: "none", border: "none", color: "#64748b", fontSize: "13px", cursor: "pointer", textAlign: "left" }}
+        >
           Close
         </button>
       </div>
