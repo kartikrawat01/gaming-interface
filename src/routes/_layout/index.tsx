@@ -90,9 +90,9 @@ function Dashboard() {
         return;
       }
       setUser(session?.user ?? null);
-      if (_event === "SIGNED_IN" && session?.access_token) {
-        startPlatformSession(session.access_token);
-      }
+      // if (_event === "SIGNED_IN" && session?.access_token) {
+      //   startPlatformSession(session.access_token);
+      // }
     });
 
     return () => {
@@ -118,56 +118,56 @@ function Dashboard() {
   }, []);
 
   // ── Session helpers ──
-  const startPlatformSession = useCallback(async (token: string) => {
-    if (localStorage.getItem("platformSessionId")) return;
-    try {
-      const res  = await fetch("http://localhost:3000/session/start", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      });
-      const data = await res.json();
-      localStorage.setItem("platformSessionId", data.session.id);
-      localStorage.removeItem("sessionRewardGiven");
+  // const startPlatformSession = useCallback(async (token: string) => {
+  //   if (localStorage.getItem("platformSessionId")) return;
+  //   try {
+  //     const res  = await fetch("http://localhost:3000/session/start", {
+  //       method: "POST",
+  //       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+  //     });
+  //     const data = await res.json();
+  //     localStorage.setItem("platformSessionId", data.session.id);
+  //     localStorage.removeItem("sessionRewardGiven");
 
-      // 2-min reward
-      setTimeout(async () => {
-        if (localStorage.getItem("sessionRewardGiven")) return;
-        const s = await supabase.auth.getSession();
-        const t = s.data.session?.access_token; if (!t) return;
-        await fetch("http://localhost:3000/wallet/earn/event", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: 10, description: "2-min session reward", game: "platform" }),
-        });
-        localStorage.setItem("sessionRewardGiven", "1");
-      }, 2 * 60 * 1000);
+  //     // 2-min reward
+  //     setTimeout(async () => {
+  //       if (localStorage.getItem("sessionRewardGiven")) return;
+  //       const s = await supabase.auth.getSession();
+  //       const t = s.data.session?.access_token; if (!t) return;
+  //       await fetch("http://localhost:3000/wallet/earn/event", {
+  //         method: "POST",
+  //         headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
+  //         body: JSON.stringify({ amount: 10, description: "2-min session reward", game: "platform" }),
+  //       });
+  //       localStorage.setItem("sessionRewardGiven", "1");
+  //     }, 2 * 60 * 1000);
 
-      // Auto-end 30 min
-      sessionTimerRef.current = setTimeout(async () => {
-        const sid = localStorage.getItem("platformSessionId"); if (!sid) return;
-        const s   = await supabase.auth.getSession(); const t = s.data.session?.access_token; if (!t) return;
-        await fetch("http://localhost:3000/session/end", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: sid }),
-        });
-        localStorage.removeItem("platformSessionId");
-        localStorage.removeItem("sessionRewardGiven");
-      }, 30 * 60 * 1000);
-    } catch (e) { console.warn("Session start failed:", e); }
-  }, []);
+  //     // Auto-end 30 min
+  //     sessionTimerRef.current = setTimeout(async () => {
+  //       const sid = localStorage.getItem("platformSessionId"); if (!sid) return;
+  //       const s   = await supabase.auth.getSession(); const t = s.data.session?.access_token; if (!t) return;
+  //       await fetch("http://localhost:3000/session/end", {
+  //         method: "POST",
+  //         headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
+  //         body: JSON.stringify({ sessionId: sid }),
+  //       });
+  //       localStorage.removeItem("platformSessionId");
+  //       localStorage.removeItem("sessionRewardGiven");
+  //     }, 30 * 60 * 1000);
+  //   } catch (e) { console.warn("Session start failed:", e); }
+  // }, []);
 
   const handleLogout = useCallback(async () => {
-    const sid = localStorage.getItem("platformSessionId");
-    if (sid) {
-      const s = await supabase.auth.getSession(); const t = s.data.session?.access_token;
-      if (t) await fetch("http://localhost:3000/session/end", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: sid }),
-      }).catch(() => {});
-      localStorage.removeItem("platformSessionId");
-    }
+    // const sid = localStorage.getItem("platformSessionId");
+    // if (sid) {
+    //   const s = await supabase.auth.getSession(); const t = s.data.session?.access_token;
+    //   if (t) await fetch("http://localhost:3000/session/end", {
+    //     method: "POST",
+    //     headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" },
+    //     body: JSON.stringify({ sessionId: sid }),
+    //   }).catch(() => {});
+    //   localStorage.removeItem("platformSessionId");
+    // }
     await supabase.auth.signOut();
   }, []);
 
