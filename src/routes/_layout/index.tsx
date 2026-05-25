@@ -571,7 +571,7 @@ setZipStats({
   loadStats();
 
   window.addEventListener("focus", loadStats);
-  window.addEventListener("storage", loadStats);
+  // window.addEventListener("storage", loadStats);
 
   const handleMessage = (event: MessageEvent) => {
     if (event.data.type === "GAME_REWARD") {
@@ -632,7 +632,7 @@ if (event.data.type === "ZIP_MASTER_UPDATE") {
 
   return () => {
     window.removeEventListener("focus", loadStats);
-    window.removeEventListener("storage", loadStats);
+    // window.removeEventListener("storage", loadStats);
     window.removeEventListener("message", handleMessage);
   };
 }, []);
