@@ -128,39 +128,6 @@ if (_event !== 'SIGNED_IN') {
 }
       // ✅ USER LOGGED IN
       if (session?.user) {
-        try {
-
-  const rewardResponse = await fetch(
-    'https://wallet-api-backend-production.up.railway.app/wallet/daily-login',
-    {
-      method: 'POST',
-
-      headers: {
-        Authorization:
-          `Bearer ${session.access_token}`,
-
-        'Content-Type':
-          'application/json',
-      },
-    }
-  );
-
-  const rewardData =
-    await rewardResponse.json();
-
-  console.log(
-    'Daily login reward:',
-    rewardData
-  );
-
-} catch (err) {
-
-  console.error(
-    'Daily login failed:',
-    err
-  );
-
-}
 
         // CHECK existing session
         const existingSession =
@@ -469,9 +436,9 @@ const updateWalletFromGame = async (coins: number, level?: number) => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        amount: coins,
-        description: "Game reward",
+        games,
         level,
+        rewardType: "GAME_REWARD"
       }),
     });
 
@@ -690,7 +657,7 @@ useEffect(() => {
       <div className="flex">
 
         {/* Sidebar — mobile drawer */}
-        <AnimatePresence>
+        {/* <AnimatePresence>
           {mobileOpen && (
             <>
               <motion.div
@@ -699,7 +666,7 @@ useEffect(() => {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-black/60 lg:hidden"
                 onClick={() => setMobileOpen(false)}
-              />
+              /> */}
               <motion.div
                 initial={{ x: -320 }}
                 animate={{ x: 0 }}
@@ -709,9 +676,9 @@ useEffect(() => {
               >
                 
               </motion.div>
-            </>
-          )} 
-        </AnimatePresence>
+            {/* </> */}
+          {/* )} */}
+        {/* </AnimatePresence> */}
 
         {/* Main */}
         <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -1348,7 +1315,6 @@ function SidePanel() {
   );
 }
 function AuthModal({ onClose, setUser }: any) {
-  console.log("AUTH MODAL RENDERED");
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
@@ -1357,111 +1323,164 @@ function AuthModal({ onClose, setUser }: any) {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleAuth = async () => {
-  if (loading) return;   // 🔥 spam click rok diya
-
-  setLoading(true);
-
-  try {
-    if (isSignup) {
-      if (password !== confirmPassword) {
-  alert("Passwords do not match");
-  setLoading(false);
-  return;
-}
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name },
-        },
-      });
-
-      if (error) alert(error.message);
-      else alert("Signup successful! Check email.");
-      onClose();
-    } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) alert(error.message);
-      else {
-        setUser(data.user);
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (isSignup) {
+        if (password !== confirmPassword) {
+          alert("Passwords do not match");
+          setLoading(false);
+          return;
+        }
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name } },
+        });
+        if (error) alert(error.message);
+        else alert("Signup successful! Check email.");
         onClose();
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) alert(error.message);
+        else {
+          setUser(data.user);
+          onClose();
+        }
       }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);   // 🔥 important (always run hoga)
-  }
-};
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    border: "2px solid #d1d5db",
+    padding: "10px 12px",
+    borderRadius: "8px",
+    color: "#111827",
+    fontSize: "16px",
+    backgroundColor: "#ffffff",
+    display: "block",
+    boxSizing: "border-box",
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl w-80 space-y-3">
-        <h2 className="text-lg font-bold">
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(0,0,0,0.6)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+      }}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        style={{
+          backgroundColor: "#ffffff",
+          padding: "24px",
+          borderRadius: "16px",
+          width: "340px",
+          boxShadow: "0 25px 50px rgba(0,0,0,0.25)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          position: "relative",
+          zIndex: 10000,
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#111827", margin: 0 }}>
           {isSignup ? "Sign Up" : "Login"}
         </h2>
 
-        {isSignup && (
+        <form
+          onSubmit={(e) => { e.preventDefault(); handleAuth(); }}
+          style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+        >
+          {isSignup && (
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              style={inputStyle}
+            />
+          )}
+
           <input
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full border p-2 rounded text-black"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            style={inputStyle}
           />
-        )}
 
-        <input
-  type="email"
-  placeholder="Email"
-  value={email}
-  onChange={(e) => {
-    console.log("EMAIL TYPING:", e.target.value);
-    setEmail(e.target.value);
-  }}/>
-
-        <input
-  type="password"
-  placeholder="Password"
-  value={password}
-  onChange={(e) => {
-    console.log("PASSWORD TYPING:", e.target.value);
-    setPassword(e.target.value);
-  }}/>
-
-        {isSignup && (
           <input
             type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full border p-2 rounded text-black"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete={isSignup ? "new-password" : "current-password"}
+            style={inputStyle}
           />
-        )}
 
-        <button
-  onClick={handleAuth}
-  disabled={loading}
-  className="w-full bg-primary text-white p-2 rounded disabled:opacity-50"
->
-  {loading ? "Processing..." : isSignup ? "Register" : "Login"}
-</button>
+          {isSignup && (
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
+              style={inputStyle}
+            />
+          )}
 
-        <button
-          onClick={() => setIsSignup(!isSignup)}
-          className="text-sm text-blue-500"
-        >
-          {isSignup ? "Already have account? Login" : "Create account"}
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              backgroundColor: loading ? "#d1d5db" : "#facc15",
+              color: "#111827",
+              fontWeight: "700",
+              padding: "12px",
+              borderRadius: "8px",
+              fontSize: "16px",
+              border: "none",
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Processing..." : isSignup ? "Register" : "Login"}
+          </button>
+        </form>
 
-        <button onClick={onClose} className="text-sm text-gray-500">
-          Close
-        </button>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <button
+            type="button"
+            onClick={() => setIsSignup(!isSignup)}
+            style={{ fontSize: "14px", color: "#3b82f6", background: "none", border: "none", cursor: "pointer" }}
+          >
+            {isSignup ? "Already have account? Login" : "Create account"}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{ fontSize: "14px", color: "#6b7280", background: "none", border: "none", cursor: "pointer" }}
+          >
+            Close
+          </button>
+        </div>
       </div>
-  
-    
     </div>
   );
 }
