@@ -690,7 +690,7 @@ useEffect(() => {
       <div className="flex">
 
         {/* Sidebar — mobile drawer */}
-        {/* <AnimatePresence>
+        <AnimatePresence>
           {mobileOpen && (
             <>
               <motion.div
@@ -699,7 +699,7 @@ useEffect(() => {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-black/60 lg:hidden"
                 onClick={() => setMobileOpen(false)}
-              /> */}
+              />
               <motion.div
                 initial={{ x: -320 }}
                 animate={{ x: 0 }}
@@ -709,9 +709,9 @@ useEffect(() => {
               >
                 
               </motion.div>
-            {/* </> */}
-          {/* )} */}
-        {/* </AnimatePresence> */}
+            </>
+          )} 
+        </AnimatePresence>
 
         {/* Main */}
         <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -1408,7 +1408,7 @@ function AuthModal({ onClose, setUser }: any) {
             placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border p-2 rounded"
+            className="w-full border p-2 rounded text-black"
           />
         )}
 
@@ -1416,7 +1416,7 @@ function AuthModal({ onClose, setUser }: any) {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border p-2 rounded"
+          className="w-full border p-2 rounded text-black"
         />
 
         <input
@@ -1424,7 +1424,7 @@ function AuthModal({ onClose, setUser }: any) {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-2 rounded"
+          className="w-full border p-2 rounded text-black"
         />
 
         {isSignup && (
@@ -1433,7 +1433,7 @@ function AuthModal({ onClose, setUser }: any) {
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full border p-2 rounded"
+            className="w-full border p-2 rounded text-black"
           />
         )}
 
