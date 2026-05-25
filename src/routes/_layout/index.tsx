@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "../../supabaseClient"; // path check kar lena
@@ -129,9 +128,6 @@ if (_event !== 'SIGNED_IN') {
 }
       // ✅ USER LOGGED IN
       if (session?.user) {
-        // Connect socket now that user is authenticated
-        localStorage.setItem("user_id", session.user.id);
-        connectSocket(session.user.id);
         try {
 
   const rewardResponse = await fetch(
@@ -359,8 +355,7 @@ const [zipStats, setZipStats] = useState({
 });
   const {
   coins: walletCoins,
-  setCoins: setWalletCoins,
-  connectSocket,
+  setCoins: setWalletCoins
 } = useWallet();
   const [searchTerm, setSearchTerm] = useState("");
 //   const start2MinRewardTimer = async () => {
@@ -1353,6 +1348,7 @@ function SidePanel() {
   );
 }
 function AuthModal({ onClose, setUser }: any) {
+  console.log("AUTH MODAL RENDERED");
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
@@ -1361,63 +1357,57 @@ function AuthModal({ onClose, setUser }: any) {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleAuth = async () => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      if (isSignup) {
-        if (password !== confirmPassword) {
-          alert("Passwords do not match");
-          return;
-        }
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { name } },
-        });
-        if (error) alert(error.message);
-        else alert("Signup successful! Check your email.");
-        onClose();
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) alert(error.message);
-        else {
-          setUser(data.user);
-          onClose();
-        }
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) return;   // 🔥 spam click rok diya
 
-  return createPortal(
+  setLoading(true);
+
+  try {
+    if (isSignup) {
+      if (password !== confirmPassword) {
+  alert("Passwords do not match");
+  setLoading(false);
+  return;
+}
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+        },
+      });
+
+      if (error) alert(error.message);
+      else alert("Signup successful! Check email.");
+      onClose();
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) alert(error.message);
+      else {
+        setUser(data.user);
+        onClose();
+      }
+    }
+  } finally {
+    setLoading(false);   // 🔥 important (always run hoga)
+  }
+};
+
+  return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center"
-      style={{ zIndex: 999999, pointerEvents: "auto" }}
-      onClick={(e) => {
-        // Only close if clicking the backdrop itself, not the modal card
-        if (e.target === e.currentTarget) onClose();
-      }}
+      style={{ zIndex: 99999, pointerEvents: "auto" }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        style={{
-          zIndex: 9999999,
-          position: "relative",
-          background: "#ffffff",
-          padding: "24px",
-          borderRadius: "12px",
-          width: "320px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          boxShadow: "0 25px 50px rgba(0,0,0,0.4)",
-          pointerEvents: "auto",
-        }}
+        className="relative bg-white p-6 rounded-xl w-80 space-y-3"
+        style={{ zIndex: 100000, pointerEvents: "auto" }}
       >
-        <h2 style={{ color: "#000", fontWeight: 700, fontSize: "18px", margin: 0 }}>
+        <h2 className="text-lg font-bold text-black">
           {isSignup ? "Sign Up" : "Login"}
         </h2>
 
@@ -1427,18 +1417,7 @@ function AuthModal({ onClose, setUser }: any) {
             placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            autoComplete="name"
-            style={{
-              width: "100%",
-              border: "1px solid #ccc",
-              padding: "8px",
-              borderRadius: "6px",
-              background: "#fff",
-              color: "#000",
-              fontSize: "14px",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
+            className="w-full border p-2 rounded text-black bg-white"
           />
         )}
 
@@ -1447,19 +1426,7 @@ function AuthModal({ onClose, setUser }: any) {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          autoFocus
-          style={{
-            width: "100%",
-            border: "1px solid #ccc",
-            padding: "8px",
-            borderRadius: "6px",
-            background: "#fff",
-            color: "#000",
-            fontSize: "14px",
-            outline: "none",
-            boxSizing: "border-box",
-          }}
+          className="w-full border p-2 rounded text-black bg-white"
         />
 
         <input
@@ -1467,18 +1434,7 @@ function AuthModal({ onClose, setUser }: any) {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          style={{
-            width: "100%",
-            border: "1px solid #ccc",
-            padding: "8px",
-            borderRadius: "6px",
-            background: "#fff",
-            color: "#000",
-            fontSize: "14px",
-            outline: "none",
-            boxSizing: "border-box",
-          }}
+          className="w-full border p-2 rounded text-black bg-white"
         />
 
         {isSignup && (
@@ -1487,53 +1443,29 @@ function AuthModal({ onClose, setUser }: any) {
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            style={{
-              width: "100%",
-              border: "1px solid #ccc",
-              padding: "8px",
-              borderRadius: "6px",
-              background: "#fff",
-              color: "#000",
-              fontSize: "14px",
-              outline: "none",
-              boxSizing: "border-box",
-            }}
+            className="w-full border p-2 rounded text-black bg-white"
           />
         )}
 
         <button
           onClick={handleAuth}
           disabled={loading}
-          style={{
-            width: "100%",
-            background: loading ? "#94a3b8" : "#2563eb",
-            color: "#fff",
-            padding: "10px",
-            borderRadius: "6px",
-            border: "none",
-            fontWeight: 600,
-            fontSize: "14px",
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
+          className="w-full bg-primary text-white p-2 rounded disabled:opacity-50"
         >
           {loading ? "Processing..." : isSignup ? "Register" : "Login"}
         </button>
 
         <button
           onClick={() => setIsSignup(!isSignup)}
-          style={{ background: "none", border: "none", color: "#2563eb", fontSize: "13px", cursor: "pointer", textAlign: "left" }}
+          className="text-sm text-blue-500"
         >
           {isSignup ? "Already have account? Login" : "Create account"}
         </button>
 
-        <button
-          onClick={onClose}
-          style={{ background: "none", border: "none", color: "#64748b", fontSize: "13px", cursor: "pointer", textAlign: "left" }}
-        >
+        <button onClick={onClose} className="text-sm text-gray-500">
           Close
         </button>
       </div>
-    </div>,
-    document.body
+    </div>
   );
 }
