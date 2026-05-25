@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1396,77 +1397,74 @@ function AuthModal({ onClose, setUser }: any) {
   }
 };
 
-return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl w-80 space-y-3">
-        <h2 className="text-lg font-bold">
-          {isSignup ? "Sign Up" : "Login"}
-        </h2>
+return createPortal(
+  <div className="fixed inset-0 z-[999999] bg-black/60 flex items-center justify-center">
+    <div className="bg-white p-6 rounded-xl w-80 space-y-3 shadow-2xl">
+      
+      <h2 className="text-lg font-bold text-black">
+        {isSignup ? "Sign Up" : "Login"}
+      </h2>
 
-        <form
-          onSubmit={(e) => { e.preventDefault(); handleAuth(); }}
-          className="space-y-3"
-          autoComplete="on"
-        >
-          {isSignup && (
-            <input
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border p-2 rounded"
-              autoComplete="name"
-            />
-          )}
+      {isSignup && (
+        <input
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full border p-2 rounded text-black bg-white"
+        />
+      )}
 
-          <input
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border p-2 rounded"
-            autoComplete="email"
-          />
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full border p-2 rounded text-black bg-white"
+      />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border p-2 rounded"
-            autoComplete={isSignup ? "new-password" : "current-password"}
-          />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="w-full border p-2 rounded text-black bg-white"
+      />
 
-          {isSignup && (
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full border p-2 rounded"
-              autoComplete="new-password"
-            />
-          )}
+      {isSignup && (
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="w-full border p-2 rounded text-black bg-white"
+        />
+      )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white p-2 rounded disabled:opacity-50"
-          >
-            {loading ? "Processing..." : isSignup ? "Register" : "Login"}
-          </button>
-        </form>
+      <button
+        onClick={handleAuth}
+        disabled={loading}
+        className="w-full bg-blue-600 text-white p-2 rounded"
+      >
+        {loading ? "Processing..." : isSignup ? "Register" : "Login"}
+      </button>
 
-        <button
-          onClick={() => setIsSignup(!isSignup)}
-          className="text-sm text-blue-500"
-        >
-          {isSignup ? "Already have account? Login" : "Create account"}
-        </button>
+      <button
+        onClick={() => setIsSignup(!isSignup)}
+        className="text-sm text-blue-500"
+      >
+        {isSignup
+          ? "Already have account? Login"
+          : "Create account"}
+      </button>
 
-        <button onClick={onClose} className="text-sm text-gray-500">
-          Close
-        </button>
-      </div>
+      <button
+        onClick={onClose}
+        className="text-sm text-gray-500"
+      >
+        Close
+      </button>
     </div>
-  );
+  </div>,
+  document.body
+);
 }
