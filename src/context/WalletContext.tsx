@@ -2,197 +2,85 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   ReactNode,
 } from "react";
 
-//import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
-// =========================
-// TYPES
-// =========================
 type WalletContextType = {
   coins: number;
-  setCoins: React.Dispatch<
-    React.SetStateAction<number>
-  >;
+  setCoins: React.Dispatch<React.SetStateAction<number>>;
+  connectWalletSocket: (userId: string) => void;
 };
 
-// =========================
-// CONTEXT
-// =========================
-const WalletContext =
-  createContext<
-    WalletContextType | undefined
-  >(undefined);
+const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-// =========================
-// PROVIDER PROPS
-// =========================
-type WalletProviderProps = {
-  children: ReactNode;
-};
+type WalletProviderProps = { children: ReactNode };
 
-// =========================
-// PROVIDER
-// =========================
-export function WalletProvider({
-  children,
-}: WalletProviderProps) {
+export function WalletProvider({ children }: WalletProviderProps) {
+  const [coins, setCoins] = useState<number>(0);
+  const socketRef = useRef<Socket | null>(null);
 
-  const [coins, setCoins] =
-    useState<number>(0);
-    useEffect(() => {
-
-  localStorage.setItem(
-    "walletCoins",
-    String(coins)
-  );
-
-}, [coins]);
-
+  // Persist coins to localStorage
   useEffect(() => {
+    localStorage.setItem("walletCoins", String(coins));
+  }, [coins]);
 
-    // =========================
-    // LOAD SAVED COINS
-    // =========================
-    const savedCoins =
-      localStorage.getItem(
-        "walletCoins"
-      );
+  // On mount: only load saved coins + multi-tab sync. NO socket here.
+  useEffect(() => {
+    const savedCoins = localStorage.getItem("walletCoins");
+    if (savedCoins) setCoins(Number(savedCoins));
 
-    if (savedCoins) {
-
-      setCoins(
-        Number(savedCoins)
-      );
-
-    }
-
-    // =========================
-    // SOCKET CONNECT
-    // =========================
-// const socket = io(
-//   "https://wallet-api-backend-production.up.railway.app",
-//   {
-//     transports: ["websocket", "polling"], // polling as fallback
-//     timeout: 5000,                        // don't hang forever
-//     reconnectionAttempts: 2,              // limit retries
-//   }
-// );
-
-    // =========================
-    // USER ID
-    // =========================
-    const userId =
-      localStorage.getItem(
-        "user_id"
-      );
-
-    // =========================
-    // JOIN WALLET ROOM
-    // =========================
-//     if (userId) {
-//         socket.emit(
-//       "join-wallet",
-//       userId
-//     );
-// }
-
-    // =========================
-    // LIVE UPDATE
-    // =========================
-    // socket.on(
-    //   "wallet-updated",
-    //   (data) => {
-
-    //     console.log(
-    //       "GLOBAL WALLET:",
-    //       data
-    //     );
-
-    //     setCoins(
-    //       data.balance
-    //     );
-
-    //   }
-    // );
-
-    // =========================
-    // MULTI TAB SYNC
-    // =========================
-    const handleStorage = (
-      e: StorageEvent
-    ) => {
-
-      if (
-        e.key === "walletCoins"
-      ) {
-
-        setCoins(
-          Number(e.newValue)
-        );
-
-      }
-
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "walletCoins") setCoins(Number(e.newValue));
     };
+    window.addEventListener("storage", handleStorage);
 
-    window.addEventListener(
-      "storage",
-      handleStorage
-    );
-
-    // =========================
-    // CLEANUP
-    // =========================
     return () => {
-
-      //socket.disconnect();
-
-      window.removeEventListener(
-        "storage",
-        handleStorage
-      );
-
+      window.removeEventListener("storage", handleStorage);
+      socketRef.current?.disconnect();
     };
-
   }, []);
 
+  // Call this ONLY after confirmed login
+  const connectWalletSocket = (userId: string) => {
+    if (socketRef.current?.connected) return;
+
+    const socket = io(
+      "https://wallet-api-backend-production.up.railway.app",
+      {
+        transports: ["websocket", "polling"],
+        timeout: 10000,
+        reconnectionAttempts: 3,
+      }
+    );
+
+    socket.on("connect", () => {
+      socket.emit("join-wallet", userId);
+    });
+
+    socket.on("wallet-updated", (data) => {
+      setCoins(data.balance);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.warn("Wallet socket error:", err.message);
+    });
+
+    socketRef.current = socket;
+  };
+
   return (
-
-    <WalletContext.Provider
-      value={{
-        coins,
-        setCoins,
-      }}
-    >
-
+    <WalletContext.Provider value={{ coins, setCoins, connectWalletSocket }}>
       {children}
-
     </WalletContext.Provider>
-
   );
-
 }
 
-// =========================
-// CUSTOM HOOK
-// =========================
 export function useWallet() {
-
-  const context =
-    useContext(
-      WalletContext
-    );
-
-  if (!context) {
-
-    throw new Error(
-      "useWallet must be used inside WalletProvider"
-    );
-
-  }
-
+  const context = useContext(WalletContext);
+  if (!context) throw new Error("useWallet must be used inside WalletProvider");
   return context;
-
 }
