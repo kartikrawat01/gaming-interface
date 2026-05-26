@@ -2822,137 +2822,222 @@ function SidePanel() {
     </aside>
   );
 }
-function AuthModal({ onClose, setUser }: any) {
+// function AuthModal({ onClose, setUser }: any) {
 
+//   const [loading, setLoading] = useState(false);
+//   const [isSignup, setIsSignup] = useState(false);
+//   const [name, setName] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [confirmPassword, setConfirmPassword] = useState("");
+
+//   const handleAuth = async () => {
+//   if (loading) return;   // 🔥 spam click rok diya
+
+//   setLoading(true);
+
+//   try {
+//     if (isSignup) {
+//       if (password !== confirmPassword) {
+//   alert("Passwords do not match");
+//   setLoading(false);
+//   return;
+// }
+
+//       const { error } = await supabase.auth.signUp({
+//         email,
+//         password,
+//         options: {
+//           data: { name },
+//         },
+//       });
+
+//       if (error) alert(error.message);
+//       else alert("Signup successful! Check email.");
+//       onClose();
+//     } else {
+//       const { data, error } = await supabase.auth.signInWithPassword({
+//         email,
+//         password,
+//       });
+
+//       if (error) alert(error.message);
+//       else {
+//         setUser(data.user);
+//         onClose();
+//       }
+//     }
+//   } finally {
+//     setLoading(false);   // 🔥 important (always run hoga)
+//   }
+// };
+
+//   return (
+//     <div
+//       className="fixed inset-0 bg-black/60 flex items-center justify-center"
+//       style={{ zIndex: 99999, pointerEvents: "auto" }}
+//       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+//     >
+//       <div
+//         style={{
+//           position: "relative",
+//           zIndex: 100000,
+//           pointerEvents: "auto",
+//           backgroundColor: "#ffffff",
+//           padding: "24px",
+//           borderRadius: "12px",
+//           width: "320px",
+//           display: "flex",
+//           flexDirection: "column",
+//           gap: "12px",
+//           boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
+//         }}
+//       >
+//         <h2 style={{ color: "#111827", fontWeight: 700, fontSize: "18px", margin: 0 }}>
+//           {isSignup ? "Sign Up" : "Login"}
+//         </h2>
+
+//         {isSignup && (
+//           <input
+//             type="text"
+//             placeholder="Name"
+//             value={name}
+//             onChange={(e) => setName(e.target.value)}
+//             style={{ display:"block", width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:"6px", backgroundColor:"#ffffff", color:"#111827", fontSize:"14px", outline:"none", boxSizing:"border-box", caretColor:"#111827" }}
+//           />
+//         )}
+
+//         <input
+//           type="email"
+//           placeholder="Email"
+//           value={email}
+//           onChange={(e) => setEmail(e.target.value)}
+//           style={{ display:"block", width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:"6px", backgroundColor:"#ffffff", color:"#111827", fontSize:"14px", outline:"none", boxSizing:"border-box", caretColor:"#111827" }}
+//         />
+
+//         <input
+//           type="password"
+//           placeholder="Password"
+//           value={password}
+//           onChange={(e) => setPassword(e.target.value)}
+//           style={{ display:"block", width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:"6px", backgroundColor:"#ffffff", color:"#111827", fontSize:"14px", outline:"none", boxSizing:"border-box", caretColor:"#111827" }}
+//         />
+
+//         {isSignup && (
+//           <input
+//             type="password"
+//             placeholder="Confirm Password"
+//             value={confirmPassword}
+//             onChange={(e) => setConfirmPassword(e.target.value)}
+//             style={{ display:"block", width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:"6px", backgroundColor:"#ffffff", color:"#111827", fontSize:"14px", outline:"none", boxSizing:"border-box", caretColor:"#111827" }}
+//           />
+//         )}
+
+//         <button
+//           onClick={handleAuth}
+//           disabled={loading}
+//           className="w-full bg-primary text-white p-2 rounded disabled:opacity-50"
+//         >
+//           {loading ? "Processing..." : isSignup ? "Register" : "Login"}
+//         </button>
+
+//         <button
+//           onClick={() => setIsSignup(!isSignup)}
+//           className="text-sm text-blue-500"
+//         >
+//           {isSignup ? "Already have account? Login" : "Create account"}
+//         </button>
+
+//         <button onClick={onClose} className="text-sm text-gray-500">
+//           Close
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+
+function AuthModal({ onClose, setUser }: any) {
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const handleAuth = async () => {
-  if (loading) return;   // 🔥 spam click rok diya
-
-  setLoading(true);
-
-  try {
-    if (isSignup) {
-      if (password !== confirmPassword) {
-  alert("Passwords do not match");
-  setLoading(false);
-  return;
-}
-
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name },
-        },
-      });
-
-      if (error) alert(error.message);
-      else alert("Signup successful! Check email.");
-      onClose();
-    } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) alert(error.message);
-      else {
-        setUser(data.user);
-        onClose();
-      }
-    }
-  } finally {
-    setLoading(false);   // 🔥 important (always run hoga)
-  }
-};
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center"
-      style={{ zIndex: 99999, pointerEvents: "auto" }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        style={{
-          position: "relative",
-          zIndex: 100000,
-          pointerEvents: "auto",
-          backgroundColor: "#ffffff",
-          padding: "24px",
-          borderRadius: "12px",
-          width: "320px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
-        }}
-      >
-        <h2 style={{ color: "#111827", fontWeight: 700, fontSize: "18px", margin: 0 }}>
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 99999,
+      background: "rgba(0,0,0,0.6)",
+      display: "flex", alignItems: "center", justifyContent: "center"
+    }}>
+      <div style={{
+        background: "#fff", borderRadius: 12, padding: 24,
+        width: 320, display: "flex", flexDirection: "column", gap: 12
+      }}>
+        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#111" }}>
           {isSignup ? "Sign Up" : "Login"}
         </h2>
 
         {isSignup && (
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ display:"block", width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:"6px", backgroundColor:"#ffffff", color:"#111827", fontSize:"14px", outline:"none", boxSizing:"border-box", caretColor:"#111827" }}
+          <input id="auth-name" type="text" placeholder="Name"
+            style={{ padding: "8px 10px", border: "1px solid #ccc",
+              borderRadius: 6, fontSize: 14, color: "#111", background: "#fff" }}
           />
         )}
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ display:"block", width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:"6px", backgroundColor:"#ffffff", color:"#111827", fontSize:"14px", outline:"none", boxSizing:"border-box", caretColor:"#111827" }}
+        <input id="auth-email" type="email" placeholder="Email"
+          style={{ padding: "8px 10px", border: "1px solid #ccc",
+            borderRadius: 6, fontSize: 14, color: "#111", background: "#fff" }}
         />
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ display:"block", width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:"6px", backgroundColor:"#ffffff", color:"#111827", fontSize:"14px", outline:"none", boxSizing:"border-box", caretColor:"#111827" }}
+        <input id="auth-password" type="password" placeholder="Password"
+          style={{ padding: "8px 10px", border: "1px solid #ccc",
+            borderRadius: 6, fontSize: 14, color: "#111", background: "#fff" }}
         />
 
         {isSignup && (
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            style={{ display:"block", width:"100%", padding:"8px 10px", border:"1px solid #d1d5db", borderRadius:"6px", backgroundColor:"#ffffff", color:"#111827", fontSize:"14px", outline:"none", boxSizing:"border-box", caretColor:"#111827" }}
+          <input id="auth-confirm" type="password" placeholder="Confirm Password"
+            style={{ padding: "8px 10px", border: "1px solid #ccc",
+              borderRadius: 6, fontSize: 14, color: "#111", background: "#fff" }}
           />
         )}
 
         <button
-          onClick={handleAuth}
           disabled={loading}
-          className="w-full bg-primary text-white p-2 rounded disabled:opacity-50"
+          style={{ padding: "10px", background: "#FFD93D", border: "none",
+            borderRadius: 6, fontWeight: 700, cursor: "pointer", fontSize: 14 }}
+          onClick={async () => {
+            const email = (document.getElementById("auth-email") as HTMLInputElement)?.value;
+            const password = (document.getElementById("auth-password") as HTMLInputElement)?.value;
+            if (!email || !password) return;
+            setLoading(true);
+            if (isSignup) {
+              const name = (document.getElementById("auth-name") as HTMLInputElement)?.value;
+              const confirm = (document.getElementById("auth-confirm") as HTMLInputElement)?.value;
+              if (password !== confirm) { alert("Passwords do not match"); setLoading(false); return; }
+              const { error } = await supabase.auth.signUp({ email, password, options: { data: { name } } });
+              if (error) alert(error.message);
+              else alert("Signup successful! Check email.");
+              onClose();
+            } else {
+              const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+              if (error) { alert(error.message); setLoading(false); }
+              else { setUser(data.user); onClose(); }
+            }
+            setLoading(false);
+          }}
         >
           {loading ? "Processing..." : isSignup ? "Register" : "Login"}
         </button>
 
-        <button
-          onClick={() => setIsSignup(!isSignup)}
-          className="text-sm text-blue-500"
-        >
+        <button onClick={() => setIsSignup(!isSignup)}
+          style={{ background: "none", border: "none", color: "#3b82f6",
+            cursor: "pointer", fontSize: 13 }}>
           {isSignup ? "Already have account? Login" : "Create account"}
         </button>
 
-        <button onClick={onClose} className="text-sm text-gray-500">
+        <button onClick={onClose}
+          style={{ background: "none", border: "none", color: "#888",
+            cursor: "pointer", fontSize: 13 }}>
           Close
         </button>
       </div>
     </div>
   );
 }
-
