@@ -93,10 +93,10 @@ useEffect(() => {
   );
 };
   supabase.auth.getUser().then(({ data }) => {
-    console.log("Logged in user:", data.user);
+
     setUser(data.user);
     supabase.auth.getSession().then(({ data }) => {
-  console.log("SESSION:", data.session);
+
   console.log("ACCESS TOKEN:", data.session?.access_token);
 });
   });
@@ -496,14 +496,9 @@ setWalletCoins(Number(data.balance) || 0);
   try {
     const session = await supabase.auth.getSession();
 
-    console.log("SESSION:", session);
-
     const token = session.data.session?.access_token;
 
-    console.log("TOKEN:", token);
-
     if (!token) {
-      console.log("No token found");
       return;
     }
 
@@ -515,14 +510,12 @@ setWalletCoins(Number(data.balance) || 0);
 
     const data = await res.json();
 
-    console.log("Wallet API Response:", data);
-
     setWalletCoins(Number(data.balance) || 0);
 
   } catch (err) {
     console.error("Fetch wallet failed:", err);
   }
-}, [setWalletCoins]);
+}, []);
 
   useEffect(() => {
   const loadStats = () => {
@@ -1351,7 +1344,7 @@ function SidePanel() {
   );
 }
 function AuthModal({ onClose, setUser }: any) {
-  console.log("AUTH MODAL RENDERED");
+
   const [loading, setLoading] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
