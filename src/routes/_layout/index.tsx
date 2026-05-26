@@ -664,8 +664,9 @@ useEffect(() => {
       {/* ✅ BUG FIX: AuthModal rendered via React Portal directly onto document.body.
           This escapes the stacking context created by the sticky .glass header which
           uses backdrop-filter — that was trapping modal inputs and making typed text
-          invisible and clicks non-functional. */}
-      {showAuth && ReactDOM.createPortal(
+          invisible and clicks non-functional.
+          Guard: typeof document !== "undefined" prevents SSR crash on Vercel hydration. */}
+      {showAuth && typeof document !== "undefined" && ReactDOM.createPortal(
         <AuthModal
           onClose={() => setShowAuth(false)}
           setUser={setUser}
