@@ -250,4 +250,4 @@ window.rewardCoins = rewardCoins;
 window.spendCoins = spendCoins;
 window.fetchWalletBalance = fetchWalletBalance;
 
-// fetchWalletBalance();
+// fetchWalletBalance() — removed auto-call. Call manually after user logs in.
