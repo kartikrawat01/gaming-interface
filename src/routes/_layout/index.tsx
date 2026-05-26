@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback } from "react";
-import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "../../supabaseClient"; // path check kar lena
@@ -318,19 +317,19 @@ if (_event !== 'SIGNED_IN') {
 );
 
   return () => {
-    // ✅ BUG FIX: unsubscribe prevents duplicate listeners accumulating on every render
-    listener.subscription.unsubscribe();
 
-    window.removeEventListener(
-      'beforeunload',
-      handleUnload
-    );
+  listener.subscription.unsubscribe();
 
-    if (sessionTimer) {
-      clearTimeout(sessionTimer);
-    }
-  };
-}, []); // eslint-disable-line react-hooks/exhaustive-deps
+  window.removeEventListener(
+    'beforeunload',
+    handleUnload
+  );
+
+  if (sessionTimer) {
+    clearTimeout(sessionTimer);
+  }
+};
+}, []);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logicMazeStats, setLogicMazeStats] = useState({
   progress: 0,
@@ -661,18 +660,12 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen text-foreground bg-background">
-      {/* ✅ BUG FIX: AuthModal rendered via React Portal directly onto document.body.
-          This escapes the stacking context created by the sticky .glass header which
-          uses backdrop-filter — that was trapping modal inputs and making typed text
-          invisible and clicks non-functional.
-          Guard: typeof document !== "undefined" prevents SSR crash on Vercel hydration. */}
-      {showAuth && typeof document !== "undefined" && ReactDOM.createPortal(
-        <AuthModal
-          onClose={() => setShowAuth(false)}
-          setUser={setUser}
-        />,
-        document.body
-      )}
+      {showAuth && (
+  <AuthModal
+    onClose={() => setShowAuth(false)}
+    setUser={setUser}
+  />
+)}
       {/* Mobile top bar */}
       <div className="lg:hidden sticky top-0 z-40 glass flex items-center justify-between px-4 h-14 border-b border-border">
         <div className="flex items-center gap-2">
@@ -696,15 +689,11 @@ useEffect(() => {
         <AnimatePresence>
           {mobileOpen && (
             <>
-              {/* ✅ BUG FIX: pointer-events-none added so this overlay never intercepts
-                  clicks when mobileOpen is false. AnimatePresence exit animations could
-                  leave this mounted briefly and eat all pointer events on the page. */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-50 bg-black/60 lg:hidden"
-                style={{ pointerEvents: mobileOpen ? "auto" : "none" }}
                 onClick={() => setMobileOpen(false)}
               />
               <motion.div
@@ -1487,3 +1476,4 @@ function AuthModal({ onClose, setUser }: any) {
     </div>
   );
 }
+
