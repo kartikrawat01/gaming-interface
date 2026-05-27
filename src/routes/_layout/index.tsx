@@ -73,12 +73,13 @@ const difficultyStyles: Record<Difficulty, string> = {
 };
 
 function Dashboard() {
+  console.count("DASHBOARD_RENDER");
   const navigate = useNavigate();
   const [active, setActive] = useState("dashboard");
   const [user, setUser] = useState<any>(null);
 const [showAuth, setShowAuth] = useState(false);
 const sessionTimerRef = useRef<any>(null);
-/*
+
 useEffect(() => {
 const handleUnload = async () => {
 
@@ -343,7 +344,6 @@ if (_event !== 'SIGNED_IN') {
 }
 };
 }, []);
-*/
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logicMazeStats, setLogicMazeStats] = useState({
   progress: 0,
