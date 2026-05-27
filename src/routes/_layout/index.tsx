@@ -994,7 +994,7 @@ setShowDropdown(false);
     console.log("LOGIN CLICKED");
     setShowAuth(true);
   }}
-  className="h-10 px-3 rounded-lg bg-red-500 text-white text-sm z-[9999] relative"
+  className="h-10 px-3 rounded-lg bg-primary text-white text-sm"
 >
   Login
 </button>
