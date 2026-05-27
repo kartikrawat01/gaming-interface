@@ -897,7 +897,7 @@ function Header({ walletCoins, searchTerm, setSearchTerm, user, setShowAuth, ses
   placeholder="Search games..."
   value={searchTerm}
   onChange={(e) => setSearchTerm(e.target.value)}
-  className="w-full h-10 pl-9 pr-3 rounded-lg bg-card border border-border shadow-soft text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition"
+  className="w-full h-10 pl-9 pr-3 rounded-lg bg-card border border-border shadow-soft text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition"
 />
         </div>
 
