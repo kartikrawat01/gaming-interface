@@ -78,7 +78,7 @@ function Dashboard() {
   const [user, setUser] = useState<any>(null);
 const [showAuth, setShowAuth] = useState(false);
 const sessionTimerRef = useRef<any>(null);
-
+/*
 useEffect(() => {
 const handleUnload = async () => {
 
@@ -343,6 +343,7 @@ if (_event !== 'SIGNED_IN') {
 }
 };
 }, []);
+*/
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logicMazeStats, setLogicMazeStats] = useState({
   progress: 0,
