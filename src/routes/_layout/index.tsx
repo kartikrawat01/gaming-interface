@@ -1203,7 +1203,7 @@ function GameCard({ game, index }: { game: Game; index: number }) {
           {game.difficulty}
         </span>
         {locked && (
-          <div className="absolute inset-0 grid place-items-center bg-muted/60 backdrop-blur-sm">
+          <div className="absolute inset-0 grid place-items-center bg-muted/80">
             <div className="grid place-items-center h-10 w-10 rounded-full bg-surface-elevated border border-border">
               <Lock className="h-4 w-4 text-muted-foreground" />
             </div>
