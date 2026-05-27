@@ -870,7 +870,7 @@ const Sidebar = memo(function Sidebar({
 
 /* ───────────────────────── Header ───────────────────────── */
 
-function Header({ walletCoins, searchTerm, setSearchTerm, user, setShowAuth, sessionTimer }: any) {
+const Header = memo(function Header({ walletCoins, searchTerm, setSearchTerm, user, setShowAuth, sessionTimer }: any) {
   const [showDropdown, setShowDropdown] = useState(false);
   return (
     <motion.header
@@ -1003,10 +1003,10 @@ setShowDropdown(false);
       </div>
     </motion.header>
   );
-}
+});
 /* ───────────────────────── Hero ───────────────────────── */
 
-function Hero() {
+const Hero = memo(function Hero() {
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -1076,7 +1076,7 @@ function Hero() {
       </div>
     </motion.section>
   );
-}
+});
 
 /* ───────────────────────── Games Section ───────────────────────── */
 
@@ -1265,7 +1265,7 @@ function GameCard({ game, index }: { game: Game; index: number }) {
 
 /* ───────────────────────── Side Panel ───────────────────────── */
 
-function SidePanel() {
+const SidePanel = memo(function SidePanel() {
   const missions = [
     { label: "Solve 3 puzzles", progress: 66, reward: 80 },
     { label: "Reach Level 13", progress: 40, reward: 150 },
@@ -1366,6 +1366,6 @@ function SidePanel() {
       </motion.div>
     </aside>
   );
-}
+});
 
 
