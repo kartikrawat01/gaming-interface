@@ -1,5 +1,5 @@
 import { useState, memo } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
 function AuthModalComponent({ onClose, setUser }: any) {
 
