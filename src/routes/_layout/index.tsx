@@ -1,6 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef, memo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// import { motion, AnimatePresence } from "framer-motion";
+const motion: any = {
+  div: "div",
+  header: "header",
+  section: "section",
+  article: "article",
+  aside: "aside",
+  button: "button",
+};
+
+const AnimatePresence = ({ children }: any) => children;
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "../../supabaseClient"; // path check kar lena
 import { AuthModal } from '../../components/ui/AuthModal';
