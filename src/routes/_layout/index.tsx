@@ -114,221 +114,200 @@ const handleUnload = async () => {
 // });
   });
 
-  const { data: listener } =
-  supabase.auth.onAuthStateChange(
-    async (_event, session) => {
-      setUser(session?.user || null);
+  const { data: listener } = supabase.auth.onAuthStateChange(
+  (_event, session) => {
 
-// ✅ logout UI instantly update
-if (_event === 'SIGNED_OUT') {
+    setUser(session?.user || null);
 
-  setUser(null);
+    // SIGN OUT
+    if (_event === "SIGNED_OUT") {
 
-  localStorage.removeItem(
-    'platformSessionId'
-  );
+      setUser(null);
 
-  localStorage.removeItem(
-    'sessionRewardGiven'
-  );
+      localStorage.removeItem("platformSessionId");
+      localStorage.removeItem("sessionRewardGiven");
 
-  return;
-}
+      return;
+    }
 
-// ✅ sirf login logic niche chalega
-if (_event !== 'SIGNED_IN') {
-  return;
-}
-      // ✅ USER LOGGED IN
-      if (session?.user) {
-        // connectWalletSocket(session.user.id);
-        localStorage.setItem("user_id", session.user.id);
+    // ONLY LOGIN EVENTS
+    if (_event !== "SIGNED_IN") {
+      return;
+    }
+
+    if (!session?.user) {
+      return;
+    }
+
+    // IMPORTANT:
+    // move async logic outside auth callback
+    setTimeout(async () => {
+
+      try {
+
+        localStorage.setItem(
+          "user_id",
+          session.user.id
+        );
+
+        // DAILY LOGIN REWARD
         try {
 
-  const rewardResponse = await fetch(
-    'https://wallet-api-backend-production.up.railway.app/wallet/daily-login',
-    {
-      method: 'POST',
-
-      headers: {
-        Authorization:
-          `Bearer ${session.access_token}`,
-
-        'Content-Type':
-          'application/json',
-      },
-    }
-  );
-
-  const rewardData =
-    await rewardResponse.json();
-
-  console.log(
-    'Daily login reward:',
-    rewardData
-  );
-
-} catch (err) {
-
-  console.error(
-    'Daily login failed:',
-    err
-  );
-
-}
-
-        // CHECK existing session
-        const existingSession =
-          localStorage.getItem(
-            'platformSessionId'
+          const rewardResponse = await fetch(
+            "https://wallet-api-backend-production.up.railway.app/wallet/daily-login",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+                "Content-Type": "application/json",
+              },
+            }
           );
 
-        // 🚫 already running
+          const rewardData =
+            await rewardResponse.json();
+
+          console.log(
+            "Daily login reward:",
+            rewardData
+          );
+
+        } catch (err) {
+
+          console.error(
+            "Daily login failed:",
+            err
+          );
+        }
+
+        // EXISTING SESSION CHECK
+        const existingSession =
+          localStorage.getItem(
+            "platformSessionId"
+          );
+
         if (existingSession) {
 
           console.log(
-            'Session already active:',
+            "Session already active:",
             existingSession
           );
 
           return;
         }
 
-        try {
+        // START SESSION
+        const response = await fetch(
+          "https://wallet-api-backend-production.up.railway.app/session/start",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-          const token =
-            session.access_token;
+        const data =
+          await response.json();
 
-          const response =
-            await fetch(
-              'https://wallet-api-backend-production.up.railway.app/session/start',
-              {
-                method: 'POST',
+        console.log(
+          "Platform Session Started:",
+          data
+        );
 
-                headers: {
-                  Authorization:
-                    `Bearer ${token}`,
+        localStorage.setItem(
+          "platformSessionId",
+          data.session.id
+        );
 
-                  'Content-Type':
-                    'application/json',
-                },
+        localStorage.removeItem(
+          "sessionRewardGiven"
+        );
+
+        // AUTO END SESSION
+        const timer = setTimeout(
+          async () => {
+
+            try {
+
+              const currentSessionId =
+                localStorage.getItem(
+                  "platformSessionId"
+                );
+
+              if (!currentSessionId) {
+                return;
               }
-            );
 
-          const data =
-            await response.json();
+              const currentSession =
+                await supabase.auth.getSession();
 
-          console.log(
-            'Platform Session Started:',
-            data
-          );
-
-          // SAVE SESSION ID
-          localStorage.setItem(
-            'platformSessionId',
-            data.session.id
-          );
-          localStorage.removeItem(
-  'sessionRewardGiven'
-);
-
-// start2MinRewardTimer();
-
-          // AUTO END AFTER 30 MIN
-          const timer = setTimeout(
-            async () => {
-
-              try {
-
-                const currentSessionId =
-                  localStorage.getItem(
-                    'platformSessionId'
-                  );
-                  // reset reward flag
-
-
-                if (!currentSessionId) {
-                  return;
-                }
-
-                const session =
-                  await supabase.auth.getSession();
-
-                const token =
-                  session.data.session
+              const token =
+                currentSession.data.session
                   ?.access_token;
 
-                if (!token) {
-                  return;
-                }
-
-                const res = await fetch(
-                  'https://wallet-api-backend-production.up.railway.app/session/end',
-                  {
-                    method: 'POST',
-
-                    headers: {
-                      Authorization:
-                        `Bearer ${token}`,
-
-                      'Content-Type':
-                        'application/json',
-                    },
-
-                    body: JSON.stringify({
-                      sessionId:
-                        currentSessionId,
-                    }),
-                  }
-                );
-
-                const result =
-                  await res.json();
-
-                console.log(
-                  'Session auto ended:',
-                  result
-                );
-                
-                localStorage.removeItem(
-                  'platformSessionId'
-                );
-                localStorage.removeItem(
-  'sessionRewardGiven'
-);
-
-                fetchWallet();
-
-              } catch (err) {
-
-                console.error(
-                  'Auto session end failed:',
-                  err
-                );
+              if (!token) {
+                return;
               }
 
-            },
+              const res = await fetch(
+                "https://wallet-api-backend-production.up.railway.app/session/end",
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    sessionId: currentSessionId,
+                  }),
+                }
+              );
 
-            30 * 60 * 1000
-          );
+              const result =
+                await res.json();
 
-          sessionTimerRef.current = timer;
-          
-        } catch (err) {
+              console.log(
+                "Session auto ended:",
+                result
+              );
 
-          console.error(
-            'Session start failed:',
-            err
-          );
-        }
+              localStorage.removeItem(
+                "platformSessionId"
+              );
+
+              localStorage.removeItem(
+                "sessionRewardGiven"
+              );
+
+              fetchWallet();
+
+            } catch (err) {
+
+              console.error(
+                "Auto session end failed:",
+                err
+              );
+            }
+
+          },
+          30 * 60 * 1000
+        );
+
+        sessionTimerRef.current = timer;
+
+      } catch (err) {
+
+        console.error(
+          "Session start failed:",
+          err
+        );
       }
-    }
-  );
-    window.addEventListener(
-  'beforeunload',
-  handleUnload
-);
 
+    }, 0);
+  }
+);
   return () => {
 
   listener.subscription.unsubscribe();
@@ -513,30 +492,42 @@ setWalletCoins(Number(data.balance) || 0);
   }
 };
 
-  const fetchWallet = useCallback(async () => {
+const fetchWallet = async () => {
   try {
-    const session = await supabase.auth.getSession();
 
-    const token = session.data.session?.access_token;
+    const session =
+      await supabase.auth.getSession();
+
+    const token =
+      session.data.session?.access_token;
 
     if (!token) {
       return;
     }
 
-    const res = await fetch("https://wallet-api-backend-production.up.railway.app/wallet/balance", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await fetch(
+      "https://wallet-api-backend-production.up.railway.app/wallet/balance",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     const data = await res.json();
 
-    setWalletCoins(Number(data.balance) || 0);
+    setWalletCoins(
+      Number(data.balance) || 0
+    );
 
   } catch (err) {
-    console.error("Fetch wallet failed:", err);
+
+    console.error(
+      "Fetch wallet failed:",
+      err
+    );
   }
-}, []);
+};
 /*
   useEffect(() => {
   const loadStats = () => {
@@ -659,25 +650,7 @@ useEffect(() => {
 
   fetchWallet();
 
-  const existingSession =
-    localStorage.getItem(
-      'platformSessionId'
-    );
-
-  const rewarded =
-    localStorage.getItem(
-      'sessionRewardGiven'
-    );
-
-  // ✅ page refresh ke baad bhi timer continue
-  // if (
-  //   existingSession &&
-  //   rewarded !== 'true'
-  // ) {
-  //   start2MinRewardTimer();
-  // }
-
-}, [user,fetchWallet]);
+}, [user]);
 
   return (
     <div className="min-h-screen text-foreground bg-background">
