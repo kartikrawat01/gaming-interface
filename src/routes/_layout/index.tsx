@@ -537,7 +537,7 @@ setWalletCoins(Number(data.balance) || 0);
     console.error("Fetch wallet failed:", err);
   }
 }, []);
-
+/*
   useEffect(() => {
   const loadStats = () => {
     const progress = Number(localStorage.getItem("logicMazeProgress")) || 0;
@@ -652,7 +652,7 @@ if (event.data.type === "ZIP_MASTER_UPDATE") {
     // window.removeEventListener("storage", loadStats);
     window.removeEventListener("message", handleMessage);
   };
-}, []);
+}, []);*/
 useEffect(() => {
 
   if (!user) return;
