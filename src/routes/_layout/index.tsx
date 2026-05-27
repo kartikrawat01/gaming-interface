@@ -1,16 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef, memo } from "react";
-// import { motion, AnimatePresence } from "framer-motion";
-const motion: any = {
-  div: "div",
-  header: "header",
-  section: "section",
-  article: "article",
-  aside: "aside",
-  button: "button",
-};
-
-const AnimatePresence = ({ children }: any) => children;
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "../../supabaseClient"; // path check kar lena
 import { AuthModal } from '../../components/ui/AuthModal';
@@ -83,6 +73,7 @@ const difficultyStyles: Record<Difficulty, string> = {
 };
 
 function Dashboard() {
+  console.count("DASHBOARD_RENDER");
   const navigate = useNavigate();
   const [active, setActive] = useState("dashboard");
   const [user, setUser] = useState<any>(null);
