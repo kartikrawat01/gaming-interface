@@ -60,4 +60,12 @@ function AuthModalComponent({ onClose, setUser }: any) {
     } finally {
       setLoading(false);
     }
+    };
+
+  return (
+    <div>
+      {/* modal UI */}
+    </div>
+  );
+}
 export const AuthModal = memo(AuthModalComponent);
