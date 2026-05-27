@@ -1083,7 +1083,7 @@ const GamesSection = memo(function GamesSection({
   triviaStats,
   zipStats,
   searchTerm,
-}) {
+}: any) {
 const filteredGames = games.filter((g) =>
   g.title.toLowerCase().includes(searchTerm.toLowerCase())
 );
@@ -1144,7 +1144,7 @@ const filteredGames = games.filter((g) =>
           
     </section>
   );
-}
+});
 
 function GameCard({ game, index }: { game: Game; index: number }) {
   const locked = !!game.locked;
