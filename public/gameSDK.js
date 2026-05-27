@@ -2,22 +2,62 @@ let socket = null;
 const GameSDK = {
   currentUser: null,
   async init() {
-    const {
-      data: { session }
-    } =
-    await supabaseClient.auth.getSession();
-    if (!session?.user) {
-      window.location.href =
-        "../login.html";
-      return;
-    }
-    this.currentUser =
-      session.user;
-    await this.setupSocket();
+
+  const {
+    data: { session }
+  } =
+  await supabaseClient.auth.getSession();
+
+  if (!session?.user) {
+
+    window.location.href =
+      "../login.html";
+
+    return;
+  }
+
+  console.log(
+    "User logged in:",
+    session.user.id
+  );
+
+  this.currentUser =
+    session.user;
+
+  await this.setupSocket();
+
+  // WAIT thoda taaki auth fully ready ho jaye
+  setTimeout(async () => {
+
     const balance =
       await fetchWalletBalance();
+
+    console.log(
+      "Fetched balance:",
+      balance
+    );
+
     this.updateWallet(balance);
-  },
+
+  }, 1000);
+},
+  // async init() {
+  //   const {
+  //     data: { session }
+  //   } =
+  //   await supabaseClient.auth.getSession();
+  //   if (!session?.user) {
+  //     window.location.href =
+  //       "../login.html";
+  //     return;
+  //   }
+  //   this.currentUser =
+  //     session.user;
+  //   await this.setupSocket();
+  //   const balance =
+  //     await fetchWalletBalance();
+  //   this.updateWallet(balance);
+  // },
 
   async setupSocket() {
     socket =
@@ -61,5 +101,32 @@ async spendCoins(data) {
       ) );
   }
 };
+supabaseClient.auth.onAuthStateChange(
+  async (event, session) => {
+
+    console.log(
+      "Auth changed:",
+      event
+    );
+
+    if (session?.user) {
+
+      console.log(
+        "Authenticated User:",
+        session.user.id
+      );
+
+      GameSDK.currentUser =
+        session.user;
+
+      const balance =
+        await fetchWalletBalance();
+
+      GameSDK.updateWallet(
+        balance
+      );
+    }
+  }
+);
 window.gameSDK =
   GameSDK;
