@@ -73,7 +73,6 @@ const difficultyStyles: Record<Difficulty, string> = {
 };
 
 function Dashboard() {
-  console.count("DASHBOARD_RENDER");
   const navigate = useNavigate();
   const [active, setActive] = useState("dashboard");
   const [user, setUser] = useState<any>(null);
@@ -1018,22 +1017,20 @@ const Hero = memo(function Hero() {
       <div className="absolute inset-0 bg-hero-grad pointer-events-none" />
       {/* floating code symbols */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {["{ }", "</>", "()", "[ ]", "==", "=>"].map((s, i) => (
-          <motion.span
-            key={i}
-            className="absolute font-mono text-primary/20 font-bold select-none"
-            style={{
-              left: `${10 + i * 15}%`,
-              top: `${15 + (i % 3) * 25}%`,
-              fontSize: `${14 + (i % 3) * 6}px`,
-            }}
-            animate={{ y: [0, -14, 0], opacity: [0.2, 0.5, 0.2] }}
-            transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
-          >
-            {s}
-          </motion.span>
-        ))}
-      </div>
+  {["{ }", "</>", "()", "[ ]", "==", "=>"].map((s, i) => (
+    <span
+      key={i}
+      className="absolute font-mono text-primary/20 font-bold select-none"
+      style={{
+        left: `${10 + i * 15}%`,
+        top: `${15 + (i % 3) * 25}%`,
+        fontSize: `${14 + (i % 3) * 6}px`,
+      }}
+    >
+      {s}
+    </span>
+  ))}
+</div>
 
       <div className="relative p-6 sm:p-10 grid md:grid-cols-[1fr_auto] gap-6 items-center">
         <div className="min-w-0">
