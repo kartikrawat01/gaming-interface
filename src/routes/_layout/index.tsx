@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "../../supabaseClient"; // path check kar lena
+import { AuthModal } from '../../components/ui/AuthModal';
 import {
   useWallet
 } from "../../context/WalletContext";
@@ -76,29 +77,41 @@ function Dashboard() {
   const [active, setActive] = useState("dashboard");
   const [user, setUser] = useState<any>(null);
 const [showAuth, setShowAuth] = useState(false);
-const [sessionTimer, setSessionTimer] =
-  useState<any>(null);
+const sessionTimerRef = useRef<any>(null);
+
 useEffect(() => {
-  const handleUnload = async () => {
+const handleUnload = async () => {
 
   const sessionId =
-    localStorage.getItem(
-      'platformSessionId'
-    );
+    localStorage.getItem('platformSessionId');
 
   if (!sessionId) return;
 
-  localStorage.removeItem(
-    'platformSessionId'
-  );
+  const session =
+    await supabase.auth.getSession();
+
+  const token =
+    session.data.session?.access_token;
+
+  if (token) {
+
+    navigator.sendBeacon(
+      'https://wallet-api-backend-production.up.railway.app/session/end',
+      JSON.stringify({
+        sessionId,
+      })
+    );
+  }
+
+  localStorage.removeItem('platformSessionId');
 };
   supabase.auth.getUser().then(({ data }) => {
 
     setUser(data.user);
-    supabase.auth.getSession().then(({ data }) => {
+//     supabase.auth.getSession().then(({ data }) => {
 
-  console.log("ACCESS TOKEN:", data.session?.access_token);
-});
+//   console.log("ACCESS TOKEN:", data.session?.access_token);
+// });
   });
 
   const { data: listener } =
@@ -128,7 +141,7 @@ if (_event !== 'SIGNED_IN') {
 }
       // ✅ USER LOGGED IN
       if (session?.user) {
-        connectWalletSocket(session.user.id);
+        // connectWalletSocket(session.user.id);
         localStorage.setItem("user_id", session.user.id);
         try {
 
@@ -299,7 +312,7 @@ if (_event !== 'SIGNED_IN') {
             30 * 60 * 1000
           );
 
-          setSessionTimer(timer);
+          sessionTimerRef.current = timer;
           
         } catch (err) {
 
@@ -325,9 +338,9 @@ if (_event !== 'SIGNED_IN') {
     handleUnload
   );
 
-  if (sessionTimer) {
-    clearTimeout(sessionTimer);
-  }
+  if (sessionTimerRef.current) {
+  clearTimeout(sessionTimerRef.current);
+}
 };
 }, []);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -360,6 +373,14 @@ const [zipStats, setZipStats] = useState({
   setCoins: setWalletCoins,
   connectWalletSocket,
 } = useWallet();
+
+    useEffect(() => {
+
+  if (!user?.id) return;
+
+  connectWalletSocket(user.id);
+
+}, [user?.id]);
   const [searchTerm, setSearchTerm] = useState("");
 //   const start2MinRewardTimer = async () => {
 
@@ -656,7 +677,7 @@ useEffect(() => {
   //   start2MinRewardTimer();
   // }
 
-}, [user]);
+}, [user,fetchWallet]);
 
   return (
     <div className="min-h-screen text-foreground bg-background">
@@ -718,7 +739,7 @@ useEffect(() => {
   setSearchTerm={setSearchTerm}
   user={user}
   setShowAuth={setShowAuth}
-  sessionTimer={sessionTimer}
+  sessionTimer={sessionTimerRef.current}
 />
             <Hero />
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-8">
@@ -740,7 +761,7 @@ useEffect(() => {
 
 /* ───────────────────────── Sidebar ───────────────────────── */
 
-function Sidebar({
+const Sidebar = memo(function Sidebar({
   walletCoins,
   active,
   setActive,
@@ -845,7 +866,7 @@ function Sidebar({
 
     </motion.aside>
   )
-}
+});
 
 /* ───────────────────────── Header ───────────────────────── */
 
@@ -1056,13 +1077,13 @@ function Hero() {
 
 /* ───────────────────────── Games Section ───────────────────────── */
 
-function GamesSection({
+const GamesSection = memo(function GamesSection({
   logicMazeStats,
   brainBlastStats,
   triviaStats,
   zipStats,
   searchTerm,
-}: any) {
+}): any) {
 const filteredGames = games.filter((g) =>
   g.title.toLowerCase().includes(searchTerm.toLowerCase())
 );
