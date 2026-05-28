@@ -172,23 +172,6 @@ const handleUnload = async () => {
             "Daily login reward:",
             rewardData
           );
-          if (rewardData?.balance !== undefined) {
-
-  setWalletCoins(
-    Number(rewardData.balance) || 0
-  );
-
-  window.dispatchEvent(
-    new CustomEvent(
-      "walletUpdated",
-      {
-        detail: {
-          balance: Number(rewardData.balance) || 0
-        }
-      }
-    )
-  );
-}
 
         } catch (err) {
 
@@ -290,23 +273,6 @@ const handleUnload = async () => {
                 "Session auto ended:",
                 result
               );
-              if (result?.balance !== undefined) {
-
-  setWalletCoins(
-    Number(result.balance) || 0
-  );
-
-  window.dispatchEvent(
-    new CustomEvent(
-      "walletUpdated",
-      {
-        detail: {
-          balance: Number(result.balance) || 0
-        }
-      }
-    )
-  );
-}
 
               localStorage.removeItem(
                 "platformSessionId"
@@ -393,8 +359,15 @@ const [zipStats, setZipStats] = useState({
   if (!user?.id) return;
 
   connectWalletSocket(user.id);
-
+  
 }, [user?.id]);
+useEffect(() => {
+  const handleWalletUpdate = (e: CustomEvent) => {
+    setWalletCoins(e.detail.balance);
+  };
+  window.addEventListener("walletUpdated", handleWalletUpdate as EventListener);
+  return () => window.removeEventListener("walletUpdated", handleWalletUpdate as EventListener);
+}, []);
   const [searchTerm, setSearchTerm] = useState("");
 //   const start2MinRewardTimer = async () => {
 
