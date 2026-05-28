@@ -46,15 +46,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   // Call this ONLY after confirmed login
   const connectWalletSocket = (userId: string) => {
-    if (socketRef.current?.connected) {
-  // Already connected, bas listener ensure karo
-  socketRef.current.off("walletUpdated");
-  socketRef.current.on("walletUpdated", (data) => {
-    setCoins(data.balance);
-    localStorage.setItem("walletCoins", String(data.balance));
-  });
-  return;
-}
+    if (socketRef.current?.connected) return;
 
     const socket = io(
       "https://wallet-api-backend-production.up.railway.app",
@@ -69,7 +61,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       socket.emit("join-wallet", userId);
     });
 
-    socket.on("walletUpdated", (data) => {
+    socket.on("wallet-updated", (data) => {
   console.log("Realtime wallet update:", data);
 
   // React state update

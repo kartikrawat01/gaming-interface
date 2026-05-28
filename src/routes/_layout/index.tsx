@@ -359,15 +359,8 @@ const [zipStats, setZipStats] = useState({
   if (!user?.id) return;
 
   connectWalletSocket(user.id);
-  
+
 }, [user?.id]);
-useEffect(() => {
-  const handleWalletUpdate = (e: CustomEvent) => {
-    setWalletCoins(e.detail.balance);
-  };
-  window.addEventListener("walletUpdated", handleWalletUpdate as EventListener);
-  return () => window.removeEventListener("walletUpdated", handleWalletUpdate as EventListener);
-}, []);
   const [searchTerm, setSearchTerm] = useState("");
 //   const start2MinRewardTimer = async () => {
 

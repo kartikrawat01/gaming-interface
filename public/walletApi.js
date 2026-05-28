@@ -87,7 +87,6 @@ const errText =
       "Reward API Result:",
       result
     );
-await fetchWalletBalance();
     return result;
 
   } catch (error) {
