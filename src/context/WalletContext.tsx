@@ -61,7 +61,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       socket.emit("join-wallet", userId);
     });
 
-    socket.on("wallet-updated", (data) => {
+    socket.on("walletUpdated", (data) => {
   console.log("Realtime wallet update:", data);
 
   // React state update

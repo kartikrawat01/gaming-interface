@@ -80,10 +80,10 @@ const GameSDK = {
       "join-wallet",
       this.currentUser.id
     );
-   socket.off("wallet-updated");
+   socket.off("walletUpdated");
 
 socket.on(
-  "wallet-updated",
+  "walletUpdated",
   (data) => {
     this.updateWallet(
       data.balance
