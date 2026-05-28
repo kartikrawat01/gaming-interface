@@ -62,8 +62,26 @@ export function WalletProvider({ children }: WalletProviderProps) {
     });
 
     socket.on("wallet-updated", (data) => {
-      setCoins(data.balance);
-    });
+  console.log("Realtime wallet update:", data);
+
+  // React state update
+  setCoins(data.balance);
+
+  // localStorage update
+  localStorage.setItem(
+    "walletCoins",
+    String(data.balance)
+  );
+
+  // Notify whole app instantly
+  window.dispatchEvent(
+    new CustomEvent("walletUpdated", {
+      detail: {
+        balance: data.balance,
+      },
+    })
+  );
+});
 
     socket.on("connect_error", (err) => {
       console.warn("Wallet socket error:", err.message);

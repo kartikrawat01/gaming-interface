@@ -38,6 +38,20 @@ const GameSDK = {
     );
 
     this.updateWallet(balance);
+    window.addEventListener(
+  "walletUpdated",
+  (event) => {
+    const balance =
+      event.detail.balance;
+
+    console.log(
+      "Wallet auto updated:",
+      balance
+    );
+
+    this.updateWallet(balance);
+  }
+);
 
   }, 1000);
 },
