@@ -38,20 +38,6 @@ const GameSDK = {
     );
 
     this.updateWallet(balance);
-    window.addEventListener(
-  "walletUpdated",
-  (event) => {
-    const balance =
-      event.detail.balance;
-
-    console.log(
-      "Wallet auto updated:",
-      balance
-    );
-
-    this.updateWallet(balance);
-  }
-);
 
   }, 1000);
 },
@@ -80,10 +66,10 @@ const GameSDK = {
       "join-wallet",
       this.currentUser.id
     );
-   socket.off("walletUpdated");
+   socket.off("wallet-updated");
 
 socket.on(
-  "walletUpdated",
+  "wallet-updated",
   (data) => {
     this.updateWallet(
       data.balance
