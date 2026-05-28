@@ -46,9 +46,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   // Call this ONLY after confirmed login
   const connectWalletSocket = (userId: string) => {
-    if (socketRef.current) {
-  socketRef.current.disconnect();
-}
+    if (socketRef.current?.connected) return;
 
     const socket = io(
       "https://wallet-api-backend-production.up.railway.app",
@@ -60,25 +58,10 @@ export function WalletProvider({ children }: WalletProviderProps) {
     );
 
     socket.on("connect", () => {
+      socket.emit("join-wallet", userId);
+    });
 
-  console.log(
-    "Socket Connected:",
-    socket.id
-  );
-
-  socket.emit(
-    "join-wallet",
-    userId
-  );
-
-  console.log(
-    "Joined wallet room:",
-    userId
-  );
-
-});
-
-  socket.on("walletUpdated", (data) => {
+    socket.on("wallet-updated", (data) => {
   console.log("Realtime wallet update:", data);
 
   // React state update
@@ -103,17 +86,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
     socket.on("connect_error", (err) => {
       console.warn("Wallet socket error:", err.message);
     });
-    socket.on("disconnect", () => {
-
-  console.log(
-    "Socket disconnected"
-  );
-
-});
 
     socketRef.current = socket;
   };
-  
 
   return (
     <WalletContext.Provider value={{ coins, setCoins, connectWalletSocket }}>
