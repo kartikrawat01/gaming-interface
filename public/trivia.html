@@ -1367,7 +1367,12 @@ if (GS.coins > 0 && window.currentUser) {
     data
   );
 
-  fetchWalletBalance();
+  fetchWalletBalance().then(() => {
+    const latestBalance = Number(localStorage.getItem("walletCoins")) || 0;
+    Store.get().coins = latestBalance;
+    Store.save(Store.get());
+    updateMenuUI();
+  });
 
 });
 
