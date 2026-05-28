@@ -842,9 +842,9 @@ dailyLoginReward();
   await checkSupabaseUser();
   await setupWalletSocket();
   await fetchWalletBalance();
-  // ✅ Store mein wallet balance sync karo taaki menuCoins sahi dikhe
-const latestBalance = Number(localStorage.getItem("walletCoins")) || 0;
-Store.set(d => { d.coins = latestBalance; });
+  const latestBalance = Number(localStorage.getItem("walletCoins")) || 0;
+Store.get().coins = latestBalance;
+Store.save(Store.get());
 updateMenuUI();
   createBubbles();
   Audio.init();
