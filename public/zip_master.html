@@ -1931,6 +1931,12 @@ const hardNoHints =
 if (hardNoHints) {
   save.hardLevelsSolved.push(currentLevel);
 }
+const firstTime =  !save.completedLevels.includes(currentLevel);
+
+if (firstTime) {
+save.completedLevels.push(currentLevel);
+
+}
 const packNumber =
   Math.floor(currentLevel / 10);
 
@@ -1988,14 +1994,7 @@ if (newHighScore) {
   );
 
 }
-const firstTime =
-  !save.completedLevels.includes(currentLevel);
 
-if (firstTime) {
-
-  save.completedLevels.push(currentLevel);
-
-}
 save.stars[currentLevel] =
   Math.max(
     save.stars[currentLevel] || 0,
@@ -2017,16 +2016,11 @@ console.log(
   "Reward Type:",
   typeof reward
 );
-if (
-  isNaN(reward) ||
-  reward <= 0
-) {
-  console.error(
-    "Reward is invalid:",
-    reward
-  );
-  return;
-}
+// if ( isNaN(reward) || reward <= 0
+// ) {
+//   console.error("Reward is invalid:",reward );
+//   return;
+// }
 if (reward > 0) {
 
   await rewardCoins({
