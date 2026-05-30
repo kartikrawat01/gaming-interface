@@ -4,16 +4,8 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 window.supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY,
-    {
-    auth: {
-      persistSession: true,
-      storageKey: 'sb-session',
-      storage: window.localStorage,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  }
+    SUPABASE_ANON_KEY
+    
   );
 
 window.sb =
