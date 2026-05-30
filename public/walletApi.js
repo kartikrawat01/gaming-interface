@@ -249,4 +249,4 @@ window.rewardCoins = rewardCoins;
 window.spendCoins = spendCoins;
 window.fetchWalletBalance = fetchWalletBalance;
 
-fetchWalletBalance() 
+// fetchWalletBalance() 

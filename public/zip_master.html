@@ -950,6 +950,7 @@ let hintsUsed = 0;
 let mistakes = 0;
 let levelStartTime = 0;
 let paused = false;
+let winTriggered = false;
 
 const canvas = document.getElementById('grid-canvas');
 const ctx = canvas.getContext('2d');
@@ -1047,6 +1048,7 @@ function startLevel(idx) {
   visitedCells.clear();
   hintsUsed = 0;
   mistakes = 0;
+  winTriggered = false;
   paused = false;
 
   document.getElementById('g-lvl-title').textContent = `Level ${idx+1}: ${lv.name}`;
@@ -1741,6 +1743,8 @@ function checkWin() {
 
   // ✅ Scenario 3: Perfect
   if (isFullGrid && correctOrder) {
+    if (winTriggered) return;  // ← ADD KARO
+  winTriggered = true; 
     stopTimer();
     isDragging = false;
     setTimeout(showWin, 300);
@@ -1771,59 +1775,39 @@ function checkWin() {
 }
 
 function submitPath() {
+  // winTriggered check NAHI karo yahan
   const lv = LEVELS[currentLevel];
   const totalCells = lv.size * lv.size;
-
   const isFullGrid = path.length === totalCells;
 
-  // Check order
   const visited = path.map(([r,c]) => cellKey(r,c));
   const numsSorted = [...lv.numbers].sort((a,b) => a[2]-b[2]);
-
   let lastIdx = -1;
   let correctOrder = true;
-
   for (const [r,c,n] of numsSorted) {
     const idx = visited.indexOf(cellKey(r,c));
-    if (idx === -1 || idx <= lastIdx) {
-      correctOrder = false;
-      break;
-    }
+    if (idx === -1 || idx <= lastIdx) { correctOrder = false; break; }
     lastIdx = idx;
   }
 
-  // ============================
-  // VALIDATION LOGIC (ON SUBMIT)
-  // ============================
-
-  // ✅ PERFECT
   if (isFullGrid && correctOrder) {
+    // winTriggered set karo taaki checkWin dobara na chale
+    if (winTriggered) {
+      // Already processing — bas next level pe jaao
+      hideWin();
+      if (currentLevel < 24) startLevel(currentLevel + 1);
+      else showScreen('levelSelect');
+      return;
+    }
+    winTriggered = true;
     stopTimer();
     setTimeout(showWin, 300);
     return;
   }
 
-  // ❌ Cells missing
-  if (!isFullGrid && correctOrder) {
-    showStreakMsg('⚠️ Cover all grid cells!');
-    return;
-  }
-
-  // ❌ Wrong order
-  if (isFullGrid && !correctOrder) {
-    showStreakMsg('❌ Wrong order/path followed!');
-    playSound('wrong');
-    canvas.classList.add('shake');
-    setTimeout(() => canvas.classList.remove('shake'), 300);
-    return;
-  }
-
-  // ❌ Both wrong
-  if (!isFullGrid && !correctOrder) {
-    showStreakMsg('❌ Wrong path and incomplete grid!');
-    playSound('wrong');
-    return;
-  }
+  if (!isFullGrid && correctOrder) { showStreakMsg('⚠️ Cover all grid cells!'); return; }
+  if (isFullGrid && !correctOrder) { showStreakMsg('❌ Wrong order/path followed!'); playSound('wrong'); canvas.classList.add('shake'); setTimeout(() => canvas.classList.remove('shake'), 300); return; }
+  if (!isFullGrid && !correctOrder) { showStreakMsg('❌ Wrong path and incomplete grid!'); playSound('wrong'); return; }
 }
 
 let streakCount = 0;
@@ -1931,6 +1915,12 @@ const hardNoHints =
 if (hardNoHints) {
   save.hardLevelsSolved.push(currentLevel);
 }
+const firstTime =  !save.completedLevels.includes(currentLevel);
+
+if (firstTime) {
+save.completedLevels.push(currentLevel);
+
+}
 const packNumber =
   Math.floor(currentLevel / 10);
 
@@ -1988,14 +1978,7 @@ if (newHighScore) {
   );
 
 }
-const firstTime =
-  !save.completedLevels.includes(currentLevel);
 
-if (firstTime) {
-
-  save.completedLevels.push(currentLevel);
-
-}
 save.stars[currentLevel] =
   Math.max(
     save.stars[currentLevel] || 0,
@@ -2017,16 +2000,11 @@ console.log(
   "Reward Type:",
   typeof reward
 );
-if (
-  isNaN(reward) ||
-  reward <= 0
-) {
-  console.error(
-    "Reward is invalid:",
-    reward
-  );
-  return;
-}
+// if ( isNaN(reward) || reward <= 0
+// ) {
+//   console.error("Reward is invalid:",reward );
+//   return;
+// }
 if (reward > 0) {
 
   await rewardCoins({
@@ -2144,6 +2122,7 @@ function restartLevel() {
   visitedCells.clear();
   hintsUsed = 0;
   mistakes = 0;
+  winTriggered = false;
   streakCount = 0;
   stopTimer();
   startTimer();
