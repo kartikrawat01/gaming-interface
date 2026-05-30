@@ -249,4 +249,10 @@ window.rewardCoins = rewardCoins;
 window.spendCoins = spendCoins;
 window.fetchWalletBalance = fetchWalletBalance;
 
-fetchWalletBalance() 
+// fetchWalletBalance() 
+// Auth ready hone ke baad hi fetch karo
+supabaseClient.auth.getSession().then(({ data }) => {
+  if (data?.session?.access_token) {
+    fetchWalletBalance();
+  }
+});

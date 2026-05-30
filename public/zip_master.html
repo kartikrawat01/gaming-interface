@@ -2006,16 +2006,55 @@ console.log(
 //   return;
 // }
 if (reward > 0) {
+  // Session ready hone ka wait karo
+  const waitForSession = async () => {
+    const { data } = await supabaseClient.auth.getSession();
+    if (data?.session?.access_token) {
+      return data.session.access_token;
+    }
+    // Token nahi mila — 3 baar retry karo 1 second ke baad
+    return new Promise((resolve) => {
+      let attempts = 0;
+      const interval = setInterval(async () => {
+        attempts++;
+        const { data: d } = await supabaseClient.auth.getSession();
+        if (d?.session?.access_token) {
+          clearInterval(interval);
+          resolve(d.session.access_token);
+        } else if (attempts >= 5) {
+          clearInterval(interval);
+          resolve(null);
+        }
+      }, 1000);
+    });
+  };
 
-  await rewardCoins({
-    amount: Number(reward),
-    description: "level_completion",
-    game: "zip_master",
-    level: currentLevel + 1,
-    score: currentScore,
-    difficulty: lv.difficulty
-  });
+  const token = await waitForSession();
 
+  if (token) {
+    await rewardCoins({
+      amount: Number(reward),
+      description: "level_completion",
+      game: "zip_master",
+      level: currentLevel + 1,
+      score: currentScore,
+      difficulty: lv.difficulty
+    });
+    // Balance update karo
+    await fetchWalletBalance();
+    updateHomeStats();
+  } else {
+    console.warn("Session timeout — reward pending");
+    // Pending reward localStorage mein save karo
+    const pending = JSON.parse(localStorage.getItem('pendingReward') || 'null');
+    if (!pending) {
+      localStorage.setItem('pendingReward', JSON.stringify({
+        amount: Number(reward),
+        level: currentLevel + 1,
+        game: "zip_master"
+      }));
+    }
+  }
 }
   save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, stars);
   if (
