@@ -367,11 +367,11 @@ difficulty:"Tutorial",
 trick:"Mid corner",
 starTimes:[30,55],
 solution:[
-[0,0],[1,0],[2,0],[2,1],
-[3,1],[3,0],
-[2,2],[3,2],[3,3],
-[2,3],[1,3],[0,3],
-[0,2],[0,1],[1,1],[1,2]
+[0,0],[0,1],[0,2],[0,3],
+[1,3],[1,2],[1,1],[1,0],
+[2,0],[3,0],[3,1],[2,1],
+[2,2],[2,3],[3,3],
+[3,2]
 ]
 },
 
@@ -2006,33 +2006,8 @@ console.log(
 //   return;
 // }
 if (reward > 0) {
-  // Session ready hone ka wait karo
-  const waitForSession = async () => {
-    const { data } = await supabaseClient.auth.getSession();
-    if (data?.session?.access_token) {
-      return data.session.access_token;
-    }
-    // Token nahi mila — 3 baar retry karo 1 second ke baad
-    return new Promise((resolve) => {
-      let attempts = 0;
-      const interval = setInterval(async () => {
-        attempts++;
-        const { data: d } = await supabaseClient.auth.getSession();
-        if (d?.session?.access_token) {
-          clearInterval(interval);
-          resolve(d.session.access_token);
-        } else if (attempts >= 5) {
-          clearInterval(interval);
-          resolve(null);
-        }
-      }, 1000);
-    });
-  };
-
-  const token = await waitForSession();
-
-  if (token) {
-    await rewardCoins({
+  try {
+    const result = await rewardCoins({
       amount: Number(reward),
       description: "level_completion",
       game: "zip_master",
@@ -2040,20 +2015,29 @@ if (reward > 0) {
       score: currentScore,
       difficulty: lv.difficulty
     });
-    // Balance update karo
-    await fetchWalletBalance();
-    updateHomeStats();
-  } else {
-    console.warn("Session timeout — reward pending");
-    // Pending reward localStorage mein save karo
-    const pending = JSON.parse(localStorage.getItem('pendingReward') || 'null');
-    if (!pending) {
-      localStorage.setItem('pendingReward', JSON.stringify({
-        amount: Number(reward),
-        level: currentLevel + 1,
-        game: "zip_master"
-      }));
+
+    if (result) {
+      await fetchWalletBalance();
+      updateHomeStats();
+    } else {
+      setTimeout(async () => {
+        try {
+          await rewardCoins({
+            amount: Number(reward),
+            description: "level_completion",
+            game: "zip_master",
+            level: currentLevel + 1,
+            score: currentScore,
+            difficulty: lv.difficulty
+          });
+
+          await fetchWalletBalance();
+          updateHomeStats();
+        } catch (e) {}
+      }, 1500);
     }
+  } catch (err) {
+    console.error("rewardCoins failed:", err);
   }
 }
   save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, stars);
