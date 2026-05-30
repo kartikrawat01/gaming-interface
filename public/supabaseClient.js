@@ -8,7 +8,6 @@ window.supabaseClient =
     {
     auth: {
       persistSession: true,
-      storageKey: 'sb-session',
       storage: window.localStorage,
       autoRefreshToken: true,
       detectSessionInUrl: true
