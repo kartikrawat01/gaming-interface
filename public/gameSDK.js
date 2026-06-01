@@ -66,7 +66,7 @@ const GameSDK = {
   data: { session }
 } =
 await supabaseClient.auth.getSession();
-
+ if (!session) return;
 socket =
   io(
     "https://wallet-api-backend-production.up.railway.app",
@@ -80,10 +80,10 @@ socket =
       "join-wallet",
       this.currentUser.id
     );
-   socket.off("wallet-updated");
+socket.off("walletUpdated");
 
 socket.on(
-  "wallet-updated",
+  "walletUpdated",
   (data) => {
     this.updateWallet(
       data.balance
