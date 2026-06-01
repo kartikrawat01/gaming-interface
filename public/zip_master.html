@@ -2014,7 +2014,8 @@ if (reward > 0) {
   const token = await waitForSession();
 
   if (token) {
-    await rewardCoins({
+    console.log("STEP-1 Before rewardCoins");
+    const rewardResult = await rewardCoins({
       amount: Number(reward),
       description: "level_completion",
       game: "zip_master",
@@ -2022,6 +2023,7 @@ if (reward > 0) {
       score: currentScore,
       difficulty: lv.difficulty
     });
+    console.log("STEP-2 rewardResult", rewardResult);
     // Balance update karo
     await fetchWalletBalance();
     updateHomeStats();
