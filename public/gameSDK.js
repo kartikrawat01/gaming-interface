@@ -9,11 +9,11 @@ const GameSDK = {
   await supabaseClient.auth.getSession();
 
   if (!session?.user) {
-
-    window.location.href = "/login.html";
-
-    return;
-  }
+  console.error(
+    "No Supabase session found"
+  );
+  return;
+}
 
   console.log(
     "User logged in:",
@@ -59,8 +59,23 @@ const GameSDK = {
   // },
 
   async setupSocket() {
-    socket =
-      io("https://wallet-api-backend-production.up.railway.app");
+    // socket =
+      // io("https://wallet-api-backend-production.up.railway.app");
+
+      const {
+  data: { session }
+} =
+await supabaseClient.auth.getSession();
+
+socket =
+  io(
+    "https://wallet-api-backend-production.up.railway.app",
+    {
+      auth: {
+        token: session.access_token
+      }
+    }
+  );
     socket.emit(
       "join-wallet",
       this.currentUser.id
