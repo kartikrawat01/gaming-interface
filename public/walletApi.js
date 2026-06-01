@@ -208,30 +208,16 @@ async function fetchWalletBalance() {
     const dataJson =
       await response.json();
 
-    if (
-      dataJson.balance !== undefined
-    ) {
-
-      localStorage.setItem(
-        "walletCoins",
-        String(dataJson.balance)
-      );
-
-      window.dispatchEvent(
-        new CustomEvent(
-          "walletUpdated",
-          {
-            detail: {
-              balance:
-                dataJson.balance
-            }
-          }
-        )
-      );
-
-      return dataJson.balance;
-
-    }
+  if (dataJson.balance !== undefined) {
+  localStorage.setItem("walletCoins", String(dataJson.balance));
+  window.dispatchEvent(new CustomEvent("walletUpdated", { detail: { balance: dataJson.balance } }));
+  
+  // ✅ NEW: Force cross-tab update — dashboard tab ka storage event trigger karega
+  localStorage.removeItem("walletCoins");
+  localStorage.setItem("walletCoins", String(dataJson.balance));
+  
+  return dataJson.balance;
+}
 
   } catch (err) {
 
