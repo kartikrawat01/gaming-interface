@@ -10,8 +10,7 @@ const GameSDK = {
 
   if (!session?.user) {
 
-    window.location.href =
-      "../login.html";
+    window.location.href = "/login.html";
 
     return;
   }
