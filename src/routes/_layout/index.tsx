@@ -132,9 +132,14 @@ const handleUnload = async () => {
     }
 
     // ONLY LOGIN EVENTS
-    if (_event !== "SIGNED_IN") {
-      return;
-    }
+    // if (_event !== "SIGNED_IN") {
+    //   return;
+    // }
+
+    // CHANGE TO:
+if (_event !== "SIGNED_IN" && _event !== "INITIAL_SESSION" && _event !== "TOKEN_REFRESHED") {
+  return;
+}
 
     if (!session?.user) {
       return;
@@ -353,7 +358,14 @@ const [zipStats, setZipStats] = useState({
   setCoins: setWalletCoins,
   connectWalletSocket,
 } = useWallet();
-
+// Existing useEffect ke saath ya naya add karo:
+useEffect(() => {
+  const handleWalletUpdate = (e: CustomEvent) => {
+    setWalletCoins(Number(e.detail.balance) || 0);
+  };
+  window.addEventListener('walletUpdated', handleWalletUpdate as EventListener);
+  return () => window.removeEventListener('walletUpdated', handleWalletUpdate as EventListener);
+}, []);
     useEffect(() => {
 
   if (!user?.id) return;
