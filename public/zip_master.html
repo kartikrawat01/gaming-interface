@@ -5,12 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ZIP MASTER</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<!-- SDK scripts loaded in HEAD — must come BEFORE game JS -->
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./supabaseClient.js"></script>
-<script src="./walletApi.js"></script>
-<script src="./gameSDK.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -373,11 +367,11 @@ difficulty:"Tutorial",
 trick:"Mid corner",
 starTimes:[30,55],
 solution:[
-[0,0],[1,0],[2,0],[2,1],
-[3,1],[3,0],
-[2,2],[3,2],[3,3],
-[2,3],[1,3],[0,3],
-[0,2],[0,1],[1,1],[1,2]
+[0,0],[0,1],[0,2],[0,3],
+[1,3],[1,2],[1,1],[1,0],
+[2,0],[3,0],[3,1],[2,1],
+[2,2],[2,3],[3,3],
+[3,2]
 ]
 },
 
@@ -443,8 +437,8 @@ trick:"Zigzag anchors",
 starTimes:[42,82],
 // LEVEL 8 FIX
 solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],
-[1,4],[1,3],[1,2],[1,1],[1,0],
+[0,2],[0,3],[0,4],
+[1,4],[1,3],[1,2],[1,1],[0,1],[0,0],[1,0],
 [2,0],[2,1],[2,2],[2,3],[2,4],
 [3,4],[3,3],[3,2],[3,1],[3,0],
 [4,0],[4,1],[4,2],[4,3],[4,4]
@@ -460,16 +454,11 @@ difficulty:"Easy",
 trick:"Offset anchors",
 starTimes:[40,80],
 solution:[
-[2,0],
-[1,0],[0,0],[0,1],
-[0,2],[0,3],[0,4],
-[1,4],[1,3],
-[1,2],[1,1],
-[2,1],[2,2],[2,3],[2,4],
-[3,4],
-[3,3],[3,2],[3,1],[3,0],
-[4,0],[4,1],[4,2],
-[4,3],[4,4]
+[2,0],[2,1],[1,1],[1,0],[0,0],[0,1],
+[0,2],[1,2],[2,2],[3,2],[4,2],
+[4,1],[4,0],[3,0],[3,1],
+[2,3],[2,4],[3,4],[4,4],[4,3],[3,3],
+[1,3],[0,3],[0,4],[1,4]
 ]
 },
 
@@ -484,13 +473,9 @@ starTimes:[40,80],
 solution:[
 [0,0],[0,1],[0,2],[0,3],[0,4],
 [1,4],[1,3],
-[2,3],[2,4],
-[3,4],[4,4],
-[4,3],[4,2],[4,1],[4,0],
-[3,0],[2,0],[1,0],
-[1,1],[1,2],
-[2,2],[3,2],[3,1],
-[2,1],[3,3]
+[1,2],[2,2],[3,2],[3,1],
+[2,1],[1,1],[1,0],[2,0],[3,0],[4,0],[4,1],[4,2],[4,3],[4,4],
+[3,4],[2,4],[2,3],[3,3]
 ]
 },
 
@@ -507,8 +492,8 @@ solution:[
 [1,5],[1,4],[1,3],[1,2],[1,1],[1,0],
 [2,0],[2,1],[2,2],[2,3],[2,4],[2,5],
 [3,5],[3,4],[3,3],[3,2],[3,1],[3,0],
-[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],
-[5,5],[5,4],[5,3],[5,2],[5,1],[5,0]
+[4,0],[5,0],[5,1],[4,1],[4,2],[5,2],
+[5,3],[4,3],[4,4],[5,4],[5,5],[4,5]
 ]
 },
 
@@ -521,20 +506,20 @@ difficulty:"Medium",
 trick:"Balanced anchors",
 starTimes:[54,105],
 solution:[
-[0,1],[0,2],[0,3],[0,4],
-[0,5],[1,5],[2,5],[3,5],[4,5],[5,5],
-[5,4],[5,3],[5,2],[5,1],
-[5,0],[4,0],[3,0],[2,0],[1,0],[0,0],
-[1,1],[2,1],[2,2],[2,3],[3,3],
-[3,2],[3,1],[4,1],[4,2],[4,3],[4,4],
-[3,4],[2,4],[1,4],[1,3],[1,2]
+[0,1],[0,0],[1,0],[1,1],[1,2],[0,2],[0,3],[0,4],
+[0,5],[1,5],[1,4],[1,3],[2,3],[2,2],
+[2,1],[2,0],[3,0],[3,1],[3,2],[3,3],
+[3,4],[4,4],[4,3],[4,2],[4,1],[4,0],
+[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],
+[4,5],[3,5],[2,5],[2,4]
 ]
 },
 
 // 13 FIXED
 {
 size:6,
-numbers:[[0,0,1],[0,5,2],[2,2,3],[2,3,4],[3,2,5],[3,3,6],[5,5,7]],
+// numbers:[[0,0,1],[0,5,2],[2,2,3],[2,3,4],[3,2,5],[3,3,6],[5,5,7]],
+numbers:[[0,0,1],[0,5,2],[2,2,3],[2,3,4],[3,3,5],[3,2,6],[5,5,7]],
 name:"Core Matrix",
 difficulty:"Medium",
 trick:"Dense middle",
@@ -542,12 +527,10 @@ starTimes:[56,108],
 solution:[
 [0,0],[0,1],[0,2],[0,3],[0,4],[0,5],
 [1,5],[1,4],[1,3],[1,2],[1,1],[1,0],
-[2,0],[2,1],[2,2],[2,3],
-[3,3],[3,2],
-[3,1],[3,0],
+[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],
+[3,5],[3,4],[3,3],[3,2],[3,1],[3,0],
 [4,0],[4,1],[4,2],[4,3],[4,4],[4,5],
-[5,5],[5,4],[5,3],[5,2],[5,1],[5,0],
-[3,5],[3,4],[2,4],[2,5]
+[5,5],[5,4],[5,3],[5,2],[5,1],[5,0]
 ]
 },
 
@@ -721,20 +704,13 @@ trick:"Dense center diagonal",
 starTimes:[102,178],
 
 solution:[
-[0,0],[0,1],[0,2],[1,2],[2,2],
-[2,3],[2,4],
-[3,4],[3,3],
-[4,3],[4,2],
-[5,2],[5,3],[5,4],[4,4],
-[4,5],[5,5],[6,5],[6,6],
-[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],
-[0,5],[0,4],[0,3],
-[1,3],[1,4],[1,5],
-[2,5],[3,5],
-[6,4],[6,3],[6,2],[6,1],[6,0],
-[5,0],[4,0],[3,0],[2,0],[1,0],
-[1,1],[2,1],[3,1],[4,1],[5,1],
-[3,2]
+[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],
+[1,6],[1,5],[1,4],[1,3],[1,2],[1,1],[1,0],
+[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6],
+[3,6],[3,5],[3,4],[3,3],[3,2],[3,1],[3,0],
+[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6],
+[5,6],[5,5],[5,4],[5,3],[5,2],[5,1],[5,0],
+[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6]
 ]
 },
 
@@ -956,6 +932,7 @@ let hintsUsed = 0;
 let mistakes = 0;
 let levelStartTime = 0;
 let paused = false;
+let winTriggered = false;
 
 const canvas = document.getElementById('grid-canvas');
 const ctx = canvas.getContext('2d');
@@ -1053,6 +1030,7 @@ function startLevel(idx) {
   visitedCells.clear();
   hintsUsed = 0;
   mistakes = 0;
+  winTriggered = false;
   paused = false;
 
   document.getElementById('g-lvl-title').textContent = `Level ${idx+1}: ${lv.name}`;
@@ -1747,6 +1725,8 @@ function checkWin() {
 
   // ✅ Scenario 3: Perfect
   if (isFullGrid && correctOrder) {
+    if (winTriggered) return;  // ← ADD KARO
+  winTriggered = true; 
     stopTimer();
     isDragging = false;
     setTimeout(showWin, 300);
@@ -1777,59 +1757,39 @@ function checkWin() {
 }
 
 function submitPath() {
+  // winTriggered check NAHI karo yahan
   const lv = LEVELS[currentLevel];
   const totalCells = lv.size * lv.size;
-
   const isFullGrid = path.length === totalCells;
 
-  // Check order
   const visited = path.map(([r,c]) => cellKey(r,c));
   const numsSorted = [...lv.numbers].sort((a,b) => a[2]-b[2]);
-
   let lastIdx = -1;
   let correctOrder = true;
-
   for (const [r,c,n] of numsSorted) {
     const idx = visited.indexOf(cellKey(r,c));
-    if (idx === -1 || idx <= lastIdx) {
-      correctOrder = false;
-      break;
-    }
+    if (idx === -1 || idx <= lastIdx) { correctOrder = false; break; }
     lastIdx = idx;
   }
 
-  // ============================
-  // VALIDATION LOGIC (ON SUBMIT)
-  // ============================
-
-  // ✅ PERFECT
   if (isFullGrid && correctOrder) {
+    // winTriggered set karo taaki checkWin dobara na chale
+    if (winTriggered) {
+      // Already processing — bas next level pe jaao
+      hideWin();
+      if (currentLevel < 24) startLevel(currentLevel + 1);
+      else showScreen('levelSelect');
+      return;
+    }
+    winTriggered = true;
     stopTimer();
     setTimeout(showWin, 300);
     return;
   }
 
-  // ❌ Cells missing
-  if (!isFullGrid && correctOrder) {
-    showStreakMsg('⚠️ Cover all grid cells!');
-    return;
-  }
-
-  // ❌ Wrong order
-  if (isFullGrid && !correctOrder) {
-    showStreakMsg('❌ Wrong order/path followed!');
-    playSound('wrong');
-    canvas.classList.add('shake');
-    setTimeout(() => canvas.classList.remove('shake'), 300);
-    return;
-  }
-
-  // ❌ Both wrong
-  if (!isFullGrid && !correctOrder) {
-    showStreakMsg('❌ Wrong path and incomplete grid!');
-    playSound('wrong');
-    return;
-  }
+  if (!isFullGrid && correctOrder) { showStreakMsg('⚠️ Cover all grid cells!'); return; }
+  if (isFullGrid && !correctOrder) { showStreakMsg('❌ Wrong order/path followed!'); playSound('wrong'); canvas.classList.add('shake'); setTimeout(() => canvas.classList.remove('shake'), 300); return; }
+  if (!isFullGrid && !correctOrder) { showStreakMsg('❌ Wrong path and incomplete grid!'); playSound('wrong'); return; }
 }
 
 let streakCount = 0;
@@ -1937,6 +1897,12 @@ const hardNoHints =
 if (hardNoHints) {
   save.hardLevelsSolved.push(currentLevel);
 }
+const firstTime =  !save.completedLevels.includes(currentLevel);
+
+if (firstTime) {
+save.completedLevels.push(currentLevel);
+
+}
 const packNumber =
   Math.floor(currentLevel / 10);
 
@@ -1994,14 +1960,7 @@ if (newHighScore) {
   );
 
 }
-const firstTime =
-  !save.completedLevels.includes(currentLevel);
 
-if (firstTime) {
-
-  save.completedLevels.push(currentLevel);
-
-}
 save.stars[currentLevel] =
   Math.max(
     save.stars[currentLevel] || 0,
@@ -2023,27 +1982,61 @@ console.log(
   "Reward Type:",
   typeof reward
 );
-if (
-  isNaN(reward) ||
-  reward <= 0
-) {
-  console.error(
-    "Reward is invalid:",
-    reward
-  );
-  return;
-}
+// if ( isNaN(reward) || reward <= 0
+// ) {
+//   console.error("Reward is invalid:",reward );
+//   return;
+// }
 if (reward > 0) {
+  // Session ready hone ka wait karo
+  const waitForSession = async () => {
+    const { data } = await supabaseClient.auth.getSession();
+    if (data?.session?.access_token) {
+      return data.session.access_token;
+    }
+    // Token nahi mila — 3 baar retry karo 1 second ke baad
+    return new Promise((resolve) => {
+      let attempts = 0;
+      const interval = setInterval(async () => {
+        attempts++;
+        const { data: d } = await supabaseClient.auth.getSession();
+        if (d?.session?.access_token) {
+          clearInterval(interval);
+          resolve(d.session.access_token);
+        } else if (attempts >= 5) {
+          clearInterval(interval);
+          resolve(null);
+        }
+      }, 1000);
+    });
+  };
 
-  await rewardCoins({
-    amount: Number(reward),
-    description: "level_completion",
-    game: "zip_master",
-    level: currentLevel + 1,
-    score: currentScore,
-    difficulty: lv.difficulty
-  });
+  const token = await waitForSession();
 
+  if (token) {
+    await rewardCoins({
+      amount: Number(reward),
+      description: "level_completion",
+      game: "zip_master",
+      level: currentLevel + 1,
+      score: currentScore,
+      difficulty: lv.difficulty
+    });
+    // Balance update karo
+    await fetchWalletBalance();
+    updateHomeStats();
+  } else {
+    console.warn("Session timeout — reward pending");
+    // Pending reward localStorage mein save karo
+    const pending = JSON.parse(localStorage.getItem('pendingReward') || 'null');
+    if (!pending) {
+      localStorage.setItem('pendingReward', JSON.stringify({
+        amount: Number(reward),
+        level: currentLevel + 1,
+        game: "zip_master"
+      }));
+    }
+  }
 }
   save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, stars);
   if (
@@ -2150,6 +2143,7 @@ function restartLevel() {
   visitedCells.clear();
   hintsUsed = 0;
   mistakes = 0;
+  winTriggered = false;
   streakCount = 0;
   stopTimer();
   startTimer();
@@ -2380,34 +2374,25 @@ window.addEventListener('resize', () => {
 
 // Splash → Home
 document.addEventListener('keydown', handleArrowKeys);
-
-window.onload = async () => {
+window.onload = () => {
   loadSave();
   LEVELS.forEach((level, index) => {
-    validateLevel(level, index);
-  });
+  validateLevel(level, index);
+});
   setTimeout(() => {
     document.getElementById('splash').classList.remove('active');
     setTimeout(() => showScreen('home'), 300);
   }, 2200);
-
-  // ── WALLET INIT ──
-  // GameSDK scripts HEAD mein load ho chuke hain
-  // isliye yahan seedha call karo
-  try {
-    await GameSDK.init();
-  } catch (e) {
-    console.warn('GameSDK init failed:', e);
-  }
 };
-
-// Jab bhi wallet balance update ho (socket se ya fetch se)
-// coins display turant sync ho
-window.addEventListener('walletUpdated', (e) => {
-  const balance = e.detail?.balance ?? Number(localStorage.getItem('walletCoins') || 0);
-  const el = document.getElementById('h-coins');
-  if (el) el.textContent = balance;
-});
 </script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="./supabaseClient.js"></script>
+
+<script src="./walletApi.js"></script>
+
+<script src="./gameSDK.js"></script>
 </body>
 </html>
