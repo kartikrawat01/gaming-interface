@@ -2014,8 +2014,7 @@ if (reward > 0) {
   const token = await waitForSession();
 
   if (token) {
-    console.log("STEP-1 Before rewardCoins");
-    const rewardResult = await rewardCoins({
+    await rewardCoins({
       amount: Number(reward),
       description: "level_completion",
       game: "zip_master",
@@ -2023,7 +2022,6 @@ if (reward > 0) {
       score: currentScore,
       difficulty: lv.difficulty
     });
-    console.log("STEP-2 rewardResult", rewardResult);
     // Balance update karo
     await fetchWalletBalance();
     updateHomeStats();
@@ -2376,39 +2374,16 @@ window.addEventListener('resize', () => {
 
 // Splash → Home
 document.addEventListener('keydown', handleArrowKeys);
-// window.onload = () => {
-//   loadSave();
-//   LEVELS.forEach((level, index) => {
-//   validateLevel(level, index);
-// });
-//   setTimeout(() => {
-//     document.getElementById('splash').classList.remove('active');
-//     setTimeout(() => showScreen('home'), 300);
-//   }, 2200);
-// };
-
-window.onload = async () => {
+window.onload = () => {
   loadSave();
   LEVELS.forEach((level, index) => {
-    validateLevel(level, index);
-  });
+  validateLevel(level, index);
+});
   setTimeout(() => {
     document.getElementById('splash').classList.remove('active');
     setTimeout(() => showScreen('home'), 300);
   }, 2200);
-
-  // Wallet + socket init — same as trivia/brain_blast
-  if (window.gameSDK) {
-    await window.gameSDK.init();
-  }
 };
-window.addEventListener('walletUpdated', (e) => {
-  if (e.detail?.balance !== undefined) {
-    localStorage.setItem('walletCoins', String(e.detail.balance));
-    updateHomeStats();
-  }
-});
-
 </script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
