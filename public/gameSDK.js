@@ -195,4 +195,26 @@ window.gameSDK = {
       }
     });
   },
+
 };
+
+// Auto wallet socket setup — har game mein automatically kaam karega
+async function setupWalletSocket() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session?.user) return;
+
+  const socket = io("https://wallet-api-backend-production.up.railway.app");
+  socket.emit("join-wallet", session.user.id);
+
+  socket.on("walletUpdated", (data) => {
+    if (data?.balance !== undefined) {
+      window.dispatchEvent(
+        new CustomEvent("walletUpdated", { detail: { balance: data.balance } })
+      );
+    }
+  });
+}
+
+// Page load hote hi call ho jaye
+setupWalletSocket();
+
