@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ZIP MASTER</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -494,10 +500,63 @@ function showScreen(id) {
 function updateHomeStats() {
   const solved = save.stars.filter(s => s > 0).length;
   const totalStars = save.stars.reduce((a, b) => a + b, 0);
+
   document.getElementById('h-levels').textContent = solved;
   document.getElementById('h-stars').textContent = totalStars;
-  document.getElementById('h-coins').textContent = save.coins;
+
+  const walletBalance =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(save.coins) ||
+    0;
+
+  document.getElementById('h-coins').textContent = walletBalance;
 }
+
+function updateZipWalletCoins(amount) {
+  save.coins = Number(amount) || 0;
+  localStorage.setItem("walletCoins", String(save.coins));
+  localStorage.setItem("zipMasterCoins", String(save.coins));
+
+  const coinEl = document.getElementById("h-coins");
+  if (coinEl) coinEl.textContent = save.coins;
+
+  window.parent.postMessage({
+    type: "ZIP_MASTER_UPDATE",
+    payload: {
+      coins: save.coins,
+      stars: save.stars,
+      unlocked: save.unlocked
+    }
+  }, "*");
+}
+
+async function initZipWalletCoins() {
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(localStorage.getItem("zipMasterCoins")) ||
+    Number(save.coins) ||
+    0;
+
+  updateZipWalletCoins(saved);
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+      if (balance !== undefined && balance !== null) {
+        updateZipWalletCoins(balance);
+      }
+    }
+  } catch (err) {
+    console.warn("Could not fetch Zip Master wallet balance:", err);
+  }
+}
+
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+  if (balance !== undefined) {
+    updateZipWalletCoins(balance);
+  }
+});
 
 // ============================================================
 // LEVEL SELECT
@@ -1065,7 +1124,7 @@ function updateProgress() {
 // ============================================================
 // WIN SCREEN
 // ============================================================
-function showWin() {
+async function showWin() {
   const lv = LEVELS[currentLevel];
   const timeTaken = timerVal;
   let stars = 1;
@@ -1075,10 +1134,43 @@ function showWin() {
   }
 
   save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, stars);
-  const coinsEarned = stars * 10 + (currentLevel + 1) * 5;
-  save.coins += coinsEarned;
-  if (currentLevel + 1 > save.unlocked) save.unlocked = Math.min(25, currentLevel + 2);
-  saveSave();
+
+const coinsEarned = 20;
+let totalCoins =
+  Number(localStorage.getItem("walletCoins")) ||
+  Number(save.coins) ||
+  0;
+
+try {
+  const rewardResult = await window.gameSDK.rewardCoins({
+    amount: coinsEarned,
+    description: `Zip Master Level ${currentLevel + 1} Complete`,
+    game: "zip_master",
+    level: currentLevel + 1,
+    score: coinsEarned,
+  });
+
+  if (rewardResult && rewardResult.balance !== undefined) {
+    totalCoins = Number(rewardResult.balance);
+  } else if (window.gameSDK) {
+    const freshBalance = await window.gameSDK.getBalance();
+    if (freshBalance !== undefined && freshBalance !== null) {
+      totalCoins = Number(freshBalance);
+    }
+  }
+} catch (err) {
+  console.error("Zip Master reward error:", err);
+  totalCoins = totalCoins + coinsEarned;
+}
+
+save.coins = totalCoins;
+
+if (currentLevel + 1 > save.unlocked) {
+  save.unlocked = Math.min(25, currentLevel + 2);
+}
+
+saveSave();
+updateZipWalletCoins(totalCoins);
 
   const m = Math.floor(timeTaken/60);
   const s = timeTaken%60;
@@ -1347,10 +1439,18 @@ window.addEventListener('resize', () => {
 document.addEventListener('keydown', handleArrowKeys);
 window.onload = () => {
   loadSave();
-  setTimeout(() => {
-    document.getElementById('splash').classList.remove('active');
-    setTimeout(() => showScreen('home'), 300);
-  }, 2200);
+  setTimeout(async () => {
+  document.getElementById('splash').classList.remove('active');
+
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+  }
+
+  loadSave();
+  await initZipWalletCoins();
+
+  showScreen('home');
+}, 1400);
 };
 </script>
 </body>
