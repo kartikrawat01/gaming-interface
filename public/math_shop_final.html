@@ -1498,11 +1498,30 @@ function useDouble() {
 
 // ── GAME START ──
 async function startGame() {
-  if(window.gameSDK){
-    await window.gameSDK.init();
+
+  console.log(
+    "gameSDK =",
+    window.gameSDK
+  );
+
+  if (!window.gameSDK) {
+
+    console.error(
+      "Game SDK not loaded"
+    );
+
+    return;
   }
+
+  await window.gameSDK.init();
+
   const walletBalance =
-  await window.gameSDK.getBalance();
+    await window.gameSDK.getBalance();
+
+  console.log(
+    "Wallet Balance:",
+    walletBalance
+  );
 
 console.log(
   "Wallet Balance:",
@@ -2031,6 +2050,8 @@ return {
 
 })();
 </script>
+<script src="supabaseclient.js"></script>
+<script src="gamesdk.js"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </body>
 </html>
