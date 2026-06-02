@@ -7,13 +7,11 @@
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <script src="https://unpkg.com/blockly/javascript.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      // Supabase client initialize karo (same keys jo baaki games use karte hain)
-      const SUPABASE_URL = "https://johfiuwwcryicgplnqew.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaGZpdXd3Y3J5aWNncGxucWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNDI3MjksImV4cCI6MjA5MzcxODcyOX0.hwuCeWXZOzVJKh5y__rkTiEnxvOiVPaqe7CdqCIRMmU";
-      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    </script>
-    <script src="./walletApi.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Nunito:wght@400;600;700;800&display=swap"
       rel="stylesheet"
@@ -1892,23 +1890,25 @@ typewriterText("dialogue-line-2", "Let’s follow the map and see where it leads
 
       // On load: backend se actual wallet balance fetch karo
       async function initHeaderCoins() {
-        // Pehle localStorage se quick load karo (flicker avoid)
-        const saved = Number(localStorage.getItem("walletCoins")) ||
-                      Number(localStorage.getItem("logicMazeCoins")) || 0;
-        updateHeaderCoins(saved);
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(localStorage.getItem("logicMazeCoins")) ||
+    0;
 
-        // Phir backend se actual balance fetch karo (walletApi.js ka function)
-        try {
-          if (typeof fetchWalletBalance === "function") {
-            const balance = await fetchWalletBalance();
-            if (balance !== undefined && balance !== null) {
-              updateHeaderCoins(balance);
-            }
-          }
-        } catch (err) {
-          console.warn("Could not fetch wallet balance:", err);
-        }
+  updateHeaderCoins(saved);
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        updateHeaderCoins(balance);
       }
+    }
+  } catch (err) {
+    console.warn("Could not fetch wallet balance:", err);
+  }
+}
 
       // ✅ WebSocket real-time sync — jab bhi main dashboard pe balance update ho, game mein bhi dikhao
       window.addEventListener("walletUpdated", (e) => {
@@ -2083,13 +2083,13 @@ let totalCoins = oldCoins + reward;
 
 // 🔥 SEND REWARD TO BACKEND (walletApi.js ka rewardCoins use karo)
 try {
-  const rewardResult = await rewardCoins({
-    amount: reward,
-    description: `Logic Maze Level ${currentLevelIdx + 1} Complete`,
-    game: "logic_maze",
-    level: currentLevelIdx + 1,
-    score: reward,
-  });
+  const rewardResult = await window.gameSDK.rewardCoins({
+  amount: reward,
+  description: `Logic Maze Level ${currentLevelIdx + 1} Complete`,
+  game: "logic_maze",
+  level: currentLevelIdx + 1,
+  score: reward,
+});
   console.log("Reward Saved:", rewardResult);
 
   // ✅ Backend se actual balance lo aur header update karo
@@ -2319,7 +2319,9 @@ setInterval(() => {
 
 }, 60000);
 
-  window.addEventListener("load", () => {
+  window.addEventListener("load", async () => {
+  await window.gameSDK.init();
+
   initBlockly();
 
   let savedLevel =

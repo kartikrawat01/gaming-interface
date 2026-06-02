@@ -7,6 +7,3 @@ window.supabaseClient =
     SUPABASE_ANON_KEY
     
   );
-
-window.sb =
-  window.supabaseClient;
