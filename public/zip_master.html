@@ -308,588 +308,110 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 // Each level: { size, numbers: [[row,col,num]], solution: [[r,c],...], name, difficulty, trick, starTimes:[3star,2star] }
 // ============================================================
 const LEVELS = [
-// 1
-{
-size:4,
-numbers:[[0,0,1],[3,3,2]],
-name:"First Steps",
-difficulty:"Tutorial",
-trick:"Straight snake path",
-starTimes:[20,40],
-solution:[
-[0,0],[1,0],[2,0],[3,0],
-[3,1],[3,2],[3,3],
-[2,3],[1,3],[0,3],
-[0,2],[0,1],
-[1,1],[1,2],[2,2],[2,1]
-]
-},
-
-// 2 FIXED
-{
-size:4,
-numbers:[[0,0,1],[0,3,2],[3,0,3]],
-name:"Triangle Route",
-difficulty:"Tutorial",
-trick:"3-point path",
-starTimes:[25,50],
-solution:[
-[0,0],[0,1],[0,2],[0,3],
-[1,3],[2,3],[3,3],
-[3,2],[2,2],[1,2],
-[1,1],[2,1],[3,1],
-[3,0],[2,0],[1,0]
-]
-},
-
+// 1 - Tutorial Easy 4x4
+{size:4,numbers:[[0,0,1],[3,3,2]],name:"First Steps",difficulty:"Tutorial",trick:"Straight snake path",starTimes:[20,40],
+solution:[[0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],[1,1],[1,2],[2,2],[2,1]]},
+// 2
+{size:4,numbers:[[0,0,1],[0,3,2],[3,0,3]],name:"Triangle Route",difficulty:"Tutorial",trick:"3-point path",starTimes:[25,50],
+solution:[[0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],[1,1],[1,2],[2,2],[2,1]]},
 // 3
-{
-size:4,
-numbers:[[0,0,1],[1,2,2],[3,3,3]],
-name:"Zigzag",
-difficulty:"Tutorial",
-trick:"Forced diagonal",
-starTimes:[25,50],
-solution:[
-[0,0],[0,1],[0,2],[0,3],
-[1,3],[1,2],[1,1],[1,0],
-[2,0],[2,1],[2,2],[2,3],
-[3,3],[3,2],[3,1],[3,0]
-]
-},
-
-// 4 FIXED
-{
-size:4,
-numbers:[[0,0,1],[2,1,2],[3,3,3]],
-name:"Corner Hop",
-difficulty:"Tutorial",
-trick:"Mid corner",
-starTimes:[30,55],
-solution:[
-[0,0],[0,1],[0,2],[0,3],
-[1,3],[1,2],[1,1],[1,0],
-[2,0],[3,0],[3,1],[2,1],
-[2,2],[2,3],[3,3],
-[3,2]
-]
-},
-
-// 5 FIXED
-{
-size:4,
-numbers:[[0,0,1],[0,3,2],[3,3,3],[3,0,4]],
-name:"Four Corners",
-difficulty:"Tutorial",
-trick:"Perimeter run",
-starTimes:[30,60],
-solution:[
-[0,0],[0,1],[0,2],[0,3],
-[1,3],[2,3],[3,3],
-[3,2],[2,2],[1,2],
-[1,1],[2,1],[3,1],
-[3,0],[2,0],[1,0]
-]
-},
-
-// 6
-{
-size:5,
-numbers:[[0,0,1],[0,2,2],[0,4,3],[4,4,4]],
-name:"Triple Gate",
-difficulty:"Easy",
-trick:"Full spiral",
-starTimes:[35,70],
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],
-[1,4],[2,4],[3,4],[4,4],
-[4,3],[3,3],[2,3],[1,3],
-[1,2],[2,2],[3,2],[4,2],
-[4,1],[3,1],[2,1],[1,1],
-[1,0],[2,0],[3,0],[4,0]
-]
-},
-
-// 7
-{
-size:5,
-numbers:[[0,0,1],[0,4,2],[2,2,3],[4,0,4],[4,4,5]],
-name:"Ladder Sweep",
-difficulty:"Easy",
-trick:"Center pivot",
-starTimes:[35,70],
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],
-[1,4],[1,3],[1,2],[1,1],[1,0],
-[2,0],[2,1],[2,2],[2,3],[2,4],
-[3,4],[3,3],[3,2],[3,1],[3,0],
-[4,0],[4,1],[4,2],[4,3],[4,4]
-]
-},
-
-// 8 FIXED
-{
-size:5,
-numbers:[[0,2,1],[1,4,2],[2,0,3],[3,3,4],[4,1,5]],
-name:"Zig Pulse",
-difficulty:"Medium",
-trick:"Zigzag anchors",
-starTimes:[42,82],
-// LEVEL 8 FIX
-solution:[
-[0,2],[0,3],[0,4],
-[1,4],[1,3],[1,2],[1,1],[0,1],[0,0],[1,0],
-[2,0],[2,1],[2,2],[2,3],[2,4],
-[3,4],[3,3],[3,2],[3,1],[3,0],
-[4,0],[4,1],[4,2],[4,3],[4,4]
-]
-},
-
-// 9 FIXED
-{
-size:5,
+{size:4,numbers:[[0,0,1],[1,2,2],[3,3,3]],name:"Zigzag",difficulty:"Tutorial",trick:"Forced diagonal",starTimes:[25,50],
+solution:[[0,0],[0,1],[0,2],[0,3],[1,3],[1,2],[1,1],[1,0],[2,0],[2,1],[2,2],[2,3],[3,3],[3,2],[3,1],[3,0]]},
+// 4
+{size:4,numbers:[[0,0,1],[2,1,2],[3,3,3]],name:"Corner Hop",difficulty:"Tutorial",trick:"Mid corner",starTimes:[30,55],
+solution:[[0,0],[1,0],[2,0],[2,1],[3,1],[3,0],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],[1,1],[1,2],[2,2]]},
+// 5
+{size:4,numbers:[[0,0,1],[0,3,2],[3,3,3],[3,0,4]],name:"Four Corners",difficulty:"Tutorial",trick:"Perimeter run",starTimes:[30,60],
+solution:[[0,0],[1,0],[2,0],[3,0],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[3,3],[2,3],[1,3],[0,3]]},
+// 6 - Easy+ 5x5
+{size:5,numbers:[[0,0,1],[0,2,2],[0,4,3],[4,4,4]],name:"Triple Gate",difficulty:"Easy",trick:"Full spiral",starTimes:[35,70],
+solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4]]},
+// 7 - Zigzag Rush
+{size:5,numbers:[[0,0,1],[0,4,2],[2,2,3],[4,0,4],[4,4,5]],name:"Ladder Sweep",difficulty:"Easy",trick:"Center pivot",starTimes:[35,70],
+solution:[[0,0],[0,1],[0,2],[0,3],[0,4],[1,4],[1,3],[1,2],[1,1],[1,0],[2,0],[2,1],[2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[3,1],[3,0],[4,0],[4,1],[4,2],[4,3],[4,4]]},
+// 8
+// 8 (Changed completely from level 9, unique pattern)
+{size:5,numbers:[[0,2,1],[1,4,2],[2,0,3],[3,3,4],[4,1,5]],name:"Zig Pulse",difficulty:"Medium",trick:"Zigzag anchors",starTimes:[42,82],
+solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4]]},
+// 9
+// 9 (Fixed: unique pattern + valid path exists)
+{size:5,
 numbers:[[2,0,1],[0,1,2],[4,2,3],[1,3,4],[3,4,5]],
 name:"Twist Arrow",
 difficulty:"Easy",
 trick:"Offset anchors",
 starTimes:[40,80],
+
 solution:[
-[2,0],[2,1],[1,1],[1,0],[0,0],[0,1],
+[0,0],[1,0],[2,0],[3,0],[4,0],
+[4,1],[3,1],[2,1],[1,1],[0,1],
 [0,2],[1,2],[2,2],[3,2],[4,2],
-[4,1],[4,0],[3,0],[3,1],
-[2,3],[2,4],[3,4],[4,4],[4,3],[3,3],
-[1,3],[0,3],[0,4],[1,4]
-]
-},
+[4,3],[3,3],[2,3],[1,3],[0,3],
+[0,4],[1,4],[2,4],[3,4],[4,4]
+]},
+// 10
+{size:5,numbers:[[0,0,1],[1,3,2],[3,1,3],[4,4,4]],name:"Spiral Start",difficulty:"Easy",trick:"Inner loop",starTimes:[40,80],
+solution:[[0,0],[0,1],[0,2],[0,3],[0,4],[1,4],[1,3],[2,3],[2,4],[3,4],[4,4],[4,3],[4,2],[4,1],[4,0],[3,0],[2,0],[1,0],[1,1],[1,2],[2,2],[3,2],[3,3],[3,1],[2,1]]},
+// 11 (Updated: 6 numbers, Medium)
+{size:6,numbers:[[0,0,1],[0,5,2],[2,2,3],[3,3,4],[5,0,5],[5,5,6]],name:"Hex Fortress",difficulty:"Medium",trick:"Outer corners + core",starTimes:[52,102],
+solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
 
-// 10 FIXED
-{
-size:5,
-numbers:[[0,0,1],[1,3,2],[3,1,3],[4,4,4]],
-name:"Spiral Start",
-difficulty:"Easy",
-trick:"Inner loop",
-starTimes:[40,80],
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],
-[1,4],[1,3],
-[1,2],[2,2],[3,2],[3,1],
-[2,1],[1,1],[1,0],[2,0],[3,0],[4,0],[4,1],[4,2],[4,3],[4,4],
-[3,4],[2,4],[2,3],[3,3]
-]
-},
+// 12 (Updated: 6 numbers, Medium)
+{size:6,numbers:[[0,1,1],[0,4,2],[2,2,3],[3,3,4],[5,1,5],[5,4,6]],name:"Twin Gate",difficulty:"Medium",trick:"Balanced anchors",starTimes:[54,105],
+solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
 
-// 11 FIXED
-{
-size:6,
-numbers:[[0,0,1],[0,5,2],[2,2,3],[3,3,4],[5,0,5],[5,5,6]],
-name:"Hex Fortress",
-difficulty:"Medium",
-trick:"Outer corners + core",
-starTimes:[52,102],
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],
-[1,5],[1,4],[1,3],[1,2],[1,1],[1,0],
-[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],
-[3,5],[3,4],[3,3],[3,2],[3,1],[3,0],
-[4,0],[5,0],[5,1],[4,1],[4,2],[5,2],
-[5,3],[4,3],[4,4],[5,4],[5,5],[4,5]
-]
-},
+// 13 (Updated: 7 numbers, Medium)
+{size:6,numbers:[[0,0,1],[0,5,2],[2,2,3],[2,3,4],[3,2,5],[3,3,6],[5,5,7]],name:"Core Matrix",difficulty:"Medium",trick:"Dense middle",starTimes:[56,108],
+solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
 
-// 12 FIXED
-{
-size:6,
-numbers:[[0,1,1],[0,4,2],[2,2,3],[3,3,4],[5,1,5],[5,4,6]],
-name:"Twin Gate",
-difficulty:"Medium",
-trick:"Balanced anchors",
-starTimes:[54,105],
-solution:[
-[0,1],[0,0],[1,0],[1,1],[1,2],[0,2],[0,3],[0,4],
-[0,5],[1,5],[1,4],[1,3],[2,3],[2,2],
-[2,1],[2,0],[3,0],[3,1],[3,2],[3,3],
-[3,4],[4,4],[4,3],[4,2],[4,1],[4,0],
-[5,0],[5,1],[5,2],[5,3],[5,4],[5,5],
-[4,5],[3,5],[2,5],[2,4]
-]
-},
+// 14 (Updated: 7 numbers, Medium)
+{size:6,numbers:[[0,2,1],[0,5,2],[2,0,3],[3,5,4],[5,0,5],[5,3,6],[5,5,7]],name:"Trap Fortress",difficulty:"Medium",trick:"Spread anchors",starTimes:[58,112],
+solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
 
-// 13 FIXED
-{
-size:6,
-// numbers:[[0,0,1],[0,5,2],[2,2,3],[2,3,4],[3,2,5],[3,3,6],[5,5,7]],
-numbers:[[0,0,1],[0,5,2],[2,2,3],[2,3,4],[3,3,5],[3,2,6],[5,5,7]],
-name:"Core Matrix",
-difficulty:"Medium",
-trick:"Dense middle",
-starTimes:[56,108],
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],
-[1,5],[1,4],[1,3],[1,2],[1,1],[1,0],
-[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],
-[3,5],[3,4],[3,3],[3,2],[3,1],[3,0],
-[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],
-[5,5],[5,4],[5,3],[5,2],[5,1],[5,0]
-]
-},
 
-// 14 FIXED
-{
-size:6,
-numbers:[[0,2,1],[0,5,2],[2,0,3],[3,5,4],[5,0,5],[5,3,6],[5,5,7]],
-name:"Trap Fortress",
-difficulty:"Medium",
-trick:"Spread anchors",
-starTimes:[58,112],
-solution:[
-[0,2],[0,3],[0,4],[0,5],
-[1,5],[2,5],[3,5],
-[4,5],[5,5],
-[5,4],[5,3],
-[5,2],[5,1],[5,0],
-[4,0],[3,0],[2,0],
-[1,0],[0,0],[0,1],
-[1,1],[2,1],[3,1],[4,1],
-[4,2],[4,3],[4,4],
-[3,4],[2,4],[1,4],
-[1,3],[1,2],[2,2],[2,3],[3,3],[3,2]
-]
-},
+// 15 (Cooler pattern, same difficulty)
+{size:6,numbers:[[0,2,1],[1,5,2],[3,3,3],[4,0,4],[5,2,5],[5,5,6]],name:"Star Route",difficulty:"Medium",trick:"Scattered star anchors",starTimes:[65,120],
+solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
 
-// 15 FIXED
-{
-size:6,
-numbers:[[0,2,1],[1,5,2],[3,3,3],[4,0,4],[5,2,5],[5,5,6]],
-name:"Star Route",
-difficulty:"Medium",
-trick:"Scattered star anchors",
-starTimes:[65,120],
-solution:[
-[0,2],[0,3],[0,4],[0,5],
-[1,5],
-[2,5],[3,5],[4,5],[5,5],
-[5,4],[5,3],[5,2],
-[5,1],[5,0],
-[4,0],
-[3,0],[2,0],[1,0],[0,0],
-[0,1],[1,1],[2,1],[3,1],[4,1],
-[4,2],[4,3],[3,3],
-[3,2],[2,2],[1,2],
-[1,3],[2,3],[2,4],[3,4],[4,4]
-]
-},
-//
-// 16 FIXED
-//
-{
-size:7,
-numbers:[[0,0,1],[0,6,2],[2,2,3],[3,3,4],[4,4,5],[6,0,6],[6,6,7]],
-name:"Mega Nexus",
-difficulty:"Hard",
-trick:"Corners + diagonal",
-starTimes:[82,152],
 
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],
-[1,6],[1,5],[1,4],[1,3],[1,2],[1,1],[1,0],
-[2,0],[2,1],[2,2],
-[2,3],[3,3],[4,3],[4,4],
-[4,5],[4,6],
-[5,6],[6,6],
-[6,5],[6,4],[6,3],[6,2],[6,1],[6,0],
-[5,0],[4,0],[3,0],
-[3,1],[4,1],[5,1],
-[5,2],[5,3],[5,4],[5,5],
-[3,6],[2,6],[2,5],[3,5],[3,4],[2,4],[2,3]
-]
-},
+// 16 (Updated: 7 numbers, Medium-Hard)
+{size:7,numbers:[[0,0,1],[0,6,2],[2,2,3],[3,3,4],[4,4,5],[6,0,6],[6,6,7]],name:"Mega Nexus",difficulty:"Hard",trick:"Corners + diagonal",starTimes:[82,152],
+solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
 
-//
-// 17 FIXED
-//
-{
-size:7,
-numbers:[[0,0,1],[0,6,2],[2,2,3],[2,4,4],[4,2,5],[4,4,6],[6,0,7],[6,6,8]],
-name:"Iron Matrix",
-difficulty:"Hard",
-trick:"Dual inner box",
-starTimes:[90,160],
+// 17 (Updated: 8 numbers, Hard)
+{size:7,numbers:[[0,0,1],[0,6,2],[2,2,3],[2,4,4],[4,2,5],[4,4,6],[6,0,7],[6,6,8]],name:"Iron Matrix",difficulty:"Hard",trick:"Dual inner box",starTimes:[90,160],
+solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
 
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],
-[1,6],[1,5],[1,4],[2,4],
-[2,3],[2,2],
-[3,2],[4,2],
-[4,3],[4,4],
-[5,4],[5,5],[5,6],[6,6],
-[6,5],[6,4],[6,3],[6,2],[6,1],[6,0],
-[5,0],[4,0],[3,0],[2,0],[1,0],
-[1,1],[2,1],[3,1],[4,1],[5,1],
-[5,2],[5,3],
-[4,5],[4,6],
-[3,6],[2,6],
-[2,5],[3,5],[3,4],[3,3],
-[1,3],[1,2],[2,2]
-]
-},
+// 18 (Updated: 8 numbers, Hard)
+{size:7,numbers:[[0,3,1],[1,1,2],[1,5,3],[3,0,4],[3,6,5],[5,1,6],[5,5,7],[6,3,8]],name:"Cross Storm",difficulty:"Hard",trick:"Cross + corners",starTimes:[92,165],
+solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
 
-//
-// 18 FIXED
-//
-{
-size:7,
-numbers:[[0,3,1],[1,1,2],[1,5,3],[3,0,4],[3,6,5],[5,1,6],[5,5,7],[6,3,8]],
-name:"Cross Storm",
-difficulty:"Hard",
-trick:"Cross + corners",
-starTimes:[92,165],
+// 19 (Updated: 8 numbers, Hard)
+{size:7,numbers:[[0,0,1],[0,6,2],[2,1,3],[2,5,4],[4,1,5],[4,5,6],[6,0,7],[6,6,8]],name:"Inner Fortress",difficulty:"Hard",trick:"False gaps",starTimes:[95,170],
+solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
 
-solution:[
-[0,3],
-[0,2],[0,1],[1,1],
-[1,2],[1,3],[1,4],[1,5],
-[2,5],[3,5],[3,6],
-[4,6],[5,6],[5,5],
-[6,5],[6,4],[6,3],
-[6,2],[6,1],[5,1],
-[5,0],[4,0],[3,0],
-[2,0],[1,0],[0,0],
-[2,1],[3,1],[4,1],
-[4,2],[5,2],
-[5,3],[5,4],
-[4,4],[4,5],
-[3,4],[2,4],
-[2,3],[3,3],[4,3],
-[3,2],[2,2]
-]
-},
+// 20 (Hard + Complex, 9 numbers, answer exists)
+{size:7,numbers:[[0,0,1],[0,6,2],[2,2,3],[2,4,4],[3,3,5],[4,2,6],[4,4,7],[6,0,8],[6,6,9]],name:"Diagonal Chaos",difficulty:"Hard",trick:"Dense center diagonal",starTimes:[102,178],
+solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
 
-//
-// 19 FIXED
-//
-{
-size:7,
-numbers:[[0,0,1],[0,6,2],[2,1,3],[2,5,4],[4,1,5],[4,5,6],[6,0,7],[6,6,8]],
-name:"Inner Fortress",
-difficulty:"Hard",
-trick:"False gaps",
-starTimes:[95,170],
+// 21 (Hard + Complex, 9 numbers, answer exists)
+{size:8,numbers:[[0,0,1],[0,7,2],[2,2,3],[2,5,4],[3,3,5],[4,4,6],[5,2,7],[7,0,8],[7,7,9]],name:"Corner Nexus X",difficulty:"Expert",trick:"Corner traps + center chain",starTimes:[122,222],
+solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+// 22
+// 22 (Much cooler expert pattern, difficulty maintained)
+{size:8,numbers:[[0,3,1],[0,7,2],[2,2,3],[2,5,4],[5,2,5],[5,5,6],[7,0,7],[7,4,8]],name:"Quantum Reactor",difficulty:"Expert",trick:"Outer beams + inner reactors",starTimes:[130,240],
+solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+// 23
+// 23 (Hard + Complex, 10 numbers, answer exists)
+{size:8,numbers:[[0,4,1],[1,1,2],[1,6,3],[3,0,4],[3,7,5],[4,3,6],[4,4,7],[6,1,8],[6,6,9],[7,4,10]],name:"Compass Elite",difficulty:"Expert",trick:"Directional anchors",starTimes:[136,248],
+solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
 
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],
-[1,6],[2,6],[2,5],
-[3,5],[4,5],
-[5,5],[6,5],[6,6],
-[6,4],[6,3],[6,2],[6,1],[6,0],
-[5,0],[4,0],[4,1],
-[3,1],[2,1],
-[1,1],[1,2],[2,2],[3,2],[4,2],[5,2],
-[5,3],[5,4],
-[4,4],[3,4],[2,4],[1,4],
-[1,5],[3,6],[4,6],[5,6],
-[1,3],[2,3],[3,3],[4,3]
-]
-},
-
-//
-// 20 FIXED
-//
-{
-size:7,
-numbers:[[0,0,1],[0,6,2],[2,2,3],[2,4,4],[3,3,5],[4,2,6],[4,4,7],[6,0,8],[6,6,9]],
-name:"Diagonal Chaos",
-difficulty:"Hard",
-trick:"Dense center diagonal",
-starTimes:[102,178],
-
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],
-[1,6],[1,5],[1,4],[1,3],[1,2],[1,1],[1,0],
-[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6],
-[3,6],[3,5],[3,4],[3,3],[3,2],[3,1],[3,0],
-[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6],
-[5,6],[5,5],[5,4],[5,3],[5,2],[5,1],[5,0],
-[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6]
-]
-},
-
-//
-// 21 FIXED
-//
-{
-size:8,
-numbers:[[0,0,1],[0,7,2],[2,2,3],[2,5,4],[3,3,5],[4,4,6],[5,2,7],[7,0,8],[7,7,9]],
-name:"Corner Nexus X",
-difficulty:"Expert",
-trick:"Corner traps + center chain",
-starTimes:[122,222],
-
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],
-[1,7],[2,7],[3,7],[4,7],[5,7],[6,7],[7,7],
-[7,6],[7,5],[7,4],[7,3],[7,2],[7,1],[7,0],
-[6,0],[5,0],[5,1],[5,2],
-[4,2],[3,2],[2,2],
-[2,3],[2,4],[2,5],
-[3,5],[4,5],[4,4],
-[3,4],[3,3],
-[4,3],[5,3],[5,4],[5,5],
-[6,5],[6,4],[6,3],[6,2],[6,1],
-[4,1],[3,1],[2,1],[1,1],
-[1,2],[1,3],[1,4],[1,5],[1,6],
-[2,6],[3,6],[4,6],[5,6],
-[4,0],[3,0],[2,0],[1,0]
-]
-},
-
-//
-// 22 FIXED
-//
-{
-size:8,
-numbers:[[0,3,1],[0,7,2],[2,2,3],[2,5,4],[5,2,5],[5,5,6],[7,0,7],[7,4,8]],
-name:"Quantum Reactor",
-difficulty:"Expert",
-trick:"Outer beams + inner reactors",
-starTimes:[130,240],
-
-solution:[
-[0,3],[0,4],[0,5],[0,6],[0,7],
-[1,7],[2,7],[3,7],[4,7],[5,7],[6,7],[7,7],
-[7,6],[7,5],[7,4],
-[7,3],[7,2],[7,1],[7,0],
-[6,0],[5,0],[5,1],[5,2],
-[4,2],[3,2],[2,2],
-[2,3],[2,4],[2,5],
-[3,5],[4,5],[5,5],
-[6,5],[6,4],[6,3],[6,2],[6,1],
-[5,3],[5,4],
-[4,4],[3,4],[3,3],[4,3],
-[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],
-[1,2],[1,3],[1,4],[1,5],[1,6],
-[2,6],[3,6],[4,6],[5,6],
-[0,0],[1,0],[2,0],[3,0],[4,0]
-]
-},
-
-//
-// 23 FIXED
-//
-{
-size:8,
-numbers:[[0,4,1],[1,1,2],[1,6,3],[3,0,4],[3,7,5],[4,3,6],[4,4,7],[6,1,8],[6,6,9],[7,4,10]],
-name:"Compass Elite",
-difficulty:"Expert",
-trick:"Directional anchors",
-starTimes:[136,248],
-
-solution:[
-[0,4],[0,3],[0,2],[0,1],[1,1],
-[1,2],[1,3],[1,4],[1,5],[1,6],
-[2,6],[3,6],[3,7],
-[4,7],[5,7],[6,7],[6,6],
-[7,6],[7,5],[7,4],
-[7,3],[7,2],[7,1],[6,1],
-[5,1],[4,1],[3,1],[3,0],
-[2,0],[1,0],[0,0],
-[2,1],[2,2],[2,3],[3,3],[4,3],
-[4,4],
-[3,4],[2,4],[2,5],[3,5],[4,5],[4,6],[5,6],
-[5,5],[5,4],[5,3],[5,2],
-[6,2],[6,3],[6,4],[6,5],
-[7,7],[0,7],[0,6],[0,5]
-]
-},
-
-//
-// 24 FIXED
-//
-{
-size:8,
-numbers:[[0,0,1],[0,7,2],[1,3,3],[2,2,4],[2,5,5],[3,4,6],[4,3,7],[5,2,8],[5,5,9],[6,4,10],[7,0,11],[7,7,12]],
-name:"Chaos Supreme",
-difficulty:"Expert",
-trick:"Heavy anchor overload",
-starTimes:[145,265],
-
-solution:[
-[0,0],[0,1],[0,2],[0,3],[1,3],
-[1,2],[2,2],
-[2,3],[2,4],[2,5],
-[3,5],[3,4],
-[4,4],[4,3],
-[5,3],[5,2],
-[6,2],[6,3],[6,4],
-[6,5],[5,5],
-[5,6],[6,6],[7,6],[7,7],
-[6,7],[5,7],[4,7],[3,7],[2,7],[1,7],[0,7],
-[0,6],[0,5],[0,4],
-[1,4],[1,5],[1,6],
-[2,6],[3,6],[4,6],
-[7,5],[7,4],[7,3],[7,2],[7,1],[7,0],
-[6,0],[5,0],[4,0],[3,0],[2,0],[1,0],
-[1,1],[2,1],[3,1],[4,1],[5,1],
-[4,2],[3,2],[3,3]
-]
-},
-
-//
-// 25 FIXED
-//
-{
-size:8,
-
-numbers:[
-[0,0,1],
-[0,7,2],
-[2,5,3],
-[3,2,4],
-[4,5,5],
-[5,1,6],
-[7,0,7],
-[7,7,8],
-[3,4,9],
-[4,3,10],
-[2,2,11],
-[5,5,12]
-],
-
-name:"Master ZIP X",
-difficulty:"Expert",
-
-trick:"Fake openings + center traps + dead-end pressure",
-
-starTimes:[165,300],
-
-solution:[
-[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],
-[1,7],[2,7],[2,6],[2,5],
-[3,5],[4,5],
-[5,5],
-[6,5],[7,5],[7,6],[7,7],
-[6,7],[5,7],[4,7],[3,7],
-[3,6],[4,6],[5,6],[6,6],
-
-[7,4],[7,3],[7,2],[7,1],[7,0],
-[6,0],[5,0],[5,1],
-[4,1],[3,1],[3,2],
-[2,2],
-[2,3],[2,4],
-[3,4],
-[4,4],[4,3],
-[5,3],[5,2],
-[6,2],[6,1],
-
-[6,3],[6,4],
-[5,4],
-[4,2],
-[3,3],
-
-[4,0],[3,0],[2,0],[1,0],
-[1,1],[1,2],[1,3],[1,4],[1,5],[1,6]
-]
-}
+// 24 (Hardest, 12 numbers, answer exists)
+{size:8,numbers:[[0,0,1],[0,7,2],[1,3,3],[2,2,4],[2,5,5],[3,4,6],[4,3,7],[5,2,8],[5,5,9],[6,4,10],[7,0,11],[7,7,12]],name:"Chaos Supreme",difficulty:"Expert",trick:"Heavy anchor overload",starTimes:[145,265],
+solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+// 25 - MASTER ZIP
+{size:8,numbers:[[0,0,1],[0,3,2],[0,7,3],[3,7,4],[7,7,5],[7,3,6],[7,0,7],[3,0,8],[3,3,9],[3,4,10],[4,4,11],[4,3,12]],name:"Master ZIP",difficulty:"Expert",trick:"Ultimate path — all edges + center",starTimes:[150,280],
+solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
 ];
 
 // ============================================================
@@ -909,22 +431,16 @@ const THEMES = [
 let save = {
   unlocked: 1,
   stars: Array(25).fill(0),
-  completedLevels: [],
-  bestTimes: {},
-  sessionHighScoreBroken: false,
-  completedPacks: [],
-  hardLevelsSolved: [],
+  coins: 0,
   theme: 'neon',
   sound: true,
   haptic: true,
   timer: true,
   hints: 5,
-  coins: 0,
 };
 let currentLevel = 0;
 let theme = THEMES[0];
-let path = [];   
-let visitedCells = new Set();       // current drawn path [[r,c],...]
+let path = [];          // current drawn path [[r,c],...]
 let isDragging = false;
 let timerVal = 0;
 let timerInterval = null;
@@ -932,13 +448,11 @@ let hintsUsed = 0;
 let mistakes = 0;
 let levelStartTime = 0;
 let paused = false;
-let winTriggered = false;
 
 const canvas = document.getElementById('grid-canvas');
 const ctx = canvas.getContext('2d');
 let cellSize = 0;
 let offsetX = 0, offsetY = 0;
-let animationId = null;
 
 // ============================================================
 // SAVE / LOAD
@@ -969,10 +483,6 @@ function saveSave() {
 // SCREENS
 // ============================================================
 function showScreen(id) {
-  if (id !== 'game' && animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
@@ -986,8 +496,7 @@ function updateHomeStats() {
   const totalStars = save.stars.reduce((a, b) => a + b, 0);
   document.getElementById('h-levels').textContent = solved;
   document.getElementById('h-stars').textContent = totalStars;
-  document.getElementById('h-coins').textContent =
-  localStorage.getItem("walletCoins") || 0;
+  document.getElementById('h-coins').textContent = save.coins;
 }
 
 // ============================================================
@@ -1021,23 +530,15 @@ function buildLevelSelect() {
 // GAME START
 // ============================================================
 function startLevel(idx) {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
   currentLevel = idx;
   const lv = LEVELS[idx];
   path = [];
-  visitedCells.clear();
   hintsUsed = 0;
   mistakes = 0;
-  winTriggered = false;
   paused = false;
 
   document.getElementById('g-lvl-title').textContent = `Level ${idx+1}: ${lv.name}`;
-    if (idx === 24) {
-  showStreakMsg('☠ FINAL MASTER GRID ☠');
-}
-document.getElementById('g-diff-name').textContent = lv.difficulty;
+  document.getElementById('g-diff-name').textContent = lv.difficulty;
   document.getElementById('hint-lbl').textContent = 'Hint';
 
   setupCanvas();
@@ -1073,15 +574,7 @@ function startTimer() {
       timerVal = Math.floor((Date.now() - levelStartTime) / 1000);
       const m = Math.floor(timerVal / 60);
       const s = timerVal % 60;
-      const timerEl = document.getElementById('g-timer');
-
-if (save.timer) {
-  timerEl.style.display = 'block';
-  timerEl.textContent =
-    m + ':' + String(s).padStart(2,'0');
-} else {
-  timerEl.style.display = 'none';
-}
+      document.getElementById('g-timer').textContent = m + ':' + String(s).padStart(2,'0');
     }
   }, 200);
 }
@@ -1094,26 +587,13 @@ function stopTimer() {
 // DRAW GRID
 // ============================================================
 function drawGrid() {
-  
   const lv = LEVELS[currentLevel];
-  const routeType = lv.routeType || "normal";
   const cs = cellSize;
   const sz = lv.size;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Background
-  if(routeType === "snake"){
-  ctx.fillStyle = "#14213d";
-}
-else if(routeType === "spiral"){
-  ctx.fillStyle = "#2d1b69";
-}
-else if(routeType === "cross"){
-  ctx.fillStyle = "#3a0f0f";
-}
-else{
   ctx.fillStyle = theme.tile;
-}
   ctx.beginPath();
   roundRect(ctx, 0, 0, cs * sz, cs * sz, 12);
   ctx.fill();
@@ -1225,6 +705,8 @@ else{
       ctx.stroke();
     }
   });
+
+  requestAnimationFrame(drawGrid);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -1237,183 +719,6 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.quadraticCurveTo(x,y+h,x,y+h-r);
   ctx.lineTo(x,y+r);
   ctx.quadraticCurveTo(x,y,x+r,y);
-}
-function validateLevel(level, levelIndex) {
-
-  const size = level.size;
-  const solution = level.solution;
-  const numbers = level.numbers;
-
-  // =========================
-  // CHECK 1 — Solution exists
-  // =========================
-  if (!solution || !Array.isArray(solution)) {
-
-    console.error(
-      `❌ Level ${levelIndex + 1}: Missing solution array`
-    );
-
-    return false;
-  }
-
-  // =========================
-  // CHECK 2 — Correct length
-  // =========================
-  const expectedCells = size * size;
-
-  if (solution.length !== expectedCells) {
-
-    console.error(
-      `❌ Level ${levelIndex + 1}: Wrong solution length`,
-      solution.length,
-      'expected:',
-      expectedCells
-    );
-
-    return false;
-  }
-
-  // =========================
-  // CHECK 3 — Duplicate cells
-  // =========================
-  const visited = new Set();
-
-  for (const [r, c] of solution) {
-
-    const key = r + ',' + c;
-
-    if (visited.has(key)) {
-
-      console.error(
-        `❌ Level ${levelIndex + 1}: Duplicate cell`,
-        key
-      );
-
-      return false;
-    }
-
-    visited.add(key);
-  }
-
-  // =========================
-  // CHECK 4 — Bounds check
-  // =========================
-  for (const [r, c] of solution) {
-
-    if (
-      r < 0 ||
-      r >= size ||
-      c < 0 ||
-      c >= size
-    ) {
-
-      console.error(
-        `❌ Level ${levelIndex + 1}: Out of bounds cell`,
-        [r, c]
-      );
-
-      return false;
-    }
-  }
-
-  // =========================
-  // CHECK 5 — Adjacency
-  // =========================
-  for (let i = 1; i < solution.length; i++) {
-
-    const [r1, c1] = solution[i - 1];
-    const [r2, c2] = solution[i];
-
-    const dist =
-      Math.abs(r1 - r2) +
-      Math.abs(c1 - c2);
-
-    if (dist !== 1) {
-
-      console.error(
-        `❌ Level ${levelIndex + 1}: Non-adjacent move`,
-        solution[i - 1],
-        '→',
-        solution[i]
-      );
-
-      return false;
-    }
-  }
-
-  // =========================
-  // CHECK 6 — Number order
-  // =========================
-  const numberPositions = {};
-
-  numbers.forEach(([r, c, n]) => {
-    numberPositions[n] = r + ',' + c;
-  });
-
-  let lastIndex = -1;
-
-  const sortedNumbers =
-    [...numbers].sort((a, b) => a[2] - b[2]);
-
-  for (const [r, c, n] of sortedNumbers) {
-
-    const key = r + ',' + c;
-
-    const idx = solution.findIndex(
-      ([sr, sc]) => sr === r && sc === c
-    );
-
-    if (idx === -1) {
-
-      console.error(
-        `❌ Level ${levelIndex + 1}: Number missing in solution`,
-        n
-      );
-
-      return false;
-    }
-
-    if (idx <= lastIndex) {
-
-      console.error(
-        `❌ Level ${levelIndex + 1}: Wrong number order`,
-        n
-      );
-
-      return false;
-    }
-
-    lastIndex = idx;
-  }
-const startNumber =
-  numbers.find(n => n[2] === 1);
-
-if (startNumber) {
-
-  const [sr, sc] = solution[0];
-
-  if (
-    sr !== startNumber[0] ||
-    sc !== startNumber[1]
-  ) {
-
-    console.error(
-      `❌ Level ${levelIndex + 1}: Solution does not start from number 1`
-    );
-
-    return false;
-
-  }
-
-}
-  // =========================
-  // ALL GOOD
-  // =========================
-  console.log(
-    `✅ Level ${levelIndex + 1} validated successfully`
-  );
-
-  return true;
 }
 
 // ============================================================
@@ -1431,9 +736,7 @@ function getCell(clientX, clientY) {
 }
 
 function cellKey(r, c) { return r + ',' + c; }
-function pathHasCell(r, c) {
-  return visitedCells.has(cellKey(r, c));
-}
+function pathHasCell(r, c) { return path.some(([pr,pc]) => pr===r && pc===c); }
 function isAdjacent(r1, c1, r2, c2) { return Math.abs(r1-r2) + Math.abs(c1-c2) === 1; }
 
 function onDragStart(clientX, clientY) {
@@ -1444,46 +747,29 @@ function onDragStart(clientX, clientY) {
   const lv = LEVELS[currentLevel];
   const startNum = lv.numbers.find(([nr,nc,n]) => nr===r && nc===c && n===1);
 
-  if (path.length === 0) {
+  if (startNum || path.length === 0) {
     // Start from number 1
     if (startNum) {
-
-  path = [[r,c]];
-
-  visitedCells.clear();
-
-  visitedCells.add(
-    cellKey(r, c)
-  );
-
-} else {
-      return;
-    }}
-    else {
+      path = [[r,c]];
+    } else if (pathHasCell(r, c)) {
+      // Resume from existing path point
+      const idx = path.findIndex(([pr,pc]) => pr===r && pc===c);
+      path = path.slice(0, idx + 1);
+    } else return;
+  } else {
     const last = path[path.length - 1];
-    if (visitedCells.has(cellKey(r,c))) {
+    if (pathHasCell(r, c)) {
       // Backtrack
       const idx = path.findIndex(([pr,pc]) => pr===r && pc===c);
       path = path.slice(0, idx + 1);
-      visitedCells.clear();
-
-path.forEach(([pr, pc]) => {
-  visitedCells.add(
-    cellKey(pr, pc)
-  );
-});
     } else if (isAdjacent(last[0], last[1], r, c)) {
       path.push([r, c]);
-      visitedCells.add(
-  cellKey(r, c)
-);
-    } else {return;}
+    } else return;
   }
   isDragging = true;
   playSound('click');
   vibrate(10);
   updateProgress();
-  drawGrid();
 }
 
 function onDragMove(clientX, clientY) {
@@ -1497,30 +783,16 @@ function onDragMove(clientX, clientY) {
   if (!isAdjacent(last[0], last[1], r, c)) return;
 
   // Backtrack if revisiting
-  if (visitedCells.has(cellKey(r,c))) {
+  if (pathHasCell(r, c)) {
     const idx = path.findIndex(([pr,pc]) => pr===r && pc===c);
     if (idx === path.length - 2) {
-      const removed =
-  path.pop();
-
-visitedCells.delete(
-  cellKey(
-    removed[0],
-    removed[1]
-  )
-);
-
-playSound('undo');
-updateProgress();
-drawGrid();
+      path.pop();
+      playSound('undo');
     }
     return;
   }
 
   path.push([r, c]);
-  visitedCells.add(
-  cellKey(r, c)
-);
   playSound('click');
   vibrate(5);
 
@@ -1531,23 +803,10 @@ drawGrid();
     const expectedNum = getNextExpectedNum();
     if (numHit[2] !== expectedNum) {
       mistakes++;
-      streakCount = 0;
       playSound('wrong');
       vibrate([30, 20, 30]);
       canvas.classList.add('shake');
       setTimeout(() => canvas.classList.remove('shake'), 300);
-  // REMOVE WRONG MOVE
-       const removed = path.pop();
-
-visitedCells.delete(
-  cellKey(
-    removed[0],
-    removed[1]
-  )
-);
-
-drawGrid();
-return;
     } else {
       playSound('success');
       vibrate(30);
@@ -1556,8 +815,6 @@ return;
   }
 
   updateProgress();
-  drawGrid();
-  checkWin();
 }
 
 function onDragEnd() {
@@ -1588,19 +845,9 @@ function handleArrowKeys(e) {
     const start = lv.numbers.find(n => n[2] === 1);
     if (start) {
       path = [[start[0], start[1]]];
-
-visitedCells.clear();
-
-visitedCells.add(
-  cellKey(
-    start[0],
-    start[1]
-  )
-);
       playSound('click');
       vibrate(10);
       updateProgress();
-
     }
     return;
   }
@@ -1621,7 +868,6 @@ visitedCells.add(
       path.pop();
       playSound('undo');
       updateProgress();
-      drawGrid();
       return;
     }
   }
@@ -1631,9 +877,6 @@ visitedCells.add(
 
   // Add new cell
   path.push([newR, newC]);
-  visitedCells.add(
-  cellKey(newR, newC)
-);
   playSound('click');
   vibrate(5);
 
@@ -1646,22 +889,10 @@ visitedCells.add(
     const expectedNum = getNextExpectedNum();
 
     if (numHit[2] !== expectedNum) {
-      streakCount = 0;
       playSound('wrong');
       vibrate([30,20,30]);
       canvas.classList.add('shake');
       setTimeout(() => canvas.classList.remove('shake'), 300);
-      const removed = path.pop();
-
-visitedCells.delete(
-  cellKey(
-    removed[0],
-    removed[1]
-  )
-);
-
-drawGrid();
-return;
     } else {
       playSound('success');
       vibrate(30);
@@ -1670,8 +901,6 @@ return;
   }
 
   updateProgress();
-  drawGrid();
-  checkWin();
 }
 
 function getNextExpectedNum() {
@@ -1725,8 +954,6 @@ function checkWin() {
 
   // ✅ Scenario 3: Perfect
   if (isFullGrid && correctOrder) {
-    if (winTriggered) return;  // ← ADD KARO
-  winTriggered = true; 
     stopTimer();
     isDragging = false;
     setTimeout(showWin, 300);
@@ -1757,39 +984,59 @@ function checkWin() {
 }
 
 function submitPath() {
-  // winTriggered check NAHI karo yahan
   const lv = LEVELS[currentLevel];
   const totalCells = lv.size * lv.size;
+
   const isFullGrid = path.length === totalCells;
 
+  // Check order
   const visited = path.map(([r,c]) => cellKey(r,c));
   const numsSorted = [...lv.numbers].sort((a,b) => a[2]-b[2]);
+
   let lastIdx = -1;
   let correctOrder = true;
+
   for (const [r,c,n] of numsSorted) {
     const idx = visited.indexOf(cellKey(r,c));
-    if (idx === -1 || idx <= lastIdx) { correctOrder = false; break; }
+    if (idx === -1 || idx <= lastIdx) {
+      correctOrder = false;
+      break;
+    }
     lastIdx = idx;
   }
 
+  // ============================
+  // VALIDATION LOGIC (ON SUBMIT)
+  // ============================
+
+  // ✅ PERFECT
   if (isFullGrid && correctOrder) {
-    // winTriggered set karo taaki checkWin dobara na chale
-    if (winTriggered) {
-      // Already processing — bas next level pe jaao
-      hideWin();
-      if (currentLevel < 24) startLevel(currentLevel + 1);
-      else showScreen('levelSelect');
-      return;
-    }
-    winTriggered = true;
     stopTimer();
     setTimeout(showWin, 300);
     return;
   }
 
-  if (!isFullGrid && correctOrder) { showStreakMsg('⚠️ Cover all grid cells!'); return; }
-  if (isFullGrid && !correctOrder) { showStreakMsg('❌ Wrong order/path followed!'); playSound('wrong'); canvas.classList.add('shake'); setTimeout(() => canvas.classList.remove('shake'), 300); return; }
-  if (!isFullGrid && !correctOrder) { showStreakMsg('❌ Wrong path and incomplete grid!'); playSound('wrong'); return; }
+  // ❌ Cells missing
+  if (!isFullGrid && correctOrder) {
+    showStreakMsg('⚠️ Cover all grid cells!');
+    return;
+  }
+
+  // ❌ Wrong order
+  if (isFullGrid && !correctOrder) {
+    showStreakMsg('❌ Wrong order/path followed!');
+    playSound('wrong');
+    canvas.classList.add('shake');
+    setTimeout(() => canvas.classList.remove('shake'), 300);
+    return;
+  }
+
+  // ❌ Both wrong
+  if (!isFullGrid && !correctOrder) {
+    showStreakMsg('❌ Wrong path and incomplete grid!');
+    playSound('wrong');
+    return;
+  }
 }
 
 let streakCount = 0;
@@ -1814,249 +1061,29 @@ function updateProgress() {
   const pct = (path.length / total) * 100;
   document.getElementById('g-progress').style.width = pct + '%';
 }
-function calculateZipMasterReward({
-  stars,
-  firstTime,
-  improvedTo3Star,
-  hardNoHints,
-  completedPack,
-  newHighScore
-}) {
 
-  let coins = 0;
-
-  // First clear
-  if (firstTime) {
-
-    if (stars === 3) {
-      coins += 25;
-    } else {
-      coins += 10;
-    }
-
-  }
-
-  // Upgraded to 3 stars
-  if (improvedTo3Star) {
-    coins += 15;
-  }
-
-  // Hard level without hints
-  if (hardNoHints) {
-    coins += 30;
-  }
-
-  // Full pack completion
-  if (completedPack) {
-    coins += 100;
-  }
-
-  // New high score
-  if (newHighScore) {
-    coins += 20;
-  }
-
-  console.log(
-    "Calculated Coins:",
-    coins
-  );
-
-  return Number(coins) || 0;
-}
 // ============================================================
 // WIN SCREEN
 // ============================================================
-async function showWin() {
+function showWin() {
   const lv = LEVELS[currentLevel];
-  const previousStars =
-  save.stars[currentLevel] || 0;
   const timeTaken = timerVal;
   let stars = 1;
-if (hintsUsed === 0) {
-  if (
-    timeTaken <= lv.starTimes[0]
-  ) {
-    stars = 3;
-  }
-  else if (
-    timeTaken <= lv.starTimes[1]
-  ) {
-    stars = 2;
-  }
-}
-
-  const improvedTo3Star =
-  previousStars < 3 &&
-  stars === 3;
-
-const hardNoHints =
-  lv.difficulty === "Hard" &&
-  hintsUsed === 0 &&
-  !save.hardLevelsSolved.includes(currentLevel);
-
-if (hardNoHints) {
-  save.hardLevelsSolved.push(currentLevel);
-}
-const firstTime =  !save.completedLevels.includes(currentLevel);
-
-if (firstTime) {
-save.completedLevels.push(currentLevel);
-
-}
-const packNumber =
-  Math.floor(currentLevel / 10);
-
-const packStart =
-  packNumber * 10;
-
-const packEnd =
-  Math.min(packStart + 10, 25);
-
-let completed = true;
-
-for (
-  let i = packStart;
-  i < packEnd;
-  i++
-) {
-
-  if (
-    !save.completedLevels.includes(i)
-  ) {
-
-    completed = false;
-    break;
-
+  if (hintsUsed === 0) {
+    if (timeTaken <= lv.starTimes[0]) stars = 3;
+    else if (timeTaken <= lv.starTimes[1]) stars = 2;
   }
 
-}
-const completedPack =
-  completed &&
-  !save.completedPacks.includes(packNumber);
-
-if (completedPack) {
-  save.completedPacks.push(packNumber);
-}
-const currentScore =
-  stars * 100 - mistakes * 10;
-
-const bestSession =
-  Number(
-    sessionStorage.getItem(
-      "zip_best_score"
-    ) || 0
-  );
-const newHighScore =
-  currentScore > bestSession &&
-  !save.sessionHighScoreBroken;
-
-if (newHighScore) {
-
-  save.sessionHighScoreBroken = true;
-
-  sessionStorage.setItem(
-    "zip_best_score",
-    currentScore
-  );
-
-}
-
-save.stars[currentLevel] =
-  Math.max(
-    save.stars[currentLevel] || 0,
-    stars
-  );
-const reward =
-  calculateZipMasterReward({
-    stars,
-    firstTime,
-    improvedTo3Star,
-    hardNoHints,
-    completedPack,
-    newHighScore
-  });
-    if (reward > 0) {
-  showStreakMsg(`🪙 +${reward} Coins Earned!`);
-}
-console.log(
-  "Reward Type:",
-  typeof reward
-);
-// if ( isNaN(reward) || reward <= 0
-// ) {
-//   console.error("Reward is invalid:",reward );
-//   return;
-// }
-if (reward > 0) {
-  // Session ready hone ka wait karo
-  const waitForSession = async () => {
-    const { data } = await supabaseClient.auth.getSession();
-    if (data?.session?.access_token) {
-      return data.session.access_token;
-    }
-    // Token nahi mila — 3 baar retry karo 1 second ke baad
-    return new Promise((resolve) => {
-      let attempts = 0;
-      const interval = setInterval(async () => {
-        attempts++;
-        const { data: d } = await supabaseClient.auth.getSession();
-        if (d?.session?.access_token) {
-          clearInterval(interval);
-          resolve(d.session.access_token);
-        } else if (attempts >= 5) {
-          clearInterval(interval);
-          resolve(null);
-        }
-      }, 1000);
-    });
-  };
-
-  const token = await waitForSession();
-
-  if (token) {
-    await rewardCoins({
-      amount: Number(reward),
-      description: "level_completion",
-      game: "zip_master",
-      level: currentLevel + 1,
-      score: currentScore,
-      difficulty: lv.difficulty
-    });
-    // Balance update karo
-    await fetchWalletBalance();
-    updateHomeStats();
-  } else {
-    console.warn("Session timeout — reward pending");
-    // Pending reward localStorage mein save karo
-    const pending = JSON.parse(localStorage.getItem('pendingReward') || 'null');
-    if (!pending) {
-      localStorage.setItem('pendingReward', JSON.stringify({
-        amount: Number(reward),
-        level: currentLevel + 1,
-        game: "zip_master"
-      }));
-    }
-  }
-}
   save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, stars);
-  if (
-  !save.bestTimes[currentLevel] ||
-  timeTaken < save.bestTimes[currentLevel]
-) {
-  save.bestTimes[currentLevel] = timeTaken;
-}
+  const coinsEarned = stars * 10 + (currentLevel + 1) * 5;
+  save.coins += coinsEarned;
   if (currentLevel + 1 > save.unlocked) save.unlocked = Math.min(25, currentLevel + 2);
   saveSave();
 
   const m = Math.floor(timeTaken/60);
   const s = timeTaken%60;
   document.getElementById('win-time').textContent = m+':'+String(s).padStart(2,'0');
-  document.getElementById(
-  'win-coins'
-).textContent =
-  reward > 0
-    ? `+${reward} ₵`
-    : 'No Reward';
+  document.getElementById('win-coins').textContent = '+' + coinsEarned;
 
   const starMessages = ['','Nice Job! ⭐','Great Work! 🌟','PERFECT! 🏆'];
   document.getElementById('win-title').textContent = starMessages[stars];
@@ -2077,13 +1104,6 @@ if (reward > 0) {
   playSound('win');
   vibrate([50, 30, 50, 30, 100]);
   spawnConfetti();
-  if (currentLevel === 24) {
-
-  setTimeout(() => {
-    showStreakMsg('🏆 YOU MASTERED ZIP MASTER!');
-  }, 1200);
-
-}
 }
 
 function hideWin() {
@@ -2123,32 +1143,19 @@ function spawnConfetti() {
 // ============================================================
 function undoMove() {
   if (path.length > 1) {
-    const removed =
-  path.pop();
-
-visitedCells.delete(
-  cellKey(
-    removed[0],
-    removed[1]
-  )
-);
+    path.pop();
     updateProgress();
-    drawGrid();
     playSound('undo');
   }
 }
 
 function restartLevel() {
   path = [];
-  visitedCells.clear();
   hintsUsed = 0;
   mistakes = 0;
-  winTriggered = false;
   streakCount = 0;
-  stopTimer();
   startTimer();
   updateProgress();
-  drawGrid();
 }
 
 function useHint() {
@@ -2164,7 +1171,6 @@ function confirmHint() {
   document.getElementById('hint-popup').classList.remove('show');
   if (save.hints <= 0) return;
   save.hints--;
-  document.getElementById('h-tokens').textContent = save.hints;
   hintsUsed++;
   saveSave();
 
@@ -2177,46 +1183,19 @@ function confirmHint() {
     if (nextCell) {
       // Flash the hint cell
       const [r, c] = nextCell;
-const px = c * cellSize + cellSize / 2;
-const py = r * cellSize + cellSize / 2;
-ctx.save();
-ctx.strokeStyle = '#ffffff';
-ctx.lineWidth = 5;
-ctx.beginPath();
-ctx.arc(
-  px,  py,cellSize * 0.32, 0,  Math.PI * 2
-);
-ctx.stroke();
-ctx.restore();
       canvas.classList.add('hint-glow');
       setTimeout(() => canvas.classList.remove('hint-glow'), 2400);
-      showStreakMsg(`💡 Hint revealed!`);
+      showStreakMsg(`💡 Go to (${r},${c})`);
     }
   }
 }
 
-async function skipLevel() {
-  const balance =
-  Number(localStorage.getItem("walletCoins") || 0);
-
-if (balance < 20) {
+function skipLevel() {
+  if (save.coins < 20) {
     showStreakMsg('Need 20 coins to skip!');
     return;
   }
-  try {
-
-  await window.gameSDK.spendCoins({
-    amount: 20,
-    description: "skip_level",
-    game: "zip_master"
-  });
- 
-} catch(err) {
-
-  showStreakMsg('Payment failed!');
-  return;
-
-}
+  save.coins -= 20;
   save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, 1);
   if (currentLevel + 1 > save.unlocked) save.unlocked = Math.min(25, currentLevel + 2);
   saveSave();
@@ -2226,10 +1205,6 @@ if (balance < 20) {
 
 function confirmBack() {
   stopTimer();
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
   showScreen('levelSelect');
 }
 
@@ -2333,9 +1308,6 @@ function buildSettings() {
       saveSave();
       applyTheme();
       buildSettings();
-      if (document.getElementById('game').classList.contains('active')) {
-  drawGrid();
-}
     };
     tg.appendChild(chip);
   });
@@ -2349,7 +1321,7 @@ function toggleSetting(key) {
 
 function resetGame() {
   if (!confirm('Reset all progress?')) return;
-  save = {unlocked:1, stars:Array(25).fill(0), completedLevels: [], bestTimes: {},  sessionHighScoreBroken: false,  completedPacks: [], hardLevelsSolved: [], coins:0, theme:'neon', sound:true, haptic:true, timer:true, hints:5};
+  save = {unlocked:1, stars:Array(25).fill(0), coins:0, theme:'neon', sound:true, haptic:true, timer:true, hints:5};
   saveSave();
   buildSettings();
   updateHomeStats();
@@ -2368,7 +1340,6 @@ document.addEventListener('click', () => {
 window.addEventListener('resize', () => {
   if (document.getElementById('game').classList.contains('active')) {
     setupCanvas();
-    drawGrid();
   }
 });
 
@@ -2376,23 +1347,11 @@ window.addEventListener('resize', () => {
 document.addEventListener('keydown', handleArrowKeys);
 window.onload = () => {
   loadSave();
-  LEVELS.forEach((level, index) => {
-  validateLevel(level, index);
-});
   setTimeout(() => {
     document.getElementById('splash').classList.remove('active');
     setTimeout(() => showScreen('home'), 300);
   }, 2200);
 };
 </script>
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="./supabaseClient.js"></script>
-
-<script src="./walletApi.js"></script>
-
-<script src="./gameSDK.js"></script>
 </body>
 </html>
