@@ -2074,11 +2074,11 @@ typewriterText("dialogue-line-2", "Let’s follow the map and see where it leads
         // Coins reward per level
         let reward = 20;
 
-// Old Coins
-let oldCoins = Number(localStorage.getItem("logicMazeCoins")) || 0;
-
-// Total Coins
-let totalCoins = oldCoins + reward;
+// Wallet fallback: current header/wallet balance lo, logicMazeCoins nahi
+let totalCoins =
+  Number(localStorage.getItem("walletCoins")) ||
+  Number(document.getElementById("header-coin-count")?.textContent) ||
+  0;
 
 
 // 🔥 SEND REWARD TO BACKEND (walletApi.js ka rewardCoins use karo)
@@ -2094,13 +2094,18 @@ try {
 
   // ✅ Backend se actual balance lo aur header update karo
   if (rewardResult && rewardResult.balance !== undefined) {
-    totalCoins = Number(rewardResult.balance);
+  totalCoins = Number(rewardResult.balance);
+} else if (window.gameSDK) {
+  const freshBalance = await window.gameSDK.getBalance();
+  if (freshBalance !== undefined && freshBalance !== null) {
+    totalCoins = Number(freshBalance);
   }
+}
 } catch (err) {
   console.error("FULL ERROR:", err);
 }        // Save
         localStorage.setItem("logicMazeProgress", progress);
-        localStorage.setItem("logicMazeCoins", totalCoins);
+        localStorage.setItem("logicMazeCoins", String(completed * reward));
         localStorage.setItem("logicMazeCompleted", completed);
         localStorage.setItem("walletCoins", String(totalCoins)); // ✅ Main wallet localStorage bhi sync karo
         updateHeaderCoins(totalCoins, true); // 🪙 Header update karo with animation
