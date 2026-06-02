@@ -7,6 +7,13 @@
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <script src="https://unpkg.com/blockly/javascript.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      // Supabase client initialize karo (same keys jo baaki games use karte hain)
+      const SUPABASE_URL = "https://johfiuwwcryicgplnqew.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaGZpdXd3Y3J5aWNncGxucWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNDI3MjksImV4cCI6MjA5MzcxODcyOX0.hwuCeWXZOzVJKh5y__rkTiEnxvOiVPaqe7CdqCIRMmU";
+      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
+    <script src="./walletApi.js"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Nunito:wght@400;600;700;800&display=swap"
       rel="stylesheet"
@@ -1990,44 +1997,19 @@ let oldCoins = Number(localStorage.getItem("logicMazeCoins")) || 0;
 let totalCoins = oldCoins + reward;
 
 
-// 🔥 SEND REWARD TO BACKEND
-
-const {
-  data: { session },
-} = await supabase.auth.getSession();
-
-const token = session?.access_token;
-
-if (!token) {
-  console.error("No token found");
-}
-fetch("https://wallet-api-backend-production.up.railway.app/wallet/earn/event", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  },
-
-  body: JSON.stringify({
+// 🔥 SEND REWARD TO BACKEND (walletApi.js ka rewardCoins use karo)
+try {
+  const rewardResult = await rewardCoins({
     amount: reward,
-    description: `Logic Maze Level ${currentLevelIdx + 1} Complete`
-}),
-})
-.then(async (res) => {
-  const data = await res.json();
-
-  console.log("STATUS:", res.status);
-  console.log("RESPONSE:", data);
-
-  if (!res.ok) {
-    throw new Error(data.error || "Server Error");
-  }
-
-  console.log("Reward Saved:", data);
-})
-.catch((err) => {
+    description: `Logic Maze Level ${currentLevelIdx + 1} Complete`,
+    game: "logic_maze",
+    level: currentLevelIdx + 1,
+    score: reward,
+  });
+  console.log("Reward Saved:", rewardResult);
+} catch (err) {
   console.error("FULL ERROR:", err);
-});        // Save
+}        // Save
         localStorage.setItem("logicMazeProgress", progress);
         localStorage.setItem("logicMazeCoins", totalCoins);
         localStorage.setItem("logicMazeCompleted", completed);
@@ -2058,6 +2040,10 @@ fetch("https://wallet-api-backend-production.up.railway.app/wallet/earn/event", 
           currentLevelIdx === 19
             ? "🌟 Claim Your Legend!"
             : "Continue Voyage →";
+
+        // ✅ FIX: onclick explicitly reset karo nextLevel pe
+        // (agar pehle error aaya tha toh onclick resetLevel pe stuck tha)
+        document.getElementById("overlay-btn").onclick = nextLevel;
 
         document.getElementById("overlay").classList.add("show");
       }
