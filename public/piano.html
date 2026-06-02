@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎹 PianoVerse – Play, Learn & Game</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=Nunito:wght@400;600;800;900&display=swap');
 
@@ -573,6 +579,11 @@
 <!-- HEADER -->
 <header>
   <div class="logo">🎹 PianoVerse</div>
+   <div id="header-coin-display">
+      <span id="header-coin-icon">🪙</span>
+      <span id="header-coin-count">0</span>
+   </div>
+</header>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <div class="note-display" id="noteDisplay">—</div>
     <div class="header-score">
@@ -796,6 +807,58 @@ function playMetronome(accent = false) {
   g.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
   osc.start(now); osc.stop(now + 0.06);
 }
+function updateHeaderCoins(amount, animate = false) {
+  const countEl = document.getElementById("header-coin-count");
+  const displayEl = document.getElementById("header-coin-display");
+
+  if (!countEl) return;
+
+  countEl.textContent = amount;
+
+  if (animate) {
+    displayEl.classList.remove("coin-pop");
+    void displayEl.offsetWidth;
+    displayEl.classList.add("coin-pop");
+
+    setTimeout(() => {
+      displayEl.classList.remove("coin-pop");
+    }, 400);
+  }
+}
+async function initHeaderCoins() {
+
+  try {
+
+    const balance = await window.gameSDK.getBalance();
+
+    updateHeaderCoins(balance || 0);
+
+  } catch(err) {
+
+    console.error("Wallet load error:", err);
+
+    updateHeaderCoins(0);
+
+  }
+
+}
+window.addEventListener("walletUpdated", (e) => {
+
+  const balance = e.detail?.balance;
+
+  if(balance !== undefined){
+      updateHeaderCoins(balance, true);
+  }
+
+});
+
+window.addEventListener("load", async () => {
+
+   await window.gameSDK.init();
+
+   initHeaderCoins();
+
+});
 
 // ═══════════════════════════════════════════════════════
 // NOTE FREQUENCIES
