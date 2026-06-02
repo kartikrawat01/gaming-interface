@@ -196,14 +196,17 @@ async function fetchWalletBalance() {
     if (!token) return 0;
 
     const response = await fetch(
-      "https://wallet-api-backend-production.up.railway.app/wallet/balance",
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+  `https://wallet-api-backend-production.up.railway.app/wallet/balance?t=${Date.now()}`,
+  {
+    method: "GET",
+    cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
+    },
+  }
+);
 
     const dataJson =
       await response.json();
