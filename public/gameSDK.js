@@ -170,71 +170,29 @@ window.gameSDK = {
   },
 
   async connectSocket() {
-
-  if (typeof io === "undefined") {
-    console.warn("Socket.io not loaded");
-    return;
-  }
-
-  const {
-    data: { session }
-  } =
-  await supabaseClient.auth.getSession();
-
-  if (!session?.user) {
-    console.error("No user session found");
-    return;
-  }
-
-  const userId = session.user.id;
-
-  const API_URL =
-    "https://wallet-api-backend-production.up.railway.app";
-
-  this.socket = io(API_URL, {
-    transports: ["websocket"],
-  });
-
-  this.socket.on("connect", () => {
-
-    console.log(
-      "Socket connected"
-    );
-
-    this.socket.emit(
-      "join-wallet",
-      userId
-    );
-
-  });
-
-  this.socket.on(
-    "wallet-updated",
-    (data) => {
-
-      console.log(
-        "Wallet updated event",
-        data
-      );
-
-      localStorage.setItem(
-        "walletCoins",
-        String(data.balance)
-      );
-
-      window.dispatchEvent(
-        new CustomEvent(
-          "walletUpdated",
-          {
-            detail: {
-              balance:
-                data.balance
-            }
-          }
-        )
-      );
-
+    if (typeof io === "undefined") {
+      console.warn("Socket.io not loaded");
+      return;
     }
-  );
-}
+
+    const API_URL =
+      window.WALLET_API_URL ||
+      "https://wallet-api-backend-production.up.railway.app";
+
+    this.socket = io(API_URL, {
+      transports: ["websocket"],
+    });
+
+    this.socket.on("walletUpdated", (data) => {
+      if (data?.balance !== undefined) {
+        localStorage.setItem("walletCoins", String(data.balance));
+
+        window.dispatchEvent(
+          new CustomEvent("walletUpdated", {
+            detail: { balance: data.balance },
+          })
+        );
+      }
+    });
+  },
 };
