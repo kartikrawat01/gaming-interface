@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Math Shop Master 🏪</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Baloo+2:wght@600;700;800&family=Fredoka+One&display=swap');
 
@@ -1071,7 +1077,7 @@ body {
       </div>
       <div class="stat-box">
         <div class="stat-val" id="hiScoreStat">0</div>
-        <div class="stat-lbl">HI SCORE</div>
+        <div class="stat-lbl">COINS</div>
       </div>
       <span id="bestLevelStat" style="display:none">1</span>
     </div>
@@ -1230,6 +1236,84 @@ let state = {
   totalLevels: 10,
 };
 
+function getCoinsByLevel(level) {
+  if (level >= 1 && level <= 3) return 5;
+  if (level >= 4 && level <= 6) return 10;
+  return 15;
+}
+
+async function syncWalletBalance() {
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        state.coins = Number(balance);
+        localStorage.setItem("walletCoins", String(state.coins));
+        updateHUD();
+        document.getElementById("hiScoreStat").textContent = state.coins;
+      }
+    }
+  } catch (err) {
+    console.warn("Math Shop wallet sync failed:", err);
+  }
+}
+
+async function creditMathShopCoins(amount) {
+  let totalCoins =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(state.coins) ||
+    0;
+
+  try {
+    const rewardResult = await window.gameSDK.rewardCoins({
+      amount,
+      description: `Math Shop Level ${state.level} Correct Answer`,
+      game: "math_shop",
+      level: state.level,
+      score: amount,
+    });
+
+    if (rewardResult && rewardResult.balance !== undefined) {
+      totalCoins = Number(rewardResult.balance);
+    } else if (window.gameSDK) {
+      const freshBalance = await window.gameSDK.getBalance();
+      if (freshBalance !== undefined && freshBalance !== null) {
+        totalCoins = Number(freshBalance);
+      }
+    }
+  } catch (err) {
+    console.error("Math Shop coin credit failed:", err);
+    totalCoins = totalCoins + amount;
+  }
+
+  state.coins = totalCoins;
+  localStorage.setItem("walletCoins", String(totalCoins));
+
+  updateHUD();
+  document.getElementById("hiScoreStat").textContent = totalCoins;
+
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "math_shop",
+    coins: totalCoins,
+    level: state.level,
+    score: state.score,
+  }, "*");
+
+  return totalCoins;
+}
+
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+  if (balance !== undefined) {
+    state.coins = Number(balance);
+    localStorage.setItem("walletCoins", String(state.coins));
+    updateHUD();
+    document.getElementById("hiScoreStat").textContent = state.coins;
+  }
+});
+
 // ── SOUND ──
 let audioCtx = null;
 function getAC() { if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
@@ -1369,29 +1453,6 @@ function openLevelSelect() {
 function closeLevelSelect(e){if(e.target===document.getElementById('levelSelectBackdrop'))closeLevelSelectBtn();}
 function closeLevelSelectBtn(){document.getElementById('levelSelectBackdrop').classList.remove('open');}
 function rnd(lo,hi) { return Math.floor(Math.random()*(hi-lo+1))+lo; }
-function calculateCoins(level, timeRatio) {
-
-  const coinTable = {
-    1: { fast:20, slow:10 },
-    2: { fast:25, slow:15 },
-    3: { fast:30, slow:20 },
-    4: { fast:35, slow:25 },
-    5: { fast:40, slow:30 },
-    6: { fast:45, slow:35 },
-    7: { fast:50, slow:40 },
-    8: { fast:55, slow:45 },
-    9: { fast:60, slow:50 },
-    10:{ fast:70, slow:60 }
-  };
-
-  const config = coinTable[level] || coinTable[10];
-
-  if(timeRatio <= 0.5){
-    return config.fast;
-  }
-
-  return config.slow;
-}
 let lastPatIdx = -1;
 function generateQuestion() {
   const tier = Math.min(Math.floor((state.level-1)/3)+1,3);
@@ -1497,37 +1558,9 @@ function useDouble() {
 }
 
 // ── GAME START ──
-async function startGame() {
-
-  console.log(
-    "gameSDK =",
-    window.gameSDK
-  );
-
-  if (!window.gameSDK) {
-
-    console.error(
-      "Game SDK not loaded"
-    );
-
-    return;
-  }
-
-  await window.gameSDK.init();
-
-  const walletBalance =
-    await window.gameSDK.getBalance();
-
-  console.log(
-    "Wallet Balance:",
-    walletBalance
-  );
-
-console.log(
-  "Wallet Balance:",
-  walletBalance
-);
-  state.level=1; state.score=0; state.coins=0; state.lives=3;
+function startGame() {
+  state.level=1; state.score=0; state.lives=3;
+  state.coins = Number(localStorage.getItem("walletCoins")) || state.coins || 0;
   state.combo=0; state.bestCombo=0; state.streak=0;
   state.totalAnswered=0; state.totalCorrect=0;
   state.customersThisLevel=0; state.phase='idle';
@@ -1760,52 +1793,9 @@ async function submitAnswer() {
     if(state.combo>1) pts=Math.floor(pts*(1+state.combo*0.1));
     state.score+=pts;
 
-    const dMult=state.doubleCoins>0?2:1;
-    let coinsEarned =
-      calculateCoins(state.level, timeRatio);
-
-      coinsEarned *= dMult;
-    state.coins += coinsEarned;
-    if (window.gameSDK) {
-
-  try {
-
-    await window.gameSDK.rewardCoins({
-
-      amount: coinsEarned,
-
-      description:
-        `Math Shop Reward`,
-
-      game: "Math Shop",
-
-      level: state.level,
-
-      score: state.score,
-
-      streak: state.streak,
-
-      mode: state.mode,
-
-      difficulty: state.mode
-
-    });
-
-    console.log(
-      "Wallet updated"
-    );
-
-  } catch (err) {
-
-    console.error(
-      "Reward failed",
-      err
-    );
-
-  }
-
-
-}
+    const dMult = state.doubleCoins > 0 ? 2 : 1;
+const coinsEarned = getCoinsByLevel(state.level) * dMult;
+await creditMathShopCoins(coinsEarned);
     if(state.score>state.hiScore){state.hiScore=state.score; document.getElementById('hiScoreStat').textContent=state.hiScore;}
     if(state.doubleCoins>0){state.doubleCoins--;if(state.doubleCoins===0)document.getElementById('doubleCoinsIndicator').classList.remove('active');}
 
@@ -1863,8 +1853,7 @@ async function submitAnswer() {
     setTimeout(()=>nextCustomer(),2000);
     document.getElementById('gameContainer').classList.add('shake');
     setTimeout(()=>document.getElementById('gameContainer').classList.remove('shake'),400);
-    }
-   
+  }
 }
 
 // ── VISUAL FX ──
@@ -2026,7 +2015,7 @@ function goToStart() {
   document.getElementById('inputUI').style.display='none';
   document.getElementById('orderPanel').style.display='none';
   document.getElementById('bestLevelStat').textContent=state.bestLevel;
-  document.getElementById('hiScoreStat').textContent=state.hiScore;
+  document.getElementById('hiScoreStat').textContent = state.coins;
   showScreen('startScreen');
 }
 
@@ -2036,7 +2025,16 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 // ── INIT ──
-renderLives(); updateHUD();
+// ── INIT ──
+(async function initMathShopWallet() {
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+    await syncWalletBalance();
+  }
+
+  renderLives();
+  updateHUD();
+})();
 
 return {
   goToSetup,selectTheme,selectMode,setupBack,setupNext,
@@ -2050,8 +2048,5 @@ return {
 
 })();
 </script>
-<script src="supabaseClient.js"></script>
-<script src="gameSDK.js"></script>
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </body>
 </html>
