@@ -7,7 +7,6 @@ import {
 import {
   LayoutDashboard,
   Gamepad2,
-  TrendingUp,
   Trophy,
   Award,
   Settings,
@@ -22,7 +21,6 @@ export const Route = createFileRoute("/_layout")({
 const menuItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" },
   { label: "Categories", icon: Gamepad2, to: "/categories" },
-  { label: "Progress", icon: TrendingUp, to: "/progress" },
   { label: "Leaderboard", icon: Trophy, to: "/leaderboard" },
   { label: "Achievements", icon: Award, to: "/achievements" },
   { label: "Settings", icon: Settings, to: "/settings" },
@@ -81,34 +79,6 @@ function LayoutPage() {
             );
           })}
         </nav>
-
-        {/* PROFILE CARD (Alex Chen) */}
-        <div className="mt-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 text-white shadow-lg">
-
-          {/* Top */}
-          <div className="flex items-center gap-3">
-            <img
-              src="https://api.dicebear.com/7.x/adventurer/svg?seed=Alex"
-              alt="avatar"
-              className="h-10 w-10 rounded-full border-2 border-white"
-            />
-
-            <div>
-              <div className="text-sm font-semibold">
-                Alex Chen
-              </div>
-
-              <div className="text-xs bg-yellow-300 text-black px-2 py-0.5 rounded-full inline-block mt-1 font-medium">
-                Level 12
-              </div>
-            </div>
-          </div>
-
-          {/* Button */}
-          <button className="mt-4 w-full bg-yellow-300 text-black text-sm font-semibold py-2 rounded-lg hover:scale-105 transition duration-200">
-            Upgrade to Pro
-          </button>
-        </div>
       </aside>
 
       {/* RIGHT CONTENT */}
