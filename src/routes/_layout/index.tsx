@@ -1,4 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link
+} from "@tanstack/react-router";
 import { useState, useEffect, useCallback, useRef, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
@@ -981,6 +984,7 @@ setShowDropdown(false);
 /* ───────────────────────── Hero ───────────────────────── */
 
 const Hero = memo(function Hero() {
+  const navigate = useNavigate();
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -1025,13 +1029,13 @@ const Hero = memo(function Hero() {
             >
               <Play className="h-4 w-4 fill-current" /> Continue Playing
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="inline-flex items-center gap-2 h-11 px-5 rounded-lg bg-white/20 border border-white/30 text-white backdrop-blur font-semibold text-sm hover:border-primary/40 transition"
-            >
-              Explore Games <ChevronRight className="h-4 w-4" />
-            </motion.button>
+<Link
+  to="/categories"
+  className="inline-flex items-center gap-2 h-11 px-5 rounded-lg bg-white/20 border border-white/30 text-white backdrop-blur font-semibold text-sm hover:border-primary/40 transition"
+>
+  Explore Games
+  <ChevronRight className="h-4 w-4" />
+</Link>
           </div>
         </div>
 
