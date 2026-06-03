@@ -691,12 +691,23 @@
       }
 
       /* 🧩 Block text (Move Forward, Turn Left, etc.) */
+
 .blocklyText {
-  dominant-baseline: middle;
-  font-size: 22px !important;   /* 🔥 increase size */
-  font-weight: 800;
-  fill: #003b4a;   /* text color inside blocks */
-  
+  font-size: 14px !important;
+  font-weight: 700;
+  fill: #ffffff !important;
+}
+
+.blocklyBlockSvg .blocklyText {
+  transform: translateY(2px);
+}
+
+.blocklyBlockSvg text {
+  dominant-baseline: middle !important;
+}
+
+.blocklyBlockSvg rect {
+  height: auto !important;
 }
 
 /* 🧩 Increase block internal spacing */
@@ -704,15 +715,21 @@
   transform-origin: top left;
 }
 
-.blocklyEditableText,
+/* .blocklyEditableText,
 .blocklyNonEditableText {
   dominant-baseline: middle !important;
-}
+} */
 
 /* 🔥 Increase block height properly */
-.blocklyBlockSvg rect {
-  height: 50px !important;   /* adjust between 48–60 as needed */
-}
+/* ✅ Blockly block text center fix */
+/* .blocklyText {
+  font-size: 14px !important;
+  font-weight: 700;
+  fill: #ffffff !important;
+  dominant-baseline: middle !important;
+  alignment-baseline: central !important;
+} */
+
 
 /* 📦 Toolbox (left panel blocks list) */
 .blocklyFlyoutLabelText {
