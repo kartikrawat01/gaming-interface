@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stop Motion Studio Jr</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 
@@ -422,6 +428,14 @@ let walletHistory = [];
 // Per-frame undo/redo stacks
 let undoStacks = [[]]; // array of arrays of ImageData
 let redoStacks = [[]];
+// Coin Rules Tracking
+let welcomeBonusGiven = false;
+
+let projectsCompleted = 0;        // 10 frame projects
+let exportsToday = 0;
+let lastExportDate = '';
+
+let galleryShares = 0;
 
 const CW = 480, CH = 320;
 
@@ -455,6 +469,7 @@ function syncOnionCanvases() {
     c.style.position = 'absolute';
   });
 }
+
 
 // ---- Zoom ----
 let canvasZoom = 100;
@@ -712,6 +727,31 @@ function addFrame() {
   saveCurrentFrame();
   const f = initFrame();
   frames.splice(currentFrame+1,0,f);
+  // Reward when project reaches 10 frames
+if(frames.length >= 10 && projectsCompleted < 3){
+    addCoinsToWallet(
+        20,
+        `Project reached 10 frames (#${projectsCompleted+1})`
+    );
+
+    projectsCompleted++;
+}
+if(frames.length >= 10 && exportsToday < 5){
+
+    addCoinsToWallet(
+        50,
+        `Animation Export (${frames.length} frames)`
+    );
+
+    exportsToday++;
+}
+if(frames.length >= 30){
+
+    addCoinsToWallet(
+        100,
+        `30+ Frame Bonus (${frames.length} frames)`
+    );
+}
   undoStacks.splice(currentFrame+1,0,[]);
   redoStacks.splice(currentFrame+1,0,[]);
   renderFilmstrip();
@@ -1039,6 +1079,12 @@ function runPreview() {
 // ---- GIF Export (canvas-based, simplified frame recorder) ----
 function exportGIF() {
   saveCurrentFrame();
+  const today = new Date().toDateString();
+
+if(lastExportDate !== today){
+    exportsToday = 0;
+    lastExportDate = today;
+}
   if(frames.length < 1){ alert('Nothing to export!'); return; }
 
   // We'll create a simple animated PNG-like using a data URL collection
@@ -1095,14 +1141,31 @@ function closeWallet() {
   document.getElementById('wallet-modal').classList.remove('show');
 }
 
-function addCoinsToWallet(amount, label) {
-  walletCoins += amount;
-  walletHistory.push({ amount, label, time: new Date().toLocaleTimeString() });
+async function addCoinsToWallet(amount, label) {
+
+  try {
+
+    const result = await gameSDK.rewardCoins({
+      amount,
+      description: label,
+      game: "stop-motion-studio"
+    });
+
+    if (result?.balance !== undefined) {
+      walletCoins = result.balance;
+    }
+
+  } catch(err) {
+    console.error(err);
+  }
+
+  walletHistory.push({
+    amount,
+    label,
+    time: new Date().toLocaleTimeString()
+  });
+
   updateWalletDisplay();
-  // Bounce animation on wallet button
-  const wb = document.querySelector('.wallet-btn');
-  wb.style.transform = 'scale(1.2)';
-  setTimeout(() => wb.style.transform = '', 250);
 }
 
 // ---- Save Animation ----
@@ -1115,19 +1178,31 @@ function saveAnimation() {
   const msg = document.getElementById('save-popup-msg');
   const coinsWrap = document.getElementById('save-popup-coins-wrap');
 
-  if(count >= 6) {
-    icon.textContent = '🏆';
-    title.textContent = 'Challenge Complete!';
-    coinsWrap.innerHTML = `<div class="save-popup-coins">🪙 +80 coins earned!</div>`;
-    msg.textContent = `Amazing! You drew ${count} frames and completed the bouncing ball challenge. Coins added to your wallet!`;
-    addCoinsToWallet(80, `Bouncing ball — ${count} frames`);
-  } else {
-    const needed = 6 - count;
-    icon.textContent = '🎬';
-    title.textContent = 'Animation Saved!';
-    coinsWrap.innerHTML = '';
-    msg.innerHTML = `Your ${count} frame${count===1?'':'s'} ${count===1?'has':'have'} been saved.<br><br>⚠️ Draw <strong>${needed} more frame${needed===1?'':'s'}</strong> to complete the challenge and earn <strong>+80 coins</strong>!`;
-  }
+  if(count >= 10){
+
+   title.textContent = "Animation Saved!";
+   icon.textContent = "🎬";
+
+   coinsWrap.innerHTML = `
+      <div class="save-popup-coins">
+      Export animation to earn coins!
+      </div>
+   `;
+
+   msg.textContent =
+      `${count} frames saved successfully.`;
+
+}
+else{
+
+   title.textContent = "Animation Saved!";
+   icon.textContent = "🎬";
+
+   coinsWrap.innerHTML = "";
+
+   msg.textContent =
+      `Create at least 10 frames before exporting to earn coins.`;
+}
   popup.classList.add('show');
 }
 
@@ -1137,6 +1212,15 @@ function closeSavePopup() {
 
 // ---- Upload Creation ----
 function uploadCreation() {
+  if(galleryShares < 1){
+
+    addCoinsToWallet(
+        150,
+        "Film Shared To Gallery"
+    );
+
+    galleryShares++;
+}
   saveCurrentFrame();
   if(frames.length < 1){ alert('Nothing to upload!'); return; }
   const exportCanvas = document.createElement('canvas');
@@ -1167,6 +1251,13 @@ function uploadCreation() {
     }
   }, 'image/png');
 }
+function rewardFeaturedFilm(){
+
+    addCoinsToWallet(
+        1000,
+        "Featured Film Of The Week"
+    );
+}
 
 function fallbackUploadDownload(exportCanvas) {
   const link = document.createElement('a');
@@ -1182,7 +1273,22 @@ redoStacks = [[]];
 buildColorGroup();
 loadFrame(0);
 updateBrush();
+fetchWalletBalance().then(balance => {
+   walletCoins = balance || 0;
+   updateWalletDisplay();
+});
+// Welcome bonus
+if(!welcomeBonusGiven){
+    addCoinsToWallet(10,"Welcome Bonus");
+    welcomeBonusGiven = true;
+}
+window.addEventListener("walletUpdated", (event) => {
 
+  walletCoins = event.detail.balance;
+
+  updateWalletDisplay();
+
+});
 // Sync onion canvas positions on resize
 window.addEventListener('resize', () => requestAnimationFrame(syncOnionCanvases));
 // Wait for layout before first sync
