@@ -1070,7 +1070,7 @@ const filteredGames = games.filter((g) =>
     <section>
       <div className="flex items-end justify-between mb-5">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Popular Games</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">Newly Added Games</h2>
           <p className="text-sm text-muted-foreground mt-0.5">Pick a challenge and start coding</p>
         </div>
         <button className="hidden sm:inline-flex items-center gap-1 text-sm text-primary hover:underline underline-offset-4">
