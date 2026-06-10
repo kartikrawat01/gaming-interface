@@ -47,12 +47,34 @@ function AuthModalComponent({ onClose, setUser }: any) {
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          alert(error.message);
-        } else {
-          setUser(data.user);
-          onClose();
-        }
+if (error) {
+  alert(error.message);
+} else {
+  const token = data.session?.access_token;
+  if (token) {
+    try {
+      const profileRes = await fetch(
+        'https://wallet-api-backend-production.up.railway.app/wallet/profile',
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const profile = await profileRes.json();
+
+      if (!profile.childName || profile.childName === '') {
+        // Profile empty hai — onboarding dikhao
+        setAccessToken(token);
+        setShowOnboarding(true);
+      } else {
+        // Already filled — seedha dashboard
+        setUser(data.user);
+        onClose();
+      }
+    } catch (err) {
+      // Profile check fail ho toh bhi login karne do
+      setUser(data.user);
+      onClose();
+    }
+  }
+}
       }
     } catch (err) {
       console.error(err);
