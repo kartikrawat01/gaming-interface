@@ -32,14 +32,21 @@ const menuItems = [
 function LayoutPage() {
   const location = useLocation();
   const [userEmail, setUserEmail] = useState<string>("");
+const [userName, setUserName] = useState<string>("");
 
 useEffect(() => {
   const getUser = async () => {
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  data: { user },
+} = await supabase.auth.getUser();
 
-    setUserEmail(user?.email || "Guest User");
+setUserEmail(user?.email || "");
+
+setUserName(
+  user?.user_metadata?.name ||
+  user?.email?.split("@")[0] ||
+  "Guest User"
+);
   };
 
   getUser();
@@ -102,8 +109,8 @@ useEffect(() => {
 
   <div className="min-w-0">
     <p className="text-sm font-semibold truncate">
-      {userEmail.split("@")[0]}
-    </p>
+  {userName}
+</p>
     <p className="text-xs text-white/70 truncate">
       {userEmail}
     </p>
