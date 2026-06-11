@@ -1,1494 +1,3845 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ZIP MASTER</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>ZIP MASTER</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-<script src="./supabaseClient.js"></script>
-<script src="./walletApi.js"></script>
-<script src="./gameSDK.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#0f0e17;
-  --surface:#1a1828;
-  --card:#201e30;
-  --border:rgba(255,255,255,0.07);
-  --txt:#fffffe;
-  --txt2:rgba(255,255,255,0.55);
-  --accent:#7c3aed;
-  --accent2:#06b6d4;
-  --gold:#fbbf24;
-  --green:#10b981;
-  --red:#ef4444;
-  --path:#7c3aed;
-  --r:14px;
-}
-html,body{width:100%;height:100%;background:var(--bg);font-family:'Nunito',sans-serif;color:var(--txt);overflow:hidden;touch-action:none;user-select:none;-webkit-tap-highlight-color:transparent;}
-/* ========= SCREENS ========= */
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-.screen.active{opacity:1;pointer-events:all;}
+    <script src="./supabaseClient.js"></script>
+    <script src="./walletApi.js"></script>
+    <script src="./gameSDK.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #0f0e17;
+        --surface: #1a1828;
+        --card: #201e30;
+        --border: rgba(255, 255, 255, 0.07);
+        --txt: #fffffe;
+        --txt2: rgba(255, 255, 255, 0.55);
+        --accent: #7c3aed;
+        --accent2: #06b6d4;
+        --gold: #fbbf24;
+        --green: #10b981;
+        --red: #ef4444;
+        --path: #7c3aed;
+        --r: 14px;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        font-family: "Nunito", sans-serif;
+        color: var(--txt);
+        overflow: hidden;
+        touch-action: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      /* ========= SCREENS ========= */
+      .screen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .screen.active {
+        opacity: 1;
+        pointer-events: all;
+      }
 
-/* BACKGROUND */
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(124,58,237,.15),transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(6,182,212,.1),transparent 50%),#0f0e17;pointer-events:none;}
+      /* BACKGROUND */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse at 20% 20%,
+            rgba(124, 58, 237, 0.15),
+            transparent 50%
+          ),
+          radial-gradient(
+            ellipse at 80% 80%,
+            rgba(6, 182, 212, 0.1),
+            transparent 50%
+          ),
+          #0f0e17;
+        pointer-events: none;
+      }
 
-/* ========= SPLASH ========= */
-#splash{background:linear-gradient(135deg,#0f0e17,#1a0a2e);}
-.splash-logo{font-family:'Fredoka One',cursive;font-size:clamp(52px,12vw,80px);background:linear-gradient(135deg,#7c3aed,#06b6d4,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;letter-spacing:2px;animation:logoPulse 2s ease infinite;}
-@keyframes logoPulse{0%,100%{filter:drop-shadow(0 0 20px rgba(124,58,237,.6));}50%{filter:drop-shadow(0 0 40px rgba(6,182,212,.8));}}
-.splash-sub{font-size:14px;color:var(--txt2);letter-spacing:4px;text-transform:uppercase;margin-top:8px;}
-.splash-dots{display:flex;gap:8px;margin-top:48px;}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:dotBounce 1.2s ease infinite;}
-.dot:nth-child(2){animation-delay:.2s;background:var(--accent2);}
-.dot:nth-child(3){animation-delay:.4s;background:var(--gold);}
-@keyframes dotBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+      /* ========= SPLASH ========= */
+      #splash {
+        background: linear-gradient(135deg, #0f0e17, #1a0a2e);
+      }
+      .splash-logo {
+        font-family: "Fredoka One", cursive;
+        font-size: clamp(52px, 12vw, 80px);
+        background: linear-gradient(135deg, #7c3aed, #06b6d4, #fbbf24);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: none;
+        letter-spacing: 2px;
+        animation: logoPulse 2s ease infinite;
+      }
+      @keyframes logoPulse {
+        0%,
+        100% {
+          filter: drop-shadow(0 0 20px rgba(124, 58, 237, 0.6));
+        }
+        50% {
+          filter: drop-shadow(0 0 40px rgba(6, 182, 212, 0.8));
+        }
+      }
+      .splash-sub {
+        font-size: 14px;
+        color: var(--txt2);
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-top: 8px;
+      }
+      .splash-dots {
+        display: flex;
+        gap: 8px;
+        margin-top: 48px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: dotBounce 1.2s ease infinite;
+      }
+      .dot:nth-child(2) {
+        animation-delay: 0.2s;
+        background: var(--accent2);
+      }
+      .dot:nth-child(3) {
+        animation-delay: 0.4s;
+        background: var(--gold);
+      }
+      @keyframes dotBounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
 
-/* ========= HOME ========= */
-#home{gap:24px;padding:30px;}
-.home-logo{font-family:'Fredoka One',cursive;font-size:clamp(40px,10vw,64px);background:linear-gradient(135deg,#7c3aed,#06b6d4);-webkit-background-clip:text;background-clip:text;color:transparent;}
-.home-tagline{font-size:14px;color:var(--txt2);letter-spacing:3px;text-transform:uppercase;}
-.home-stats{display:flex;gap:16px;margin:8px 0;}
-.stat-chip{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 18px;text-align:center;}
-.stat-chip .val{font-size:22px;font-weight:900;color:var(--gold);font-family:'Fredoka One',cursive;}
-.stat-chip .lbl{font-size:10px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;}
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:15px 36px;border-radius:50px;border:none;font-family:'Nunito',sans-serif;font-weight:800;font-size:16px;cursor:pointer;transition:all .18s;letter-spacing:.5px;}
-.btn-primary{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;box-shadow:0 8px 30px rgba(124,58,237,.4);}
-.btn-primary:active{transform:scale(.96);box-shadow:0 4px 15px rgba(124,58,237,.3);}
-.btn-secondary{background:var(--card);color:var(--txt);border:1px solid var(--border);}
-.btn-secondary:active{transform:scale(.96);}
-.btn-outline{background:transparent;color:var(--accent2);border:1.5px solid var(--accent2);}
-.btn-outline:active{transform:scale(.96);background:rgba(6,182,212,.1);}
+      /* ========= HOME ========= */
+      #home {
+        gap: 24px;
+        padding: 30px;
+      }
+      .home-logo {
+        font-family: "Fredoka One", cursive;
+        font-size: clamp(40px, 10vw, 64px);
+        background: linear-gradient(135deg, #7c3aed, #06b6d4);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .home-tagline {
+        font-size: 14px;
+        color: var(--txt2);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+      .home-stats {
+        display: flex;
+        gap: 16px;
+        margin: 8px 0;
+      }
+      .stat-chip {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 18px;
+        text-align: center;
+      }
+      .stat-chip .val {
+        font-size: 22px;
+        font-weight: 900;
+        color: var(--gold);
+        font-family: "Fredoka One", cursive;
+      }
+      .stat-chip .lbl {
+        font-size: 10px;
+        color: var(--txt2);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 15px 36px;
+        border-radius: 50px;
+        border: none;
+        font-family: "Nunito", sans-serif;
+        font-weight: 800;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.18s;
+        letter-spacing: 0.5px;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        color: #fff;
+        box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4);
+      }
+      .btn-primary:active {
+        transform: scale(0.96);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+      }
+      .btn-secondary {
+        background: var(--card);
+        color: var(--txt);
+        border: 1px solid var(--border);
+      }
+      .btn-secondary:active {
+        transform: scale(0.96);
+      }
+      .btn-outline {
+        background: transparent;
+        color: var(--accent2);
+        border: 1.5px solid var(--accent2);
+      }
+      .btn-outline:active {
+        transform: scale(0.96);
+        background: rgba(6, 182, 212, 0.1);
+      }
 
-/* ========= LEVEL SELECT ========= */
-#levelSelect{padding:20px;gap:16px;overflow-y:auto;justify-content:flex-start;}
-.ls-header{display:flex;align-items:center;gap:12px;width:100%;max-width:480px;}
-.ls-title{font-family:'Fredoka One',cursive;font-size:28px;flex:1;}
-.ls-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;width:100%;max-width:480px;padding-bottom:24px;}
-.level-card{aspect-ratio:1;background:var(--card);border:1.5px solid var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
-.level-card:active{transform:scale(.93);}
-.level-card.unlocked{border-color:rgba(124,58,237,.4);}
-.level-card.unlocked:hover{border-color:var(--accent);background:rgba(124,58,237,.1);}
-.level-card.completed{border-color:var(--green);background:rgba(16,185,129,.08);}
-.level-card.locked{opacity:.4;cursor:not-allowed;}
-.lc-num{font-family:'Fredoka One',cursive;font-size:20px;color:var(--txt);}
-.lc-stars{display:flex;gap:1px;margin-top:2px;}
-.lc-star{font-size:10px;}
-.lc-diff{font-size:8px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
-.diff-badge{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;}
-.diff-easy{background:#10b981;}
-.diff-medium{background:#fbbf24;}
-.diff-hard{background:#f97316;}
-.diff-expert{background:#ef4444;}
+      /* ========= LEVEL SELECT ========= */
+      #levelSelect {
+        padding: 20px;
+        gap: 16px;
+        overflow-y: auto;
+        justify-content: flex-start;
+      }
+      .ls-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        max-width: 480px;
+      }
+      .ls-title {
+        font-family: "Fredoka One", cursive;
+        font-size: 28px;
+        flex: 1;
+      }
+      .ls-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        width: 100%;
+        max-width: 480px;
+        padding-bottom: 24px;
+      }
+      .level-card {
+        aspect-ratio: 1;
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.18s;
+        position: relative;
+        overflow: hidden;
+      }
+      .level-card:active {
+        transform: scale(0.93);
+      }
+      .level-card.unlocked {
+        border-color: rgba(124, 58, 237, 0.4);
+      }
+      .level-card.unlocked:hover {
+        border-color: var(--accent);
+        background: rgba(124, 58, 237, 0.1);
+      }
+      .level-card.completed {
+        border-color: var(--green);
+        background: rgba(16, 185, 129, 0.08);
+      }
+      .level-card.locked {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .lc-num {
+        font-family: "Fredoka One", cursive;
+        font-size: 20px;
+        color: var(--txt);
+      }
+      .lc-stars {
+        display: flex;
+        gap: 1px;
+        margin-top: 2px;
+      }
+      .lc-star {
+        font-size: 10px;
+      }
+      .lc-diff {
+        font-size: 8px;
+        color: var(--txt2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 1px;
+      }
+      .diff-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+      .diff-easy {
+        background: #10b981;
+      }
+      .diff-medium {
+        background: #fbbf24;
+      }
+      .diff-hard {
+        background: #f97316;
+      }
+      .diff-expert {
+        background: #ef4444;
+      }
 
-/* ========= GAME SCREEN ========= */
-#game{padding:0;justify-content:flex-start;gap:0;}
-.game-topbar{width:100%;display:flex;align-items:center;padding:12px 16px 8px;gap:10px;background:rgba(15,14,23,.8);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);flex-shrink:0;}
-.topbar-back{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all .15s;}
-.topbar-back:active{transform:scale(.9);}
-.topbar-center{flex:1;text-align:center;}
-.topbar-lvl{font-family:'Fredoka One',cursive;font-size:18px;color:var(--txt);}
-.topbar-hint-count{font-size:11px;color:var(--txt2);}
-.topbar-right{display:flex;align-items:center;gap:8px;}
-.icon-btn{width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:all .15s;}
-.icon-btn:active{transform:scale(.9);}
-.timer-chip{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:5px 10px;font-family:'Fredoka One',cursive;font-size:16px;color:var(--accent2);min-width:54px;text-align:center;}
+      /* ========= GAME SCREEN ========= */
+      #game {
+        padding: 0;
+        justify-content: flex-start;
+        gap: 0;
+      }
+      .game-topbar {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 12px 16px 8px;
+        gap: 10px;
+        background: rgba(15, 14, 23, 0.8);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .topbar-back {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        transition: all 0.15s;
+      }
+      .topbar-back:active {
+        transform: scale(0.9);
+      }
+      .topbar-center {
+        flex: 1;
+        text-align: center;
+      }
+      .topbar-lvl {
+        font-family: "Fredoka One", cursive;
+        font-size: 18px;
+        color: var(--txt);
+      }
+      .topbar-hint-count {
+        font-size: 11px;
+        color: var(--txt2);
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.15s;
+      }
+      .icon-btn:active {
+        transform: scale(0.9);
+      }
+      .timer-chip {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 5px 10px;
+        font-family: "Fredoka One", cursive;
+        font-size: 16px;
+        color: var(--accent2);
+        min-width: 54px;
+        text-align: center;
+      }
 
-#puzzle-area{flex:1;display:flex;align-items:center;justify-content:center;padding:12px;position:relative;overflow:hidden;}
-#grid-canvas{border-radius:16px;touch-action:none;display:block;}
+      #puzzle-area {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        position: relative;
+        overflow: hidden;
+      }
+      #grid-canvas {
+        border-radius: 16px;
+        touch-action: none;
+        display: block;
+      }
 
-.game-bottombar{width:100%;display:flex;align-items:center;justify-content:space-around;padding:10px 16px 16px;background:rgba(15,14,23,.8);backdrop-filter:blur(10px);border-top:1px solid var(--border);flex-shrink:0;}
-.bot-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 14px;border-radius:12px;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:all .15s;min-width:54px;}
-.bot-btn:active{transform:scale(.9);}
-.bot-btn .icon{font-size:20px;}
-.bot-btn .lbl{font-size:9px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
-.bot-btn.hint-btn{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06);}
-.progress-bar-wrap{width:100%;max-width:480px;height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin:0 auto;}
-.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .3s;}
+      .game-bottombar {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 10px 16px 16px;
+        background: rgba(15, 14, 23, 0.8);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .bot-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 14px;
+        border-radius: 12px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.15s;
+        min-width: 54px;
+      }
+      .bot-btn:active {
+        transform: scale(0.9);
+      }
+      .bot-btn .icon {
+        font-size: 20px;
+      }
+      .bot-btn .lbl {
+        font-size: 9px;
+        color: var(--txt2);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .bot-btn.hint-btn {
+        border-color: rgba(251, 191, 36, 0.3);
+        background: rgba(251, 191, 36, 0.06);
+      }
+      .progress-bar-wrap {
+        width: 100%;
+        max-width: 480px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 2px;
+        margin: 0 auto;
+      }
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        border-radius: 2px;
+        transition: width 0.3s;
+      }
 
-/* ========= POPUPS ========= */
-.popup-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;z-index:100;}
-.popup-bg.show{opacity:1;pointer-events:all;}
-.popup-card{background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:32px 28px;max-width:320px;width:90%;text-align:center;transform:scale(.85);transition:transform .25s;box-shadow:0 30px 80px rgba(0,0,0,.5);}
-.popup-bg.show .popup-card{transform:scale(1);}
-.popup-icon{font-size:56px;margin-bottom:12px;}
-.popup-title{font-family:'Fredoka One',cursive;font-size:28px;margin-bottom:8px;}
-.popup-sub{font-size:14px;color:var(--txt2);margin-bottom:20px;line-height:1.5;}
-.stars-row{display:flex;justify-content:center;gap:8px;margin-bottom:20px;}
-.big-star{font-size:36px;transition:transform .4s;transform:scale(0);}
-.big-star.show{transform:scale(1);}
-.popup-stats{display:flex;gap:12px;justify-content:center;margin-bottom:20px;}
-.popup-stat{background:rgba(255,255,255,.05);border-radius:12px;padding:10px 16px;text-align:center;}
-.popup-stat .v{font-size:20px;font-weight:900;color:var(--gold);font-family:'Fredoka One',cursive;}
-.popup-stat .l{font-size:10px;color:var(--txt2);text-transform:uppercase;}
-.popup-btns{display:flex;flex-direction:column;gap:10px;}
+      /* ========= POPUPS ========= */
+      .popup-bg {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+        z-index: 100;
+      }
+      .popup-bg.show {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .popup-card {
+        background: var(--card);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 32px 28px;
+        max-width: 320px;
+        width: 90%;
+        text-align: center;
+        transform: scale(0.85);
+        transition: transform 0.25s;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+      }
+      .popup-bg.show .popup-card {
+        transform: scale(1);
+      }
+      .popup-icon {
+        font-size: 56px;
+        margin-bottom: 12px;
+      }
+      .popup-title {
+        font-family: "Fredoka One", cursive;
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+      .popup-sub {
+        font-size: 14px;
+        color: var(--txt2);
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .stars-row {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      .big-star {
+        font-size: 36px;
+        transition: transform 0.4s;
+        transform: scale(0);
+      }
+      .big-star.show {
+        transform: scale(1);
+      }
+      .popup-stats {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      .popup-stat {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 10px 16px;
+        text-align: center;
+      }
+      .popup-stat .v {
+        font-size: 20px;
+        font-weight: 900;
+        color: var(--gold);
+        font-family: "Fredoka One", cursive;
+      }
+      .popup-stat .l {
+        font-size: 10px;
+        color: var(--txt2);
+        text-transform: uppercase;
+      }
+      .popup-btns {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
 
-/* WIN confetti */
-.confetti-piece{position:fixed;pointer-events:none;width:8px;height:8px;border-radius:2px;animation:confettiFall 1.5s ease-in forwards;z-index:200;}
-@keyframes confettiFall{
-  0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
-  100%{transform:translateY(110vh) rotate(720deg);opacity:0;}
-}
+      /* WIN confetti */
+      .confetti-piece {
+        position: fixed;
+        pointer-events: none;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        animation: confettiFall 1.5s ease-in forwards;
+        z-index: 200;
+      }
+      @keyframes confettiFall {
+        0% {
+          transform: translateY(-20px) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(110vh) rotate(720deg);
+          opacity: 0;
+        }
+      }
 
-/* STREAK POPUP */
-#streak-popup{position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(0);background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50px;padding:8px 20px;font-family:'Fredoka One',cursive;font-size:18px;color:#fff;z-index:150;transition:transform .25s,opacity .25s;white-space:nowrap;box-shadow:0 8px 30px rgba(124,58,237,.5);}
-#streak-popup.show{transform:translateX(-50%) scale(1);}
+      /* STREAK POPUP */
+      #streak-popup {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%) scale(0);
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-family: "Fredoka One", cursive;
+        font-size: 18px;
+        color: #fff;
+        z-index: 150;
+        transition:
+          transform 0.25s,
+          opacity 0.25s;
+        white-space: nowrap;
+        box-shadow: 0 8px 30px rgba(124, 58, 237, 0.5);
+      }
+      #streak-popup.show {
+        transform: translateX(-50%) scale(1);
+      }
 
-/* HINT HIGHLIGHT */
-.hint-glow{animation:hintPulse 0.8s ease-in-out 3;}
-@keyframes hintPulse{0%,100%{filter:brightness(1);}50%{filter:brightness(2) drop-shadow(0 0 12px #fbbf24);}}
+      /* HINT HIGHLIGHT */
+      .hint-glow {
+        animation: hintPulse 0.8s ease-in-out 3;
+      }
+      @keyframes hintPulse {
+        0%,
+        100% {
+          filter: brightness(1);
+        }
+        50% {
+          filter: brightness(2) drop-shadow(0 0 12px #fbbf24);
+        }
+      }
 
-/* SHAKE */
-@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
-.shake{animation:shake .25s ease;}
+      /* SHAKE */
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-6px);
+        }
+        75% {
+          transform: translateX(6px);
+        }
+      }
+      .shake {
+        animation: shake 0.25s ease;
+      }
 
-/* Settings */
-.settings-row{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 0;border-bottom:1px solid var(--border);}
-.settings-row:last-child{border-bottom:none;}
-.toggle{width:46px;height:26px;border-radius:13px;background:rgba(255,255,255,.1);position:relative;cursor:pointer;transition:background .2s;}
-.toggle.on{background:var(--accent);}
-.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;}
-.toggle.on::after{left:23px;}
+      /* Settings */
+      .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .settings-row:last-child {
+        border-bottom: none;
+      }
+      .toggle {
+        width: 46px;
+        height: 26px;
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.1);
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .toggle.on {
+        background: var(--accent);
+      }
+      .toggle::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        transition: left 0.2s;
+      }
+      .toggle.on::after {
+        left: 23px;
+      }
 
-/* THEMES */
-.theme-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:16px 0;}
-.theme-chip{width:52px;height:52px;border-radius:12px;cursor:pointer;border:2.5px solid transparent;transition:all .18s;position:relative;}
-.theme-chip.active{border-color:#fff;transform:scale(1.1);}
-.theme-chip::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;opacity:0;}
-.theme-chip.active::after{opacity:1;}
+      /* THEMES */
+      .theme-grid {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 16px 0;
+      }
+      .theme-chip {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        cursor: pointer;
+        border: 2.5px solid transparent;
+        transition: all 0.18s;
+        position: relative;
+      }
+      .theme-chip.active {
+        border-color: #fff;
+        transform: scale(1.1);
+      }
+      .theme-chip::after {
+        content: "✓";
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 900;
+        font-size: 18px;
+        opacity: 0;
+      }
+      .theme-chip.active::after {
+        opacity: 1;
+      }
 
-/* Responsive */
-@media(min-width:520px){
-  .ls-grid{grid-template-columns:repeat(5,1fr);}
-}
-</style>
-</head>
-<body>
-
-<!-- SPLASH -->
-<div class="screen active" id="splash">
-  <div class="splash-logo">ZIP MASTER</div>
-  <div class="splash-sub">Connect the Path</div>
-  <div class="splash-dots">
-    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-  </div>
-</div>
-
-<!-- HOME -->
-<div class="screen" id="home">
-  <div class="home-logo">ZIP MASTER</div>
-  <div class="home-tagline">The Ultimate Path Puzzle</div>
-  <div class="home-stats">
-    <div class="stat-chip"><div class="val" id="h-levels">0</div><div class="lbl">Solved</div></div>
-    <div class="stat-chip"><div class="val" id="h-stars">0</div><div class="lbl">Stars</div></div>
-    <div class="stat-chip"><div class="val" id="h-coins">0</div><div class="lbl">Coins</div></div>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:280px;">
-    <button class="btn btn-primary" onclick="showScreen('levelSelect')">▶ Play</button>
-    <button class="btn btn-secondary" onclick="showScreen('settings')">⚙ Settings</button>
-  </div>
-</div>
-
-<!-- LEVEL SELECT -->
-<div class="screen" id="levelSelect">
-  <div class="ls-header">
-    <div class="topbar-back" onclick="showScreen('home')">←</div>
-    <div class="ls-title">Levels</div>
-    <div style="font-size:12px;color:var(--txt2);" id="ls-progress">0/25</div>
-  </div>
-  <div class="ls-grid" id="ls-grid"></div>
-</div>
-
-<!-- GAME -->
-<div class="screen" id="game">
-  <div class="game-topbar">
-    <div class="topbar-back" onclick="confirmBack()">←</div>
-    <div class="topbar-center">
-      <div class="topbar-lvl" id="g-lvl-title">Level 1</div>
-      <div class="topbar-hint-count" id="g-diff-name">Tutorial Easy</div>
+      /* Responsive */
+      @media (min-width: 520px) {
+        .ls-grid {
+          grid-template-columns: repeat(5, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- SPLASH -->
+    <div class="screen active" id="splash">
+      <div class="splash-logo">ZIP MASTER</div>
+      <div class="splash-sub">Connect the Path</div>
+      <div class="splash-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
     </div>
-    <div class="topbar-right">
-      <div class="timer-chip" id="g-timer">0:00</div>
-      <div class="icon-btn" onclick="showPause()">⏸</div>
-    </div>
-  </div>
-  <div class="progress-bar-wrap" style="margin:6px auto;padding:0 16px;width:100%;">
-    <div class="progress-bar" id="g-progress" style="width:0%"></div>
-  </div>
-  <div id="puzzle-area">
-    <canvas id="grid-canvas"></canvas>
-  </div>
-  <div class="game-bottombar">
-  <div class="bot-btn" onclick="undoMove()"><div class="icon">↩</div><div class="lbl">Undo</div></div>
-  <div class="bot-btn" onclick="restartLevel()"><div class="icon">↺</div><div class="lbl">Restart</div></div>
-  <div class="bot-btn hint-btn" onclick="useHint()"><div class="icon">💡</div><div class="lbl" id="hint-lbl">Hint</div></div>
-  <div class="bot-btn" onclick="skipLevel()"><div class="icon">⏭</div><div class="lbl">Skip</div></div>
-  
-  <!-- NEW SUBMIT BUTTON -->
-  <div class="bot-btn" onclick="submitPath()">
-    <div class="icon">✔</div>
-    <div class="lbl">Submit</div>
-  </div>
-</div>
-</div>
 
-<!-- SETTINGS -->
-<div class="screen" id="settings" style="padding:20px;gap:0;justify-content:flex-start;">
-  <div class="ls-header" style="margin-bottom:24px;">
-    <div class="topbar-back" onclick="showScreen('home')">←</div>
-    <div class="ls-title">Settings</div>
-  </div>
-  <div style="width:100%;max-width:400px;">
-    <div class="settings-row">
-      <div><div style="font-weight:800;">Sound Effects</div><div style="font-size:12px;color:var(--txt2);">Tile clicks & chimes</div></div>
-      <div class="toggle on" id="sound-toggle" onclick="toggleSetting('sound')"></div>
+    <!-- HOME -->
+    <div class="screen" id="home">
+      <div class="home-logo">ZIP MASTER</div>
+      <div class="home-tagline">The Ultimate Path Puzzle</div>
+      <div class="home-stats">
+        <div class="stat-chip">
+          <div class="val" id="h-levels">0</div>
+          <div class="lbl">Solved</div>
+        </div>
+        <div class="stat-chip">
+          <div class="val" id="h-stars">0</div>
+          <div class="lbl">Stars</div>
+        </div>
+        <div class="stat-chip">
+          <div class="val" id="h-coins">0</div>
+          <div class="lbl">Coins</div>
+        </div>
+      </div>
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          width: 100%;
+          max-width: 280px;
+        "
+      >
+        <button class="btn btn-primary" onclick="showScreen('levelSelect')">
+          ▶ Play
+        </button>
+        <button class="btn btn-secondary" onclick="showScreen('settings')">
+          ⚙ Settings
+        </button>
+      </div>
     </div>
-    <div class="settings-row">
-      <div><div style="font-weight:800;">Haptic Feedback</div><div style="font-size:12px;color:var(--txt2);">Vibration on mobile</div></div>
-      <div class="toggle on" id="haptic-toggle" onclick="toggleSetting('haptic')"></div>
-    </div>
-    <div class="settings-row">
-      <div><div style="font-weight:800;">Show Timer</div><div style="font-size:12px;color:var(--txt2);">Track solve time</div></div>
-      <div class="toggle on" id="timer-toggle" onclick="toggleSetting('timer')"></div>
-    </div>
-    <div style="margin-top:24px;">
-      <div style="font-weight:800;margin-bottom:12px;">Theme</div>
-      <div class="theme-grid" id="theme-grid"></div>
-    </div>
-    <div style="margin-top:24px;">
-      <button class="btn btn-secondary" style="width:100%;" onclick="resetGame()">Reset All Progress</button>
-    </div>
-  </div>
-</div>
 
-<!-- POPUPS -->
-<div class="popup-bg" id="pause-popup">
-  <div class="popup-card">
-    <div class="popup-icon">⏸</div>
-    <div class="popup-title">Paused</div>
-    <div class="popup-btns">
-      <button class="btn btn-primary" onclick="hidePause()">▶ Resume</button>
-      <button class="btn btn-secondary" onclick="restartLevel();hidePause()">↺ Restart</button>
-      <button class="btn btn-outline" onclick="hidePause();confirmBack()">← Levels</button>
+    <!-- LEVEL SELECT -->
+    <div class="screen" id="levelSelect">
+      <div class="ls-header">
+        <div class="topbar-back" onclick="showScreen('home')">←</div>
+        <div class="ls-title">Levels</div>
+        <div style="font-size: 12px; color: var(--txt2)" id="ls-progress">
+          0/25
+        </div>
+      </div>
+      <div class="ls-grid" id="ls-grid"></div>
     </div>
-  </div>
-</div>
 
-<div class="popup-bg" id="win-popup">
-  <div class="popup-card">
-    <div class="popup-icon">🎉</div>
-    <div class="popup-title" id="win-title">Solved!</div>
-    <div class="stars-row" id="win-stars"></div>
-    <div class="popup-stats">
-      <div class="popup-stat"><div class="v" id="win-time">0:00</div><div class="l">Time</div></div>
-      <div class="popup-stat"><div class="v" id="win-coins">+0</div><div class="l">Coins</div></div>
+    <!-- GAME -->
+    <div class="screen" id="game">
+      <div class="game-topbar">
+        <div class="topbar-back" onclick="confirmBack()">←</div>
+        <div class="topbar-center">
+          <div class="topbar-lvl" id="g-lvl-title">Level 1</div>
+          <div class="topbar-hint-count" id="g-diff-name">Tutorial Easy</div>
+        </div>
+        <div class="topbar-right">
+          <div class="timer-chip" id="g-timer">0:00</div>
+          <div class="icon-btn" onclick="showPause()">⏸</div>
+        </div>
+      </div>
+      <div
+        class="progress-bar-wrap"
+        style="margin: 6px auto; padding: 0 16px; width: 100%"
+      >
+        <div class="progress-bar" id="g-progress" style="width: 0%"></div>
+      </div>
+      <div id="puzzle-area">
+        <canvas id="grid-canvas"></canvas>
+      </div>
+      <div class="game-bottombar">
+        <div class="bot-btn" onclick="undoMove()">
+          <div class="icon">↩</div>
+          <div class="lbl">Undo</div>
+        </div>
+        <div class="bot-btn" onclick="restartLevel()">
+          <div class="icon">↺</div>
+          <div class="lbl">Restart</div>
+        </div>
+        <div class="bot-btn hint-btn" onclick="useHint()">
+          <div class="icon">💡</div>
+          <div class="lbl" id="hint-lbl">Hint</div>
+        </div>
+        <div class="bot-btn" onclick="skipLevel()">
+          <div class="icon">⏭</div>
+          <div class="lbl">Skip</div>
+        </div>
+
+        <!-- NEW SUBMIT BUTTON -->
+        <div class="bot-btn" onclick="submitPath()">
+          <div class="icon">✔</div>
+          <div class="lbl">Submit</div>
+        </div>
+      </div>
     </div>
-    <div class="popup-btns">
-      <button class="btn btn-primary" id="win-next-btn" onclick="nextLevel()">Next Level →</button>
-      <button class="btn btn-secondary" onclick="hideWin();restartLevel()">↺ Replay</button>
-      <button class="btn btn-outline" onclick="hideWin();showScreen('levelSelect')">≡ Levels</button>
+
+    <!-- SETTINGS -->
+    <div
+      class="screen"
+      id="settings"
+      style="padding: 20px; gap: 0; justify-content: flex-start"
+    >
+      <div class="ls-header" style="margin-bottom: 24px">
+        <div class="topbar-back" onclick="showScreen('home')">←</div>
+        <div class="ls-title">Settings</div>
+      </div>
+      <div style="width: 100%; max-width: 400px">
+        <div class="settings-row">
+          <div>
+            <div style="font-weight: 800">Sound Effects</div>
+            <div style="font-size: 12px; color: var(--txt2)">
+              Tile clicks & chimes
+            </div>
+          </div>
+          <div
+            class="toggle on"
+            id="sound-toggle"
+            onclick="toggleSetting('sound')"
+          ></div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div style="font-weight: 800">Haptic Feedback</div>
+            <div style="font-size: 12px; color: var(--txt2)">
+              Vibration on mobile
+            </div>
+          </div>
+          <div
+            class="toggle on"
+            id="haptic-toggle"
+            onclick="toggleSetting('haptic')"
+          ></div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div style="font-weight: 800">Show Timer</div>
+            <div style="font-size: 12px; color: var(--txt2)">
+              Track solve time
+            </div>
+          </div>
+          <div
+            class="toggle on"
+            id="timer-toggle"
+            onclick="toggleSetting('timer')"
+          ></div>
+        </div>
+        <div style="margin-top: 24px">
+          <div style="font-weight: 800; margin-bottom: 12px">Theme</div>
+          <div class="theme-grid" id="theme-grid"></div>
+        </div>
+        <div style="margin-top: 24px">
+          <button
+            class="btn btn-secondary"
+            style="width: 100%"
+            onclick="resetGame()"
+          >
+            Reset All Progress
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div class="popup-bg" id="hint-popup">
-  <div class="popup-card">
-    <div class="popup-icon">💡</div>
-    <div class="popup-title">Need a Hint?</div>
-    <div class="popup-sub">Using a hint will cost 1 token and reduce your star rating.</div>
-    <div class="popup-btns">
-      <button class="btn btn-primary" onclick="confirmHint()">Use Hint (<span id="h-tokens">3</span> left)</button>
-      <button class="btn btn-secondary" onclick="document.getElementById('hint-popup').classList.remove('show')">Cancel</button>
+    <!-- POPUPS -->
+    <div class="popup-bg" id="pause-popup">
+      <div class="popup-card">
+        <div class="popup-icon">⏸</div>
+        <div class="popup-title">Paused</div>
+        <div class="popup-btns">
+          <button class="btn btn-primary" onclick="hidePause()">
+            ▶ Resume
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="
+              restartLevel();
+              hidePause();
+            "
+          >
+            ↺ Restart
+          </button>
+          <button
+            class="btn btn-outline"
+            onclick="
+              hidePause();
+              confirmBack();
+            "
+          >
+            ← Levels
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div id="streak-popup"></div>
+    <div class="popup-bg" id="win-popup">
+      <div class="popup-card">
+        <div class="popup-icon">🎉</div>
+        <div class="popup-title" id="win-title">Solved!</div>
+        <div class="stars-row" id="win-stars"></div>
+        <div class="popup-stats">
+          <div class="popup-stat">
+            <div class="v" id="win-time">0:00</div>
+            <div class="l">Time</div>
+          </div>
+          <div class="popup-stat">
+            <div class="v" id="win-coins">+0</div>
+            <div class="l">Coins</div>
+          </div>
+        </div>
+        <div class="popup-btns">
+          <button
+            class="btn btn-primary"
+            id="win-next-btn"
+            onclick="nextLevel()"
+          >
+            Next Level →
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="
+              hideWin();
+              restartLevel();
+            "
+          >
+            ↺ Replay
+          </button>
+          <button
+            class="btn btn-outline"
+            onclick="
+              hideWin();
+              showScreen('levelSelect');
+            "
+          >
+            ≡ Levels
+          </button>
+        </div>
+      </div>
+    </div>
 
-<script>
-// ============================================================
-// 25 LEVELS DATA
-// Each level: { size, numbers: [[row,col,num]], solution: [[r,c],...], name, difficulty, trick, starTimes:[3star,2star] }
-// ============================================================
-const LEVELS = [
-// 1 - Tutorial Easy 4x4
-{size:4,numbers:[[0,0,1],[3,3,2]],name:"First Steps",difficulty:"Tutorial",trick:"Straight snake path",starTimes:[20,40],
-solution:[[0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],[1,1],[1,2],[2,2],[2,1]]},
-// 2
-{size:4,numbers:[[0,0,1],[0,3,2],[3,0,3]],name:"Triangle Route",difficulty:"Tutorial",trick:"3-point path",starTimes:[25,50],
-solution:[[0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],[1,1],[1,2],[2,2],[2,1]]},
-// 3
-{size:4,numbers:[[0,0,1],[1,2,2],[3,3,3]],name:"Zigzag",difficulty:"Tutorial",trick:"Forced diagonal",starTimes:[25,50],
-solution:[[0,0],[0,1],[0,2],[0,3],[1,3],[1,2],[1,1],[1,0],[2,0],[2,1],[2,2],[2,3],[3,3],[3,2],[3,1],[3,0]]},
-// 4
-{size:4,numbers:[[0,0,1],[2,1,2],[3,3,3]],name:"Corner Hop",difficulty:"Tutorial",trick:"Mid corner",starTimes:[30,55],
-solution:[[0,0],[1,0],[2,0],[2,1],[3,1],[3,0],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],[1,1],[1,2],[2,2]]},
-// 5
-{size:4,numbers:[[0,0,1],[0,3,2],[3,3,3],[3,0,4]],name:"Four Corners",difficulty:"Tutorial",trick:"Perimeter run",starTimes:[30,60],
-solution:[[0,0],[1,0],[2,0],[3,0],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[3,3],[2,3],[1,3],[0,3]]},
-// 6 - Easy+ 5x5
-{size:5,numbers:[[0,0,1],[0,2,2],[0,4,3],[4,4,4]],name:"Triple Gate",difficulty:"Easy",trick:"Full spiral",starTimes:[35,70],
-solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4]]},
-// 7 - Zigzag Rush
-{size:5,numbers:[[0,0,1],[0,4,2],[2,2,3],[4,0,4],[4,4,5]],name:"Ladder Sweep",difficulty:"Easy",trick:"Center pivot",starTimes:[35,70],
-solution:[[0,0],[0,1],[0,2],[0,3],[0,4],[1,4],[1,3],[1,2],[1,1],[1,0],[2,0],[2,1],[2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[3,1],[3,0],[4,0],[4,1],[4,2],[4,3],[4,4]]},
-// 8
-// 8 (Changed completely from level 9, unique pattern)
-{size:5,numbers:[[0,2,1],[1,4,2],[2,0,3],[3,3,4],[4,1,5]],name:"Zig Pulse",difficulty:"Medium",trick:"Zigzag anchors",starTimes:[42,82],
-solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4]]},
-// 9
-// 9 (Fixed: unique pattern + valid path exists)
-{size:5,
-numbers:[[2,0,1],[0,1,2],[4,2,3],[1,3,4],[3,4,5]],
-name:"Twist Arrow",
+    <div class="popup-bg" id="hint-popup">
+      <div class="popup-card">
+        <div class="popup-icon">💡</div>
+        <div class="popup-title">Need a Hint?</div>
+        <div class="popup-sub">
+          Using a hint will cost 1 token and reduce your star rating.
+        </div>
+        <div class="popup-btns">
+          <button class="btn btn-primary" onclick="confirmHint()">
+            Use Hint (<span id="h-tokens">3</span> left)
+          </button>
+          <button
+            class="btn btn-secondary"
+            onclick="
+              document.getElementById('hint-popup').classList.remove('show')
+            "
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="streak-popup"></div>
+
+    <script>
+      // ============================================================
+      // 25 LEVELS DATA
+      // Each level: { size, numbers: [[row,col,num]], solution: [[r,c],...], name, difficulty, trick, starTimes:[3star,2star] }
+      // ============================================================
+      const LEVELS = [
+        // 1a
+        {
+          size: 4,
+          numbers: [
+            [0, 0, 1],
+            [1, 2, 2],
+            [3, 3, 3],
+          ],
+          name: "Zigzag",
+          difficulty: "Tutorial",
+          trick: "Forced diagonal",
+          starTimes: [25, 50],
+          solution: [
+            [0, 0],
+            [0, 1],
+            [0, 2],
+            [0, 3],
+            [1, 3],
+            [1, 2],
+            [1, 1],
+            [1, 0],
+            [2, 0],
+            [2, 1],
+            [2, 2],
+            [2, 3],
+            [3, 3],
+            [3, 2],
+            [3, 1],
+            [3, 0],
+          ],
+        },
+
+        // 2a
+        {
+size:5,
+numbers:[
+  [1,3,1],
+  [1,0,2],
+  [4,1,3],
+  [3,3,4]
+],
+name:"Mini Grid",
 difficulty:"Easy",
-trick:"Offset anchors",
+trick:"Simple route",
 starTimes:[40,80],
+solution:[
+  [1,3],[1,2],[1,1],[1,0],
+  [2,0],[3,0],[4,0],[4,1],
+  [4,2],[4,3],[3,3],
+  [3,4],[2,4],[1,4],[0,4],
+  [0,3],[0,2],[0,1],[0,0],
+  [2,1],[2,2],[2,3],
+  [3,2],[3,1],[4,4]
+]
+},
+
+// 3a
+{
+size:6,
+numbers:[
+  [2,4,1],
+  [0,3,2],
+  [1,0,3],
+  [3,1,4],
+  [4,5,5]
+],
+name:"Wide Point Route",
+difficulty:"Medium",
+trick:"Long open route",
+starTimes:[55,110],
+solution:[
+  [2,4],[1,4],[0,4],[0,3],
+  [0,2],[0,1],[0,0],[1,0],
+  [2,0],[3,0],[3,1],
+  [4,1],[5,1],[5,2],[5,3],[5,4],[5,5],
+  [4,5],
+  [4,4],[3,4],[3,3],[2,3],[1,3],
+  [1,2],[2,2],[3,2],[4,2],
+  [4,3],[5,3],[5,0]
+]
+},
+// 4a
+{
+size:5,
+numbers:[
+  [3,3,1],
+  [4,0,2],
+  [0,0,3],
+  [1,3,4],
+  [2,2,5]
+],
+name:"Five Point Route",
+difficulty:"Easy",
+trick:"Connect sparse points",
+starTimes:[45,90],
+solution:[
+  [3,3],[3,2],[2,2],
+  [2,1],[3,1],[4,1],[4,0],
+  [3,0],[2,0],[1,0],[0,0],
+  [0,1],[0,2],[0,3],[1,3],
+  [1,4],[2,4],[3,4],[4,4],
+  [4,3],[4,2],[3,2],[2,2],
+  [2,3]
+]
+},
+
+// 5a
+{
+          size: 6,
+
+          numbers: [
+            [1, 5, 1],
+
+            [5, 4, 2],
+
+            [2, 0, 3],
+
+            [0, 1, 4],
+
+            [1, 3, 5],
+
+            [3, 3, 6],
+          ],
+
+          name: "Cross Route",
+
+          difficulty: "Expert",
+
+          trick: "Sparse Clues",
+
+          blocked: [[4, 1]],
+
+          solution: [
+            [5, 1],
+            [5, 0],
+            [4, 0],
+            [3, 0],
+            [2, 0],
+            [1, 0],
+
+            [0, 0],
+            [0, 1],
+            [0, 2],
+            [0, 3],
+            [0, 4],
+            [0, 5],
+
+            [1, 5],
+            [2, 5],
+            [3, 5],
+            [4, 5],
+            [5, 5],
+            [5, 4],
+
+            [5, 3],
+            [5, 2],
+            [4, 2],
+            [4, 1],
+            [3, 1],
+            [2, 1],
+
+            [1, 1],
+            [1, 2],
+            [1, 3],
+            [1, 4],
+            [2, 4],
+            [3, 4],
+
+            [4, 4],
+            [4, 3],
+            [3, 3],
+            [2, 3],
+            [2, 2],
+            [3, 2],
+          ],
+        },
+
+        // 6a
+        {
+          size: 8,
+
+          numbers: [
+            [0, 0, 1],
+
+            [3, 0, 2],
+
+            [7, 7, 3],
+
+            [6, 5, 4],
+
+            [5, 1, 5],
+
+            [2, 1, 6],
+
+            [4, 7, 7],
+
+            [5, 2, 8],
+
+            [2, 5, 9],
+
+            [3, 4, 10],
+          ],
+
+          name: "Zip Spiral",
+
+          difficulty: "Easy",
+
+          trick: "Spiral Route",
+
+          starTimes: [60, 120],
+
+          solution: [
+            [0, 0],
+            [1, 0],
+            [2, 0],
+            [3, 0],
+            [4, 0],
+            [5, 0],
+            [6, 0],
+            [7, 0],
+
+            [7, 1],
+            [7, 2],
+            [7, 3],
+            [7, 4],
+            [7, 5],
+            [7, 6],
+            [7, 7],
+
+            [6, 7],
+            [5, 7],
+            [4, 7],
+            [3, 7],
+            [2, 7],
+            [1, 7],
+            [0, 7],
+
+            [0, 6],
+            [0, 5],
+            [0, 4],
+            [0, 3],
+            [0, 2],
+            [0, 1],
+
+            [1, 1],
+            [2, 1],
+            [3, 1],
+            [4, 1],
+            [5, 1],
+            [6, 1],
+
+            [6, 2],
+            [6, 3],
+            [6, 4],
+            [6, 5],
+            [6, 6],
+
+            [5, 6],
+            [4, 6],
+            [3, 6],
+            [2, 6],
+            [1, 6],
+
+            [1, 5],
+            [1, 4],
+            [1, 3],
+            [1, 2],
+
+            [2, 2],
+            [3, 2],
+            [4, 2],
+            [5, 2],
+
+            [5, 3],
+            [5, 4],
+            [5, 5],
+
+            [4, 5],
+            [3, 5],
+            [2, 5],
+
+            [2, 4],
+            [2, 3],
+
+            [3, 3],
+            [4, 3],
+            [4, 4],
+            [3, 4],
+          ],
+        },
+
+        // 7a - Easy+ 5x5
+        {
+          size: 8,
+
+          numbers: [
+            [0, 0, 1],
+
+            [4, 0, 2],
+
+            [7, 7, 3],
+
+            [6, 6, 4],
+
+            [6, 1, 5],
+
+            [1, 1, 6],
+
+            [1, 6, 7],
+
+            [5, 6, 8],
+
+            [5, 2, 9],
+
+            [2, 2, 10],
+
+            [2, 5, 11],
+
+            [3, 4, 12],
+          ],
+
+          name: "Spiral Master",
+
+          difficulty: "Medium",
+
+          trick: "Deep Spiral",
+
+          starTimes: [80, 150],
+
+          solution: [
+            [0, 0],
+            [1, 0],
+            [2, 0],
+            [3, 0],
+            [4, 0],
+            [5, 0],
+            [6, 0],
+            [7, 0],
+
+            [7, 1],
+            [7, 2],
+            [7, 3],
+            [7, 4],
+            [7, 5],
+            [7, 6],
+            [7, 7],
+
+            [6, 7],
+            [5, 7],
+            [4, 7],
+            [3, 7],
+            [2, 7],
+            [1, 7],
+            [0, 7],
+
+            [0, 6],
+            [0, 5],
+            [0, 4],
+            [0, 3],
+            [0, 2],
+            [0, 1],
+
+            [1, 1],
+            [2, 1],
+            [3, 1],
+            [4, 1],
+            [5, 1],
+            [6, 1],
+
+            [6, 2],
+            [6, 3],
+            [6, 4],
+            [6, 5],
+            [6, 6],
+
+            [5, 6],
+            [4, 6],
+            [3, 6],
+            [2, 6],
+            [1, 6],
+
+            [1, 5],
+            [1, 4],
+            [1, 3],
+            [1, 2],
+
+            [2, 2],
+            [3, 2],
+            [4, 2],
+            [5, 2],
+
+            [5, 3],
+            [5, 4],
+            [5, 5],
+
+            [4, 5],
+            [3, 5],
+            [2, 5],
+
+            [2, 4],
+            [2, 3],
+
+            [3, 3],
+            [4, 3],
+            [4, 4],
+            [3, 4],
+          ],
+        },
+
+        // 8a - Screenshot Number Cluster Level
+{
+size:7,
+numbers:[
+  [6,4,1],
+  [5,4,2],
+  [5,5,3],
+  [6,5,4],
+  [0,2,5],
+  [0,1,6],
+  [2,5,7],
+  [1,5,8],
+  [1,4,9],
+  [1,2,10],
+  [2,4,11],
+  [4,2,12],
+  [5,2,13],
+  [5,1,14],
+  [4,1,15],
+  [1,1,16]
+],
+name:"Number Cluster",
+difficulty:"Hard",
+trick:"Long number chain",
+starTimes:[100,180],
+solution:[
+  [6,4],[5,4],[5,5],[6,5],[6,6],[5,6],[4,6],[3,6],[2,6],[1,6],[0,6],[0,5],[0,4],[0,3],[0,2],[0,1],
+  [0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[6,1],[6,2],[6,3],
+  [5,3],[4,3],[4,4],[4,5],[3,5],[2,5],[1,5],[1,4],[1,3],[1,2],
+  [2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[4,2],[5,2],[5,1],[4,1],[3,1],[2,1],[1,1]
+]
+},
+
+// 9a - Screenshot 16 Number Grid Level
+{
+size:7,
+numbers:[
+  [4,0,1],
+  [5,0,2],
+  [5,6,3],
+  [4,4,4],
+  [5,4,5],
+  [5,2,6],
+  [2,0,7],
+  [2,2,8],
+  [4,2,9],
+  [1,2,10],
+  [1,0,11],
+  [1,4,12],
+  [1,6,13],
+  [2,6,14],
+  [2,4,15],
+  [4,6,16]
+],
+name:"Number Web",
+difficulty:"Hard",
+trick:"Connect all numbers in order",
+starTimes:[100,180],
+solution:[
+  [4,0],[5,0],
+  [6,0],[6,1],[6,2],[6,3],[6,4],[6,5],[6,6],
+  [5,6],
+  [5,5],[4,5],[4,4],
+  [5,4],
+  [5,3],[5,2],
+  [4,2],[3,2],[3,1],[3,0],[2,0],
+  [2,1],[2,2],
+  [3,2],[4,2],
+  [4,1],[3,1],[2,1],[1,1],[1,2],
+  [1,1],[1,0],
+  [0,0],[0,1],[0,2],[0,3],[0,4],[1,4],
+  [0,4],[0,5],[0,6],[1,6],
+  [2,6],
+  [2,5],[2,4],
+  [3,4],[3,5],[3,6],[4,6]
+]
+},
+        // 10a - Screenshot T Wall Level
+        {
+          size: 6,
+          numbers: [
+            [0, 3, 1],
+            [1, 1, 2],
+            [2, 2, 3],
+            [3, 1, 4],
+            [4, 0, 5],
+            [5, 3, 6],
+            [3, 4, 7],
+            [0, 4, 8],
+          ],
+          name: "Split Barrier",
+          difficulty: "Hard",
+          trick: "Avoid split walls",
+          starTimes: [70, 130],
+          walls: {
+            horizontal: [[4, 0, 1]],
+            vertical: [
+              [1, 4],
+              [3, 4],
+            ],
+          },
+          solution: [
+            [0, 3],
+            [0, 2],
+            [0, 1],
+            [1, 1],
+            [1, 2],
+            [2, 2],
+            [2, 1],
+            [3, 1],
+            [3, 0],
+            [4, 0],
+            [5, 0],
+            [5, 1],
+            [5, 2],
+            [5, 3],
+            [5, 4],
+            [4, 4],
+            [3, 4],
+            [2, 4],
+            [1, 4],
+            [0, 4],
+            [0, 5],
+            [1, 5],
+            [2, 5],
+            [3, 5],
+            [4, 5],
+            [5, 5],
+            [4, 4],
+            [4, 3],
+            [4, 2],
+            [3, 2],
+            [2, 2],
+            [2, 3],
+            [1, 3],
+            [1, 2],
+            [1, 0],
+            [2, 0],
+          ],
+        },
+        // 11a - Screenshot Wall Level
+        {
+          size: 6,
+          numbers: [
+            [0, 0, 1],
+            [0, 3, 2],
+            [1, 5, 3],
+            [1, 2, 4],
+            [2, 0, 5],
+            [2, 3, 6],
+            [3, 5, 7],
+            [3, 2, 8],
+            [3, 0, 9],
+            [4, 1, 10],
+            [4, 3, 11],
+            [4, 5, 12],
+          ],
+          name: "Wall Circuit",
+          difficulty: "Hard",
+          trick: "Avoid wall borders",
+          starTimes: [70, 130],
+          walls: {
+            horizontal: [
+              [1, 0, 0],
+              [2, 5, 5],
+              [3, 0, 0],
+              [4, 3, 5],
+            ],
+            vertical: [],
+          },
+          solution: [
+            [0, 0],
+            [0, 1],
+            [0, 2],
+            [0, 3],
+            [0, 4],
+            [0, 5],
+            [1, 5],
+            [1, 4],
+            [1, 3],
+            [1, 2],
+            [1, 1],
+            [1, 0],
+            [2, 0],
+            [2, 1],
+            [2, 2],
+            [2, 3],
+            [2, 4],
+            [2, 5],
+            [3, 5],
+            [3, 4],
+            [3, 3],
+            [3, 2],
+            [3, 1],
+            [3, 0],
+            [4, 0],
+            [4, 1],
+            [4, 2],
+            [4, 3],
+            [4, 4],
+            [4, 5],
+            [5, 5],
+            [5, 4],
+            [5, 3],
+            [5, 2],
+            [5, 1],
+            [5, 0],
+          ],
+        },
+
+// 12a
+        {
+size:6,
+
+numbers:[
+ [5,1,1],
+ [3,0,2],
+ [1,0,3],
+ [0,2,4],
+ [3,2,5],
+ [4,3,6],
+ [1,3,7],
+ [0,5,8],
+ [2,4,9],
+ [3,5,10],
+ [5,4,11]
+],
+
+name:"Broken Walls",
+difficulty:"Hard",
+trick:"Navigate around barriers",
+starTimes:[90,170],
+
+walls:{
+  horizontal:[
+    [2,0,0],
+    [5,1,1]
+  ],
+
+  vertical:[
+    [3,2],
+    [4,2],
+    [5,2],
+
+    [4,4]
+  ]
+},
 
 solution:[
-[0,0],[1,0],[2,0],[3,0],[4,0],
-[4,1],[3,1],[2,1],[1,1],[0,1],
-[0,2],[1,2],[2,2],[3,2],[4,2],
-[4,3],[3,3],[2,3],[1,3],[0,3],
-[0,4],[1,4],[2,4],[3,4],[4,4]
-]},
-// 10
-{size:5,numbers:[[0,0,1],[1,3,2],[3,1,3],[4,4,4]],name:"Spiral Start",difficulty:"Easy",trick:"Inner loop",starTimes:[40,80],
-solution:[[0,0],[0,1],[0,2],[0,3],[0,4],[1,4],[1,3],[2,3],[2,4],[3,4],[4,4],[4,3],[4,2],[4,1],[4,0],[3,0],[2,0],[1,0],[1,1],[1,2],[2,2],[3,2],[3,3],[3,1],[2,1]]},
-// 11 (Updated: 6 numbers, Medium)
-{size:6,numbers:[[0,0,1],[0,5,2],[2,2,3],[3,3,4],[5,0,5],[5,5,6]],name:"Hex Fortress",difficulty:"Medium",trick:"Outer corners + core",starTimes:[52,102],
-solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
+ [5,1],
+ [5,0],
+ [4,0],
+ [3,0],
 
-// 12 (Updated: 6 numbers, Medium)
-{size:6,numbers:[[0,1,1],[0,4,2],[2,2,3],[3,3,4],[5,1,5],[5,4,6]],name:"Twin Gate",difficulty:"Medium",trick:"Balanced anchors",starTimes:[54,105],
-solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
+ [2,0],
+ [1,0],
 
-// 13 (Updated: 7 numbers, Medium)
-{size:6,numbers:[[0,0,1],[0,5,2],[2,2,3],[2,3,4],[3,3,5],[3,2,6],[5,5,7]],name:"Core Matrix",difficulty:"Medium",trick:"Dense middle",starTimes:[56,108],
-solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
+ [0,0],
+ [0,1],
+ [0,2],
 
-// 14 (Updated: 7 numbers, Medium)
-{size:6,numbers:[[0,2,1],[0,5,2],[2,0,3],[3,5,4],[5,0,5],[5,3,6],[5,5,7]],name:"Trap Fortress",difficulty:"Medium",trick:"Spread anchors",starTimes:[58,112],
-solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
+ [1,2],
+ [2,2],
+ [3,2],
 
+ [4,2],
+ [4,3],
 
-// 15 (Cooler pattern, same difficulty)
-{size:6,numbers:[[0,2,1],[1,5,2],[3,3,3],[4,0,4],[5,2,5],[5,5,6]],name:"Star Route",difficulty:"Medium",trick:"Scattered star anchors",starTimes:[65,120],
-solution:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[5,5],[4,5],[3,5],[2,5],[1,5],[0,5]]},
+ [3,3],
+ [2,3],
+ [1,3],
 
+ [1,4],
+ [0,4],
+ [0,5],
 
-// 16 (Updated: 7 numbers, Medium-Hard)
-{size:7,numbers:[[0,0,1],[0,6,2],[2,2,3],[3,3,4],[4,4,5],[6,0,6],[6,6,7]],name:"Mega Nexus",difficulty:"Hard",trick:"Corners + diagonal",starTimes:[82,152],
-solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+ [1,5],
+ [2,5],
+ [2,4],
 
-// 17 (Updated: 8 numbers, Hard)
-{size:7,numbers:[[0,0,1],[0,6,2],[2,2,3],[2,4,4],[4,2,5],[4,4,6],[6,0,7],[6,6,8]],name:"Iron Matrix",difficulty:"Hard",trick:"Dual inner box",starTimes:[90,160],
-solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+ [3,4],
+ [3,5],
 
-// 18 (Updated: 8 numbers, Hard)
-{size:7,numbers:[[0,3,1],[1,1,2],[1,5,3],[3,0,4],[3,6,5],[5,1,6],[5,5,7],[6,3,8]],name:"Cross Storm",difficulty:"Hard",trick:"Cross + corners",starTimes:[92,165],
-solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+ [4,5],
+ [5,5],
+ [5,4]
+]
+},
+        // 13a (Changed completely from level 9, unique pattern)
+        
+        {
+          size: 6,
+          numbers: [
+            [2, 3, 1],
+            [3, 4, 2],
+            [4, 3, 3],
+            [5, 4, 4],
+            [3, 2, 5],
+            [5, 1, 6],
+            [1, 0, 7],
+            [0, 3, 8],
+            [1, 5, 9],
+          ],
+          name: "T Barrier",
+          difficulty: "Hard",
+          trick: "Avoid the T wall",
+          starTimes: [70, 130],
+          walls: {
+            horizontal: [[2, 2, 4]],
+            vertical: [
+              [2, 3],
+              [3, 3],
+            ],
+          },
+          solution: [
+            [2, 3],
+            [2, 4],
+            [2, 5],
+            [3, 5],
+            [3, 4],
+            [3, 3],
+            [4, 3],
+            [4, 4],
+            [4, 5],
+            [5, 5],
+            [5, 4],
+            [5, 3],
+            [5, 2],
+            [4, 2],
+            [3, 2],
+            [2, 2],
+            [2, 1],
+            [3, 1],
+            [4, 1],
+            [5, 1],
+            [5, 0],
+            [4, 0],
+            [3, 0],
+            [2, 0],
+            [1, 0],
+            [0, 0],
+            [0, 1],
+            [1, 1],
+            [1, 2],
+            [0, 2],
+            [0, 3],
+            [1, 3],
+            [1, 4],
+            [0, 4],
+            [0, 5],
+            [1, 5],
+          ],
+        },
 
-// 19 (Updated: 8 numbers, Hard)
-{size:7,numbers:[[0,0,1],[0,6,2],[2,1,3],[2,5,4],[4,1,5],[4,5,6],[6,0,7],[6,6,8]],name:"Inner Fortress",difficulty:"Hard",trick:"False gaps",starTimes:[95,170],
-solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+        // 14a - Screenshot Level
+        {
+          size: 6,
+          numbers: [
+            [2, 1, 1],
+            [1, 4, 2],
+            [2, 4, 3],
+            [4, 2, 4],
+            [5, 2, 5],
+            [5, 5, 6],
+            [4, 5, 7],
+            [0, 2, 8],
+            [0, 1, 9],
+            [3, 1, 10],
+          ],
+          name: "Wall Maze",
+          difficulty: "Easy",
+          trick: "Avoid black borders",
+          starTimes: [55, 110],
+          walls: {
+            horizontal: [[3, 2, 3]],
+            vertical: [
+              [1, 1],
+              [2, 1],
+              [3, 1],
+              [4, 1],
+              [1, 5],
+              [2, 5],
+              [3, 5],
+              [4, 5],
+              [1, 3],
+              [2, 2],
+              [2, 4],
+              [5, 2],
+              [5, 4],
+            ],
+          },
+          solution: [
+            [2, 1],
+            [1, 1],
+            [1, 2],
+            [2, 2],
+            [2, 3],
+            [1, 3],
+            [1, 4],
+            [2, 4],
+            [3, 4],
+            [3, 3],
+            [3, 2],
+            [4, 2],
+            [5, 2],
+            [5, 3],
+            [4, 3],
+            [4, 4],
+            [5, 4],
+            [5, 5],
+            [4, 5],
+            [3, 5],
+            [2, 5],
+            [1, 5],
+            [0, 5],
+            [0, 4],
+            [0, 3],
+            [0, 2],
+            [0, 1],
+            [0, 0],
+            [1, 0],
+            [2, 0],
+            [3, 0],
+            [4, 0],
+            [5, 0],
+            [5, 1],
+            [4, 1],
+            [3, 1],
+          ],
+        },
 
-// 20 (Hard + Complex, 9 numbers, answer exists)
-{size:7,numbers:[[0,0,1],[0,6,2],[2,2,3],[2,4,4],[3,3,5],[4,2,6],[4,4,7],[6,0,8],[6,6,9]],name:"Diagonal Chaos",difficulty:"Hard",trick:"Dense center diagonal",starTimes:[102,178],
-solution:(()=>{let p=[];const s=7;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+        // 15a - Screenshot Level
+        {
+          size: 7,
+          numbers: [
+            [1, 1, 1],
+            [1, 5, 2],
+            [2, 0, 3],
+            [4, 6, 4],
+            [5, 1, 5],
+            [5, 5, 6],
+          ],
+          name: "Barrier Route",
+          difficulty: "Easy",
+          trick: "Do not touch black borders",
+          starTimes: [60, 120],
+          walls: {
+            horizontal: [
+              [2, 1, 5],
+              [5, 1, 5],
+            ],
+            vertical: [
+              [3, 1],
+              [3, 2],
+              [3, 3],
+              [3, 4],
+              [3, 5],
+              [3, 6],
+            ],
+          },
+          solution: [
+            [1, 1],
+            [1, 2],
+            [1, 3],
+            [1, 4],
+            [1, 5],
+            [1, 6],
+            [0, 6],
+            [0, 5],
+            [0, 4],
+            [0, 3],
+            [0, 2],
+            [0, 1],
+            [0, 0],
+            [1, 0],
+            [2, 0],
+            [3, 0],
+            [4, 0],
+            [4, 1],
+            [3, 1],
+            [2, 1],
+            [2, 2],
+            [3, 2],
+            [4, 2],
+            [4, 3],
+            [3, 3],
+            [2, 3],
+            [2, 4],
+            [3, 4],
+            [4, 4],
+            [4, 5],
+            [3, 5],
+            [2, 5],
+            [2, 6],
+            [3, 6],
+            [4, 6],
+            [5, 6],
+            [6, 6],
+            [6, 5],
+            [6, 4],
+            [6, 3],
+            [6, 2],
+            [6, 1],
+            [6, 0],
+            [5, 0],
+            [5, 1],
+            [5, 2],
+            [5, 3],
+            [5, 4],
+            [5, 5],
+          ],
+        },
+// 16a
+        {
+size:7,
 
-// 21 (Hard + Complex, 9 numbers, answer exists)
-{size:8,numbers:[[0,0,1],[0,7,2],[2,2,3],[2,5,4],[3,3,5],[4,4,6],[5,2,7],[7,0,8],[7,7,9]],name:"Corner Nexus X",difficulty:"Expert",trick:"Corner traps + center chain",starTimes:[122,222],
-solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
-// 22
-// 22 (Much cooler expert pattern, difficulty maintained)
-{size:8,numbers:[[0,3,1],[0,7,2],[2,2,3],[2,5,4],[5,2,5],[5,5,6],[7,0,7],[7,4,8]],name:"Quantum Reactor",difficulty:"Expert",trick:"Outer beams + inner reactors",starTimes:[130,240],
-solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
-// 23
-// 23 (Hard + Complex, 10 numbers, answer exists)
-{size:8,numbers:[[0,4,1],[1,1,2],[1,6,3],[3,0,4],[3,7,5],[4,3,6],[4,4,7],[6,1,8],[6,6,9],[7,4,10]],name:"Compass Elite",difficulty:"Expert",trick:"Directional anchors",starTimes:[136,248],
-solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
+numbers:[
+ [2,6,1],
+ [1,4,2],
+ [2,0,3],
+ [1,1,4],
+ [5,2,5],
+ [3,0,6],
+ [5,5,7],
+ [3,6,8]
+],
 
-// 24 (Hardest, 12 numbers, answer exists)
-{size:8,numbers:[[0,0,1],[0,7,2],[1,3,3],[2,2,4],[2,5,5],[3,4,6],[4,3,7],[5,2,8],[5,5,9],[6,4,10],[7,0,11],[7,7,12]],name:"Chaos Supreme",difficulty:"Expert",trick:"Heavy anchor overload",starTimes:[145,265],
-solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
-// 25 - MASTER ZIP
-{size:8,numbers:[[0,0,1],[0,3,2],[0,7,3],[3,7,4],[7,7,5],[7,3,6],[7,0,7],[3,0,8],[3,3,9],[3,4,10],[4,4,11],[4,3,12]],name:"Master ZIP",difficulty:"Expert",trick:"Ultimate path — all edges + center",starTimes:[150,280],
-solution:(()=>{let p=[];const s=8;let t=0,b=s-1,l=0,r=s-1;while(t<=b&&l<=r){for(let c=l;c<=r;c++)p.push([t,c]);t++;for(let row=t;row<=b;row++)p.push([row,r]);r--;if(t<=b){for(let c=r;c>=l;c--)p.push([b,c]);b--;}if(l<=r){for(let row=b;row>=t;row--)p.push([row,l]);l++;}}return p;})()},
-];
+name:"Central Divider",
+difficulty:"Hard",
+trick:"Navigate around the central wall",
+starTimes:[90,170],
 
-// ============================================================
-// THEMES
-// ============================================================
-const THEMES = [
-  {id:'neon',name:'Neon Night',bg:'#0f0e17',path:'#7c3aed',num:'#06b6d4',tile:'#1a1828',text:'#fffffe',grad:['#7c3aed','#06b6d4']},
-  {id:'candy',name:'Candy Grid',bg:'#1a0526',path:'#f472b6',num:'#fb923c',tile:'#2d1040',text:'#fff0f8',grad:['#f472b6','#fb923c']},
-  {id:'ice',name:'Ice Logic',bg:'#0c1628',path:'#38bdf8',num:'#e0f2fe',tile:'#0f2040',text:'#e0f2fe',grad:['#38bdf8','#bfdbfe']},
-  {id:'gold',name:'Golden Path',bg:'#1a1200',path:'#fbbf24',num:'#f97316',tile:'#2a1e00',text:'#fffbeb',grad:['#fbbf24','#f97316']},
-  {id:'cyber',name:'Cyber Matrix',bg:'#001a0a',path:'#10b981',num:'#6ee7b7',tile:'#002010',text:'#d1fae5',grad:['#10b981','#6ee7b7']},
-];
+walls:{
+  horizontal:[
+    [1,1,4],   // top horizontal wall
+    [3,1,1],   // left small wall
+    [3,4,4],   // right small wall
+    [6,1,5]    // bottom horizontal wall
+  ],
 
-// ============================================================
-// STATE
-// ============================================================
-let save = {
-  unlocked: 1,
-  stars: Array(25).fill(0),
-  coins: 0,
-  theme: 'neon',
-  sound: true,
-  haptic: true,
-  timer: true,
-  hints: 5,
-};
-let currentLevel = 0;
-let theme = THEMES[0];
-let path = [];          // current drawn path [[r,c],...]
-let isDragging = false;
-let timerVal = 0;
-let timerInterval = null;
-let hintsUsed = 0;
-let mistakes = 0;
-let levelStartTime = 0;
-let paused = false;
+  vertical:[
+    [1,3],
+    [2,3],
+    [3,3],
+    [4,3],
+    [5,3]
+  ]
+},
 
-const canvas = document.getElementById('grid-canvas');
-const ctx = canvas.getContext('2d');
-let cellSize = 0;
-let offsetX = 0, offsetY = 0;
+solution:[
+ [2,6],
+ [1,6],[0,6],[0,5],[0,4],[1,4],
+ [1,5],[2,5],[2,4],[2,3],[2,2],[2,1],[2,0],
+ [1,0],[1,1],
+ [0,1],[0,2],[0,3],
 
-// ============================================================
-// SAVE / LOAD
-// ============================================================
-function loadSave() {
-  try {
-    const s = localStorage.getItem('zipmaster_save');
-    if (s) save = {...save, ...JSON.parse(s)};
-  } catch(e){}
-  applyTheme();
-  updateHomeStats();
-}
-function saveSave() {
-  localStorage.setItem('zipmaster_save', JSON.stringify(save));
+ [1,3],[2,3],[3,3],[4,3],[5,3],
 
-  // 🔥 NEW: Send data to React (index.tsx)
-  window.parent.postMessage({
-    type: "ZIP_MASTER_UPDATE",
-    payload: {
-      coins: save.coins,
-      stars: save.stars,
-      unlocked: save.unlocked
-    }
-  }, "*");
-}
+ [5,2],
+ [5,1],[5,0],[4,0],[3,0],
 
-// ============================================================
-// SCREENS
-// ============================================================
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(id);
-  if (el) el.classList.add('active');
-  if (id === 'levelSelect') buildLevelSelect();
-  if (id === 'home') updateHomeStats();
-  if (id === 'settings') buildSettings();
-}
+ [4,0],[5,0],[6,0],[6,1],[6,2],[6,3],[6,4],[6,5],
 
-function updateHomeStats() {
-  const solved = save.stars.filter(s => s > 0).length;
-  const totalStars = save.stars.reduce((a, b) => a + b, 0);
+ [5,5],
+ [5,6],[4,6],[3,6]
+]
+},
+// 17a
+        {
+size:7,
+numbers:[
+  [0,2,1],
+  [3,5,2],
+  [0,0,3],
+  [3,1,4],
+  [6,0,5],
+  [6,4,6],
+  [6,6,7],
+  [0,6,8]
+],
+name:"Wall Snake",
+difficulty:"Hard",
+trick:"Avoid walls",
+starTimes:[90,160],
+walls:{
+  horizontal:[
+    [1,2,4],
+    [2,2,3],
+    [3,3,4],
+    [4,3,4],
+    [5,2,3],
+    [6,2,4]
+  ],
+  vertical:[
+    [1,5],
+    [2,5],
+    [3,5],
+    [4,5],
+    [5,5]
+  ]
+},
+solution:[
+  [0,2],[0,3],[0,4],[0,5],
+  [1,5],[2,5],[3,5],
+  [3,4],[3,3],[3,2],[3,1],
+  [4,1],[5,1],[6,1],[6,0],
+  [6,1],[6,2],[6,3],[6,4],
+  [6,5],[6,6],
+  [5,6],[4,6],[3,6],[2,6],[1,6],[0,6]
+]
+},
+        // 18a - Screenshot U Wall Level
+{
+size:8,
+numbers:[
+  [5,7,1],
+  [0,7,2],
+  [4,6,3],
+  [2,5,4],
+  [0,4,5],
+  [3,4,6],
+  [5,3,7],
+  [1,3,8],
+  [2,2,9],
+  [4,1,10],
+  [0,0,11],
+  [5,0,12],
+  [7,3,13],
+  [6,7,14]
+],
+name:"U Fortress",
+difficulty:"Hard",
+trick:"Avoid U-shaped wall",
+starTimes:[100,180],
+walls:{
+  horizontal:[
+    [6,1,7]
+  ],
+  vertical:[
+    [0,4],
+    [3,1],[4,1],[5,1],
+    [3,7],[4,7],[5,7]
+  ]
+},
+solution:[
+  [5,7],[4,7],[4,6],
+  [3,6],[2,6],[2,5],
+  [1,5],[0,5],[0,4],
+  [1,4],[2,4],[3,4],
+  [4,4],[5,4],[5,3],
+  [4,3],[3,3],[2,3],[1,3],
+  [1,2],[2,2],
+  [3,2],[4,2],[4,1],
+  [3,1],[2,1],[1,1],[0,1],[0,0],
+  [1,0],[2,0],[3,0],[4,0],[5,0],
+  [6,0],[7,0],[7,1],[7,2],[7,3],
+  [7,4],[7,5],[7,6],[7,7],[6,7]
+]
+},
 
-  document.getElementById('h-levels').textContent = solved;
-  document.getElementById('h-stars').textContent = totalStars;
+// 19a
+{
+size:8,
 
-  const walletBalance =
-    Number(localStorage.getItem("walletCoins")) ||
-    Number(save.coins) ||
-    0;
+numbers:[
+ [7,5,1],
+ [4,5,2],
+ [6,3,3],
+ [0,2,4],
+ [3,6,5],
+ [1,4,6],
+ [4,1,7],
+ [3,2,8]
+],
 
-  document.getElementById('h-coins').textContent = walletBalance;
-}
+name:"Double U Trap",
+difficulty:"Hard",
+trick:"Avoid U shaped walls",
+starTimes:[100,180],
 
-function updateZipWalletCoins(amount) {
-  save.coins = Number(amount) || 0;
-  localStorage.setItem("walletCoins", String(save.coins));
-  localStorage.setItem("zipMasterCoins", String(save.coins));
+walls:{
+  horizontal:[
+    [3,1,2],
+    [3,5,6],
+    [7,1,2],
+    [7,5,6]
+  ],
 
-  const coinEl = document.getElementById("h-coins");
-  if (coinEl) coinEl.textContent = save.coins;
+  vertical:[
+    [1,1],
+    [2,1],
+    [1,3],
+    [2,3],
 
-  window.parent.postMessage({
-    type: "ZIP_MASTER_UPDATE",
-    payload: {
-      coins: save.coins,
-      stars: save.stars,
-      unlocked: save.unlocked
-    }
-  }, "*");
-}
+    [1,5],
+    [2,5],
+    [1,7],
+    [2,7],
 
-async function initZipWalletCoins() {
-  const saved =
-    Number(localStorage.getItem("walletCoins")) ||
-    Number(localStorage.getItem("zipMasterCoins")) ||
-    Number(save.coins) ||
-    0;
+    [5,1],
+    [6,1],
+    [5,3],
+    [6,3],
 
-  updateZipWalletCoins(saved);
+    [5,5],
+    [6,5],
+    [5,7],
+    [6,7]
+  ]
+},
 
-  try {
-    if (window.gameSDK) {
-      const balance = await window.gameSDK.getBalance();
-      if (balance !== undefined && balance !== null) {
-        updateZipWalletCoins(balance);
+solution:[
+ [7,5],[6,5],[5,5],[4,5],
+ [4,4],[5,4],[6,4],[6,3],
+ [5,3],[4,3],[3,3],[2,3],[1,3],
+ [0,3],[0,2],
+ [0,1],[1,1],[2,1],[3,1],[3,2],
+ [4,2],[4,1],
+ [5,1],[6,1],[7,1],[7,2],
+ [6,2],[5,2],[5,3],[6,3],[7,3],
+ [7,4],[7,5],[7,6],[7,7],
+ [6,7],[5,7],[4,7],[3,7],[3,6],
+ [3,5],[2,5],[1,5],[1,4]
+]
+},
+
+// 20a
+{
+size:7,
+
+numbers:[
+ [3,3,1],
+ [5,1,2],
+ [1,1,3],
+ [6,0,4],
+ [1,5,5],
+ [5,5,6],
+ [6,6,7],
+ [0,6,8],
+ [0,0,9]
+],
+
+name:"Twin Pillars",
+difficulty:"Hard",
+trick:"Navigate around multiple pillars",
+starTimes:[100,180],
+
+walls:{
+  horizontal:[],
+
+  vertical:[
+    [1,3],
+    [1,4],
+
+    [3,1],
+    [3,2],
+
+    [3,5],
+    [3,6],
+
+    [5,3],
+    [5,4]
+  ]
+},
+
+solution:[
+ [3,3],
+
+ [2,3],[2,2],[2,1],[1,1],
+
+ [1,0],[0,0],
+
+ [0,1],[0,2],[0,3],[0,4],[0,5],[1,5],
+
+ [2,5],[2,6],[1,6],[0,6],
+
+ [1,6],[2,6],[3,6],[4,6],[5,6],[6,6],
+
+ [6,5],[5,5],
+
+ [4,5],[4,4],[4,3],[5,3],[6,3],[6,2],[6,1],[5,1],
+
+ [6,1],[6,0]
+]
+},
+        // 21a - Screenshot Maze Level
+{
+size:8,
+numbers:[
+  [5,4,1],
+  [2,2,2],
+  [0,4,3],
+  [2,5,4],
+  [1,6,5],
+  [2,7,6],
+  [6,7,7],
+  [6,5,8],
+  [7,2,9],
+  [6,0,10]
+],
+name:"Maze Lock",
+difficulty:"Hard",
+trick:"Avoid wall borders",
+starTimes:[90,160],
+walls:{
+  horizontal:[
+    [2,2,2],
+    [2,4,4],
+    [3,0,0],
+    [4,2,2],
+    [4,4,4],
+    [6,0,6]
+  ],
+  vertical:[
+    [0,6],
+    [1,6],
+    [2,6],
+    [2,5],
+    [3,5],
+    [4,5],
+    [4,7],
+    [5,7]
+  ]
+},
+solution:[
+  [5,4],[5,3],[5,2],[5,1],[4,1],[3,1],[2,1],[2,2],
+  [1,2],[0,2],[0,3],[0,4],
+  [0,5],[1,5],[2,5],
+  [1,5],[1,6],
+  [1,7],[2,7],
+  [3,7],[4,7],[5,7],[6,7],
+  [6,6],[6,5],
+  [7,5],[7,4],[7,3],[7,2],
+  [7,1],[7,0],[6,0]
+]
+},
+
+// 22a - Screenshot Hard Wall Level
+{
+size:8,
+numbers:[
+  [2,1,1],
+  [1,3,2],
+  [1,5,3],
+  [0,7,4],
+  [2,3,5],
+  [3,0,6],
+  [5,2,7],
+  [7,0,8],
+  [7,3,9],
+  [4,3,10],
+  [7,4,11],
+  [3,6,12],
+  [6,6,13],
+  [7,7,14]
+],
+name:"Wall Fortress",
+difficulty:"Hard",
+trick:"Avoid wall borders",
+starTimes:[100,180],
+walls:{
+  horizontal:[
+    [2,2,3],
+    [3,0,1],
+    [3,3,7],
+    [6,2,2]
+  ],
+  vertical:[
+    [3,3],
+    [4,3],
+    [7,6]
+  ]
+},
+solution:[
+  [2,1],[1,1],[1,2],[1,3],
+  [1,4],[1,5],
+  [0,5],[0,6],[0,7],
+  [1,7],[2,7],[2,6],[2,5],[2,4],[2,3],
+  [2,2],[2,1],[2,0],[3,0],
+  [4,0],[5,0],[6,0],[6,1],[6,2],
+  [7,2],[7,1],[7,0],
+  [7,1],[7,2],[7,3],
+  [6,3],[5,3],[4,3],
+  [5,3],[6,3],[7,3],[7,4],
+  [7,5],[6,5],[5,5],[4,5],[3,5],[3,6],
+  [4,6],[5,6],[6,6],
+  [6,7],[7,7]
+]
+},
+
+// 23a - Screenshot Complex Wall Level
+{
+size:8,
+numbers:[
+  [2,7,1],
+  [5,6,2],
+  [4,5,3],
+  [7,4,4],
+  [3,4,5],
+  [7,2,6],
+  [2,2,7],
+  [4,1,8],
+  [7,1,9],
+  [2,0,10],
+  [0,3,11],
+  [1,5,12],
+  [1,7,13]
+],
+name:"Complex Gate",
+difficulty:"Hard",
+trick:"Avoid wall borders",
+starTimes:[100,180],
+walls:{
+  horizontal:[
+    [2,1,7]
+  ],
+  vertical:[
+    [2,1],[3,1],[4,1],
+    [2,3],
+    [2,5],[3,5],
+    [1,7],[2,7],
+    [7,2],
+    [7,4],
+    [7,6]
+  ]
+},
+solution:[
+  [2,7],[3,7],[4,7],[5,7],[5,6],
+  [4,6],[4,5],
+  [5,5],[6,5],[7,5],[7,4],
+  [6,4],[5,4],[4,4],[3,4],
+  [3,3],[4,3],[5,3],[6,3],[7,3],[7,2],
+  [6,2],[5,2],[4,2],[3,2],[2,2],
+  [2,1],[3,1],[4,1],
+  [5,1],[6,1],[7,1],
+  [7,0],[6,0],[5,0],[4,0],[3,0],[2,0],
+  [1,0],[0,0],[0,1],[0,2],[0,3],
+  [0,4],[0,5],[1,5],
+  [1,6],[1,7]
+]
+},
+
+// 24a - Screenshot Box Wall Level
+{
+size:7,
+numbers:[
+  [5,5,1],
+  [5,4,2],
+  [1,2,3],
+  [1,1,4],
+  [2,1,5],
+  [2,4,6],
+  [4,5,7],
+  [2,5,8],
+  [1,4,9],
+  [4,1,10],
+  [5,2,11],
+  [4,2,12]
+],
+name:"Box Trap",
+difficulty:"Hard",
+trick:"Avoid boxed walls",
+starTimes:[95,170],
+walls:{
+  horizontal:[
+    [1,1,2],
+    [6,1,1],
+    [6,4,5]
+  ],
+  vertical:[
+    [1,1],
+    [1,6],
+    [2,6],
+    [4,1],
+    [5,1],
+    [5,6]
+  ]
+},
+solution:[
+  [5,5],[5,4],
+  [4,4],[3,4],[3,3],[2,3],[1,3],[1,2],
+  [1,1],[2,1],
+  [2,2],[2,3],[2,4],
+  [3,4],[4,4],[4,5],
+  [3,5],[2,5],
+  [1,5],[1,4],
+  [2,4],[3,4],[4,4],[4,3],[4,2],[4,1],
+  [5,1],[5,2],
+  [4,2]
+]
+},
+
+// 25a - Screenshot Hook Maze Level
+{
+size:8,
+numbers:[
+  [4,0,1],
+  [7,1,2],
+  [7,2,3],
+  [5,7,4],
+  [6,1,5],
+  [4,1,6],
+  [4,7,7],
+  [3,7,8],
+  [1,6,9],
+  [0,6,10],
+  [0,5,11],
+  [2,0,12],
+  [3,0,13],
+  [3,6,14]
+],
+name:"Hook Maze",
+difficulty:"Hard",
+trick:"Avoid hook walls",
+starTimes:[105,190],
+walls:{
+  horizontal:[
+    [3,1,1],
+    [3,3,3],
+    [3,5,5],
+    [5,2,2],
+    [5,4,4],
+    [5,6,6]
+  ],
+  vertical:[
+    [2,2],
+    [2,4],
+    [2,6],
+    [5,2],
+    [5,4],
+    [5,6]
+  ]
+},
+solution:[
+  [4,0],[4,1],
+  [5,1],[6,1],[7,1],[7,2],
+  [6,2],[6,3],[6,4],[6,5],[6,6],[5,6],[5,7],
+  [4,7],[3,7],
+  [2,7],[1,7],[1,6],
+  [0,6],[0,5],
+  [0,4],[0,3],[0,2],[0,1],[0,0],[1,0],[2,0],
+  [3,0],
+  [3,1],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6],
+  [3,6]
+]
+},
+      ];
+
+      // ============================================================
+      // THEMES
+      // ============================================================
+      const THEMES = [
+        {
+          id: "neon",
+          name: "Neon Night",
+          bg: "#0f0e17",
+          path: "#7c3aed",
+          num: "#06b6d4",
+          tile: "#1a1828",
+          text: "#fffffe",
+          grad: ["#7c3aed", "#06b6d4"],
+        },
+        {
+          id: "candy",
+          name: "Candy Grid",
+          bg: "#1a0526",
+          path: "#f472b6",
+          num: "#fb923c",
+          tile: "#2d1040",
+          text: "#fff0f8",
+          grad: ["#f472b6", "#fb923c"],
+        },
+        {
+          id: "ice",
+          name: "Ice Logic",
+          bg: "#0c1628",
+          path: "#38bdf8",
+          num: "#e0f2fe",
+          tile: "#0f2040",
+          text: "#e0f2fe",
+          grad: ["#38bdf8", "#bfdbfe"],
+        },
+        {
+          id: "gold",
+          name: "Golden Path",
+          bg: "#1a1200",
+          path: "#fbbf24",
+          num: "#f97316",
+          tile: "#2a1e00",
+          text: "#fffbeb",
+          grad: ["#fbbf24", "#f97316"],
+        },
+        {
+          id: "cyber",
+          name: "Cyber Matrix",
+          bg: "#001a0a",
+          path: "#10b981",
+          num: "#6ee7b7",
+          tile: "#002010",
+          text: "#d1fae5",
+          grad: ["#10b981", "#6ee7b7"],
+        },
+      ];
+
+      // ============================================================
+      // STATE
+      // ============================================================
+      let save = {
+        unlocked: 1,
+        stars: Array(25).fill(0),
+        coins: 0,
+        theme: "neon",
+        sound: true,
+        haptic: true,
+        timer: true,
+        hints: 5,
+      };
+      let currentLevel = 0;
+      let theme = THEMES[0];
+      let path = []; // current drawn path [[r,c],...]
+      let isDragging = false;
+      let timerVal = 0;
+      let timerInterval = null;
+      let hintsUsed = 0;
+      let mistakes = 0;
+      let levelStartTime = 0;
+      let paused = false;
+
+      const canvas = document.getElementById("grid-canvas");
+      const ctx = canvas.getContext("2d");
+      let cellSize = 0;
+      let offsetX = 0,
+        offsetY = 0;
+
+      // ============================================================
+      // SAVE / LOAD
+      // ============================================================
+      function loadSave() {
+        try {
+          const s = localStorage.getItem("zipmaster_save");
+          if (s) save = { ...save, ...JSON.parse(s) };
+        } catch (e) {}
+        applyTheme();
+        updateHomeStats();
       }
-    }
-  } catch (err) {
-    console.warn("Could not fetch Zip Master wallet balance:", err);
-  }
-}
-
-window.addEventListener("walletUpdated", (e) => {
-  const balance = e.detail?.balance;
-  if (balance !== undefined) {
-    updateZipWalletCoins(balance);
-  }
-});
-
-// ============================================================
-// LEVEL SELECT
-// ============================================================
-const DIFF_COLORS = {Tutorial:'diff-easy', Easy:'diff-easy', Medium:'diff-medium', Hard:'diff-hard', Expert:'diff-expert'};
-
-function buildLevelSelect() {
-  const grid = document.getElementById('ls-grid');
-  grid.innerHTML = '';
-  const solved = save.stars.filter(s => s > 0).length;
-  document.getElementById('ls-progress').textContent = solved + '/25';
-
-  LEVELS.forEach((lv, i) => {
-    const card = document.createElement('div');
-    const unlocked = i < save.unlocked;
-    const stars = save.stars[i] || 0;
-    card.className = 'level-card ' + (stars > 0 ? 'completed' : unlocked ? 'unlocked' : 'locked');
-    card.innerHTML = `
-      <div class="lc-num">${i+1}</div>
-      <div class="lc-stars">${[1,2,3].map(s=>`<span class="lc-star">${stars>=s?'⭐':'☆'}</span>`).join('')}</div>
-      <div class="lc-diff">${lv.difficulty}</div>
-      <div class="diff-badge ${DIFF_COLORS[lv.difficulty]||'diff-easy'}"></div>
-    `;
-    if (unlocked) card.onclick = () => startLevel(i);
-    grid.appendChild(card);
-  });
-}
-
-// ============================================================
-// GAME START
-// ============================================================
-function startLevel(idx) {
-  currentLevel = idx;
-  const lv = LEVELS[idx];
-  path = [];
-  hintsUsed = 0;
-  mistakes = 0;
-  paused = false;
-
-  document.getElementById('g-lvl-title').textContent = `Level ${idx+1}: ${lv.name}`;
-  document.getElementById('g-diff-name').textContent = lv.difficulty;
-  document.getElementById('hint-lbl').textContent = 'Hint';
-
-  setupCanvas();
-  drawGrid();
-  startTimer();
-  showScreen('game');
-  updateProgress();
-  saveSave(); // sync current progress
-}
-
-function setupCanvas() {
-  const lv = LEVELS[currentLevel];
-  const area = document.getElementById('puzzle-area');
-  const maxW = Math.min(area.clientWidth - 24, area.clientHeight - 24);
-  cellSize = Math.floor(maxW / lv.size);
-  const total = cellSize * lv.size;
-  canvas.width = total;
-  canvas.height = total;
-  canvas.style.width = total + 'px';
-  canvas.style.height = total + 'px';
-  offsetX = 0; offsetY = 0;
-}
-
-// ============================================================
-// TIMER
-// ============================================================
-function startTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerVal = 0;
-  levelStartTime = Date.now();
-  timerInterval = setInterval(() => {
-    if (!paused) {
-      timerVal = Math.floor((Date.now() - levelStartTime) / 1000);
-      const m = Math.floor(timerVal / 60);
-      const s = timerVal % 60;
-      document.getElementById('g-timer').textContent = m + ':' + String(s).padStart(2,'0');
-    }
-  }, 200);
-}
-
-function stopTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-}
-
-// ============================================================
-// DRAW GRID
-// ============================================================
-function drawGrid() {
-  const lv = LEVELS[currentLevel];
-  const cs = cellSize;
-  const sz = lv.size;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Background
-  ctx.fillStyle = theme.tile;
-  ctx.beginPath();
-  roundRect(ctx, 0, 0, cs * sz, cs * sz, 12);
-  ctx.fill();
-
-  // Grid lines
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= sz; i++) {
-    ctx.beginPath();
-    ctx.moveTo(i * cs, 0);
-    ctx.lineTo(i * cs, sz * cs);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(0, i * cs);
-    ctx.lineTo(sz * cs, i * cs);
-    ctx.stroke();
-  }
-
-  // Draw path
-  if (path.length > 1) {
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = cs * 0.45;
-    ctx.strokeStyle = theme.path + 'cc';
-    ctx.shadowColor = theme.path;
-    ctx.shadowBlur = 15;
-    ctx.beginPath();
-    ctx.moveTo(path[0][1] * cs + cs/2, path[0][0] * cs + cs/2);
-    for (let i = 1; i < path.length; i++) {
-      ctx.lineTo(path[i][1] * cs + cs/2, path[i][0] * cs + cs/2);
-    }
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // Dotted inner line
-    ctx.lineWidth = cs * 0.12;
-    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-    ctx.setLineDash([cs * 0.15, cs * 0.1]);
-    ctx.beginPath();
-    ctx.moveTo(path[0][1] * cs + cs/2, path[0][0] * cs + cs/2);
-    for (let i = 1; i < path.length; i++) {
-      ctx.lineTo(path[i][1] * cs + cs/2, path[i][0] * cs + cs/2);
-    }
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // Path start dot
-  if (path.length === 1) {
-    const [r, c] = path[0];
-    ctx.fillStyle = theme.path;
-    ctx.shadowColor = theme.path;
-    ctx.shadowBlur = 20;
-    ctx.beginPath();
-    ctx.arc(c*cs+cs/2, r*cs+cs/2, cs*0.18, 0, Math.PI*2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  }
-
-  // Number tiles
-  const numMap = {};
-  lv.numbers.forEach(([r,c,n]) => numMap[r+','+c] = n);
-
-  lv.numbers.forEach(([r,c,n]) => {
-    const px = c * cs + cs/2;
-    const py = r * cs + cs/2;
-    const inPath = path.some(([pr,pc]) => pr===r && pc===c);
-    const isLast = path.length > 0 && path[path.length-1][0]===r && path[path.length-1][1]===c;
-    const pathIdx = path.findIndex(([pr,pc]) => pr===r && pc===c);
-    const visited = pathIdx !== -1;
-
-    // Tile background
-    const radius = cs * 0.32;
-    ctx.save();
-    ctx.shadowColor = visited ? theme.path : 'rgba(0,0,0,0.4)';
-    ctx.shadowBlur = visited ? 18 : 8;
-
-    if (visited) {
-      const grad = ctx.createRadialGradient(px, py, 0, px, py, radius);
-      grad.addColorStop(0, theme.grad ? THEMES.find(t=>t.id===save.theme).grad[0] : theme.path);
-      grad.addColorStop(1, theme.grad ? THEMES.find(t=>t.id===save.theme).grad[1] : theme.num);
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = theme.tile;
-    }
-    ctx.beginPath();
-    ctx.arc(px, py, radius, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Border
-    ctx.strokeStyle = visited ? theme.path : 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = visited ? 2.5 : 1.5;
-    ctx.stroke();
-    ctx.restore();
-
-    // Number
-    ctx.fillStyle = visited ? '#fff' : theme.num;
-    ctx.font = `900 ${cs * 0.32}px Fredoka One, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(n, px, py + 1);
-
-    // Pulse ring for current endpoint
-    if (isLast) {
-      ctx.strokeStyle = theme.path + '88';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(px, py, radius + 4 + Math.sin(Date.now()/300) * 3, 0, Math.PI*2);
-      ctx.stroke();
-    }
-  });
-
-  requestAnimationFrame(drawGrid);
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.moveTo(x+r,y);
-  ctx.lineTo(x+w-r,y);
-  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r);
-  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h);
-  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r);
-  ctx.quadraticCurveTo(x,y,x+r,y);
-}
-
-// ============================================================
-// INPUT HANDLING
-// ============================================================
-function getCell(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  const x = clientX - rect.left;
-  const y = clientY - rect.top;
-  const c = Math.floor(x / cellSize);
-  const r = Math.floor(y / cellSize);
-  const lv = LEVELS[currentLevel];
-  if (r >= 0 && r < lv.size && c >= 0 && c < lv.size) return [r, c];
-  return null;
-}
-
-function cellKey(r, c) { return r + ',' + c; }
-function pathHasCell(r, c) { return path.some(([pr,pc]) => pr===r && pc===c); }
-function isAdjacent(r1, c1, r2, c2) { return Math.abs(r1-r2) + Math.abs(c1-c2) === 1; }
-
-function onDragStart(clientX, clientY) {
-  if (paused) return;
-  const cell = getCell(clientX, clientY);
-  if (!cell) return;
-  const [r, c] = cell;
-  const lv = LEVELS[currentLevel];
-  const startNum = lv.numbers.find(([nr,nc,n]) => nr===r && nc===c && n===1);
-
-  if (startNum || path.length === 0) {
-    // Start from number 1
-    if (startNum) {
-      path = [[r,c]];
-    } else if (pathHasCell(r, c)) {
-      // Resume from existing path point
-      const idx = path.findIndex(([pr,pc]) => pr===r && pc===c);
-      path = path.slice(0, idx + 1);
-    } else return;
-  } else {
-    const last = path[path.length - 1];
-    if (pathHasCell(r, c)) {
-      // Backtrack
-      const idx = path.findIndex(([pr,pc]) => pr===r && pc===c);
-      path = path.slice(0, idx + 1);
-    } else if (isAdjacent(last[0], last[1], r, c)) {
-      path.push([r, c]);
-    } else return;
-  }
-  isDragging = true;
-  playSound('click');
-  vibrate(10);
-  updateProgress();
-}
-
-function onDragMove(clientX, clientY) {
-  if (!isDragging || paused || path.length === 0) return;
-  const cell = getCell(clientX, clientY);
-  if (!cell) return;
-  const [r, c] = cell;
-  const last = path[path.length - 1];
-  if (last[0] === r && last[1] === c) return;
-
-  if (!isAdjacent(last[0], last[1], r, c)) return;
-
-  // Backtrack if revisiting
-  if (pathHasCell(r, c)) {
-    const idx = path.findIndex(([pr,pc]) => pr===r && pc===c);
-    if (idx === path.length - 2) {
-      path.pop();
-      playSound('undo');
-    }
-    return;
-  }
-
-  path.push([r, c]);
-  playSound('click');
-  vibrate(5);
-
-  // Check if we hit a number in wrong order
-  const lv = LEVELS[currentLevel];
-  const numHit = lv.numbers.find(([nr,nc,n]) => nr===r && nc===c);
-  if (numHit) {
-    const expectedNum = getNextExpectedNum();
-    if (numHit[2] !== expectedNum) {
-      mistakes++;
-      playSound('wrong');
-      vibrate([30, 20, 30]);
-      canvas.classList.add('shake');
-      setTimeout(() => canvas.classList.remove('shake'), 300);
-    } else {
-      playSound('success');
-      vibrate(30);
-      checkStreak();
-    }
-  }
-
-  updateProgress();
-}
-
-function onDragEnd() {
-  isDragging = false;
-}
-
-function handleArrowKeys(e) {
-  if (!document.getElementById('game').classList.contains('active')) return;
-  if (paused) return;
-
-  const key = e.key;
-
-  let dir = null;
-
-  if (key === 'ArrowUp') dir = [-1, 0];
-  else if (key === 'ArrowDown') dir = [1, 0];
-  else if (key === 'ArrowLeft') dir = [0, -1];
-  else if (key === 'ArrowRight') dir = [0, 1];
-  else return;
-
-  e.preventDefault();
-
-  // ============================
-  // START PATH (if empty)
-  // ============================
-  if (path.length === 0) {
-    const lv = LEVELS[currentLevel];
-    const start = lv.numbers.find(n => n[2] === 1);
-    if (start) {
-      path = [[start[0], start[1]]];
-      playSound('click');
-      vibrate(10);
-      updateProgress();
-    }
-    return;
-  }
-
-  const last = path[path.length - 1];
-  const newR = last[0] + dir[0];
-  const newC = last[1] + dir[1];
-
-  const lv = LEVELS[currentLevel];
-
-  // Check bounds
-  if (newR < 0 || newR >= lv.size || newC < 0 || newC >= lv.size) return;
-
-  // Backtrack if going backward
-  if (path.length > 1) {
-    const prev = path[path.length - 2];
-    if (prev[0] === newR && prev[1] === newC) {
-      path.pop();
-      playSound('undo');
-      updateProgress();
-      return;
-    }
-  }
-
-  // Prevent revisiting random cell
-  if (pathHasCell(newR, newC)) return;
-
-  // Add new cell
-  path.push([newR, newC]);
-  playSound('click');
-  vibrate(5);
-
-  // ============================
-  // CHECK NUMBER ORDER
-  // ============================
-  const numHit = lv.numbers.find(([r,c,n]) => r === newR && c === newC);
-
-  if (numHit) {
-    const expectedNum = getNextExpectedNum();
-
-    if (numHit[2] !== expectedNum) {
-      playSound('wrong');
-      vibrate([30,20,30]);
-      canvas.classList.add('shake');
-      setTimeout(() => canvas.classList.remove('shake'), 300);
-    } else {
-      playSound('success');
-      vibrate(30);
-      checkStreak();
-    }
-  }
-
-  updateProgress();
-}
-
-function getNextExpectedNum() {
-  const lv = LEVELS[currentLevel];
-  const visited = new Set(path.map(([r,c]) => cellKey(r,c)));
-  let maxVisited = 0;
-  lv.numbers.forEach(([r,c,n]) => {
-    if (visited.has(cellKey(r,c))) maxVisited = Math.max(maxVisited, n);
-  });
-  return maxVisited + 1;
-}
-
-// Touch events
-canvas.addEventListener('touchstart', e => { e.preventDefault(); const t = e.touches[0]; onDragStart(t.clientX, t.clientY); }, {passive:false});
-canvas.addEventListener('touchmove', e => { e.preventDefault(); const t = e.touches[0]; onDragMove(t.clientX, t.clientY); }, {passive:false});
-canvas.addEventListener('touchend', e => { e.preventDefault(); onDragEnd(); }, {passive:false});
-
-// Mouse events
-canvas.addEventListener('mousedown', e => onDragStart(e.clientX, e.clientY));
-canvas.addEventListener('mousemove', e => { if (e.buttons > 0) onDragMove(e.clientX, e.clientY); });
-canvas.addEventListener('mouseup', onDragEnd);
-
-// ============================================================
-// WIN DETECTION
-// ============================================================
-function checkWin() {
-  const lv = LEVELS[currentLevel];
-  const totalCells = lv.size * lv.size;
-
-  const isFullGrid = path.length === totalCells;
-
-  // Check order
-  const visited = path.map(([r,c]) => cellKey(r,c));
-  const numsSorted = [...lv.numbers].sort((a,b) => a[2]-b[2]);
-
-  let lastIdx = -1;
-  let correctOrder = true;
-
-  for (const [r,c,n] of numsSorted) {
-    const idx = visited.indexOf(cellKey(r,c));
-    if (idx === -1 || idx <= lastIdx) {
-      correctOrder = false;
-      break;
-    }
-    lastIdx = idx;
-  }
-
-  // ============================
-  // SCENARIOS HANDLING
-  // ============================
-
-  // ✅ Scenario 3: Perfect
-  if (isFullGrid && correctOrder) {
-    stopTimer();
-    isDragging = false;
-    setTimeout(showWin, 300);
-    return;
-  }
-
-  // ❌ Scenario 1: Full grid but wrong order
-  if (isFullGrid && !correctOrder) {
-    showStreakMsg('❌ Wrong order followed!');
-    playSound('wrong');
-    canvas.classList.add('shake');
-    setTimeout(() => canvas.classList.remove('shake'), 300);
-    return;
-  }
-
-  // ❌ Scenario 2: Correct order but incomplete grid
-  if (!isFullGrid && correctOrder) {
-    showStreakMsg('⚠️ Some cells are left!');
-    return;
-  }
-
-  // ❌ Scenario 4: Both wrong
-  if (!isFullGrid && !correctOrder) {
-    showStreakMsg('❌ Wrong path!');
-    playSound('wrong');
-    return;
-  }
-}
-
-function submitPath() {
-  const lv = LEVELS[currentLevel];
-  const totalCells = lv.size * lv.size;
-
-  const isFullGrid = path.length === totalCells;
-
-  // Check order
-  const visited = path.map(([r,c]) => cellKey(r,c));
-  const numsSorted = [...lv.numbers].sort((a,b) => a[2]-b[2]);
-
-  let lastIdx = -1;
-  let correctOrder = true;
-
-  for (const [r,c,n] of numsSorted) {
-    const idx = visited.indexOf(cellKey(r,c));
-    if (idx === -1 || idx <= lastIdx) {
-      correctOrder = false;
-      break;
-    }
-    lastIdx = idx;
-  }
-
-  // ============================
-  // VALIDATION LOGIC (ON SUBMIT)
-  // ============================
-
-  // ✅ PERFECT
-  if (isFullGrid && correctOrder) {
-    stopTimer();
-    setTimeout(showWin, 300);
-    return;
-  }
-
-  // ❌ Cells missing
-  if (!isFullGrid && correctOrder) {
-    showStreakMsg('⚠️ Cover all grid cells!');
-    return;
-  }
-
-  // ❌ Wrong order
-  if (isFullGrid && !correctOrder) {
-    showStreakMsg('❌ Wrong order/path followed!');
-    playSound('wrong');
-    canvas.classList.add('shake');
-    setTimeout(() => canvas.classList.remove('shake'), 300);
-    return;
-  }
-
-  // ❌ Both wrong
-  if (!isFullGrid && !correctOrder) {
-    showStreakMsg('❌ Wrong path and incomplete grid!');
-    playSound('wrong');
-    return;
-  }
-}
-
-let streakCount = 0;
-function checkStreak() {
-  streakCount++;
-  if (streakCount >= 3) {
-    const msgs = ['🔥 On Fire!', '⚡ Unstoppable!', '✨ Perfect Flow!', '🎯 Laser Focus!'];
-    showStreakMsg(msgs[(streakCount - 3) % msgs.length]);
-  }
-}
-
-function showStreakMsg(msg) {
-  const el = document.getElementById('streak-popup');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 1800);
-}
-
-function updateProgress() {
-  const lv = LEVELS[currentLevel];
-  const total = lv.size * lv.size;
-  const pct = (path.length / total) * 100;
-  document.getElementById('g-progress').style.width = pct + '%';
-}
-
-// ============================================================
-// WIN SCREEN
-// ============================================================
-async function showWin() {
-  const lv = LEVELS[currentLevel];
-  const timeTaken = timerVal;
-  let stars = 1;
-  if (hintsUsed === 0) {
-    if (timeTaken <= lv.starTimes[0]) stars = 3;
-    else if (timeTaken <= lv.starTimes[1]) stars = 2;
-  }
-
-  save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, stars);
-
-const coinsEarned = 20;
-let totalCoins =
-  Number(localStorage.getItem("walletCoins")) ||
-  Number(save.coins) ||
-  0;
-
-try {
-  const rewardResult = await window.gameSDK.rewardCoins({
-    amount: coinsEarned,
-    description: `Zip Master Level ${currentLevel + 1} Complete`,
-    game: "zip_master",
-    level: currentLevel + 1,
-    score: coinsEarned,
-  });
-
-  if (rewardResult && rewardResult.balance !== undefined) {
-    totalCoins = Number(rewardResult.balance);
-  } else if (window.gameSDK) {
-    const freshBalance = await window.gameSDK.getBalance();
-    if (freshBalance !== undefined && freshBalance !== null) {
-      totalCoins = Number(freshBalance);
-    }
-  }
-} catch (err) {
-  console.error("Zip Master reward error:", err);
-  totalCoins = totalCoins + coinsEarned;
-}
-
-save.coins = totalCoins;
-
-if (currentLevel + 1 > save.unlocked) {
-  save.unlocked = Math.min(25, currentLevel + 2);
-}
-
-saveSave();
-updateZipWalletCoins(totalCoins);
-
-  const m = Math.floor(timeTaken/60);
-  const s = timeTaken%60;
-  document.getElementById('win-time').textContent = m+':'+String(s).padStart(2,'0');
-  document.getElementById('win-coins').textContent = '+' + coinsEarned;
-
-  const starMessages = ['','Nice Job! ⭐','Great Work! 🌟','PERFECT! 🏆'];
-  document.getElementById('win-title').textContent = starMessages[stars];
-
-  const starsEl = document.getElementById('win-stars');
-  starsEl.innerHTML = '';
-  for (let i = 1; i <= 3; i++) {
-    const s2 = document.createElement('span');
-    s2.className = 'big-star';
-    s2.textContent = i <= stars ? '⭐' : '☆';
-    starsEl.appendChild(s2);
-    setTimeout(() => s2.classList.add('show'), i * 200);
-  }
-
-  document.getElementById('win-next-btn').style.display = currentLevel < 24 ? 'flex' : 'none';
-
-  document.getElementById('win-popup').classList.add('show');
-  playSound('win');
-  vibrate([50, 30, 50, 30, 100]);
-  spawnConfetti();
-}
-
-function hideWin() {
-  document.getElementById('win-popup').classList.remove('show');
-}
-
-function nextLevel() {
-  hideWin();
-  if (currentLevel < 24) startLevel(currentLevel + 1);
-  else showScreen('levelSelect');
-}
-
-// ============================================================
-// CONFETTI
-// ============================================================
-function spawnConfetti() {
-  const colors = ['#7c3aed','#06b6d4','#fbbf24','#10b981','#f472b6','#f97316'];
-  for (let i = 0; i < 60; i++) {
-    setTimeout(() => {
-      const p = document.createElement('div');
-      p.className = 'confetti-piece';
-      p.style.left = Math.random() * 100 + 'vw';
-      p.style.top = '-20px';
-      p.style.background = colors[Math.floor(Math.random() * colors.length)];
-      p.style.width = (6 + Math.random() * 8) + 'px';
-      p.style.height = (6 + Math.random() * 8) + 'px';
-      p.style.animationDuration = (1 + Math.random() * 1) + 's';
-      p.style.animationDelay = Math.random() * 0.5 + 's';
-      document.body.appendChild(p);
-      setTimeout(() => p.remove(), 2500);
-    }, i * 30);
-  }
-}
-
-// ============================================================
-// CONTROLS
-// ============================================================
-function undoMove() {
-  if (path.length > 1) {
-    path.pop();
-    updateProgress();
-    playSound('undo');
-  }
-}
-
-function restartLevel() {
-  path = [];
-  hintsUsed = 0;
-  mistakes = 0;
-  streakCount = 0;
-  startTimer();
-  updateProgress();
-}
-
-function useHint() {
-  if (save.hints <= 0) {
-    showStreakMsg('No hints left!');
-    return;
-  }
-  document.getElementById('h-tokens').textContent = save.hints;
-  document.getElementById('hint-popup').classList.add('show');
-}
-
-function confirmHint() {
-  document.getElementById('hint-popup').classList.remove('show');
-  if (save.hints <= 0) return;
-  save.hints--;
-  hintsUsed++;
-  saveSave();
-
-  // Show next correct cell
-  const lv = LEVELS[currentLevel];
-  const sol = lv.solution;
-  const pathLen = path.length;
-  if (pathLen < sol.length) {
-    const nextCell = sol[pathLen];
-    if (nextCell) {
-      // Flash the hint cell
-      const [r, c] = nextCell;
-      canvas.classList.add('hint-glow');
-      setTimeout(() => canvas.classList.remove('hint-glow'), 2400);
-      showStreakMsg(`💡 Go to (${r},${c})`);
-    }
-  }
-}
-
-async function skipLevel() {
-  const skipCost = 10;
-
-  let currentCoins =
-    Number(localStorage.getItem("walletCoins")) ||
-    Number(save.coins) ||
-    0;
-
-  if (currentCoins < skipCost) {
-    showStreakMsg('Need 10 coins to skip!');
-    return;
-  }
-
-  try {
-    const result = await window.gameSDK.rewardCoins({
-      amount: -skipCost,
-      description: `Zip Master Level ${currentLevel + 1} Skipped`,
-      game: "zip_master",
-      level: currentLevel + 1,
-      score: -skipCost,
-    });
-
-    if (result && result.balance !== undefined) {
-      save.coins = Number(result.balance);
-    } else {
-      save.coins = currentCoins - skipCost;
-    }
-  } catch (err) {
-    console.error("Skip coin deduction failed:", err);
-    save.coins = currentCoins - skipCost;
-  }
-
-  localStorage.setItem("walletCoins", String(save.coins));
-  localStorage.setItem("zipMasterCoins", String(save.coins));
-
-  save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, 1);
-
-  if (currentLevel + 1 > save.unlocked) {
-    save.unlocked = Math.min(25, currentLevel + 2);
-  }
-
-  saveSave();
-  updateHomeStats();
-
-  showStreakMsg('⏭ Level skipped! -10 coins');
-
-  if (currentLevel < 24) startLevel(currentLevel + 1);
-  else showScreen('levelSelect');
-}
-
-function confirmBack() {
-  stopTimer();
-  showScreen('levelSelect');
-}
-
-function showPause() {
-  paused = true;
-  document.getElementById('pause-popup').classList.add('show');
-}
-
-function hidePause() {
-  paused = false;
-  levelStartTime = Date.now() - timerVal * 1000;
-  document.getElementById('pause-popup').classList.remove('show');
-}
-
-// ============================================================
-// SOUND
-// ============================================================
-let audioCtx = null;
-function getAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-function playSound(type) {
-  if (!save.sound) return;
-  try {
-    const ac = getAudio();
-    if (ac.state === 'suspended') ac.resume();
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.connect(gain); gain.connect(ac.destination);
-    const now = ac.currentTime;
-    if (type === 'click') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.05);
-      gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      osc.start(now); osc.stop(now + 0.1);
-    } else if (type === 'wrong') {
-      osc.type = 'square'; osc.frequency.setValueAtTime(150, now);
-      gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-      osc.start(now); osc.stop(now + 0.15);
-    } else if (type === 'success') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(900, now + 0.1);
-      gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-      osc.start(now); osc.stop(now + 0.2);
-    } else if (type === 'undo') {
-      osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.08);
-      gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      osc.start(now); osc.stop(now + 0.1);
-    } else if (type === 'win') {
-      [523,659,784,1047].forEach((f, i) => {
-        const o = ac.createOscillator(); const g = ac.createGain();
-        o.connect(g); g.connect(ac.destination);
-        const t = now + i * 0.12;
-        o.type = 'sine'; o.frequency.setValueAtTime(f, t);
-        g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-        o.start(t); o.stop(t + 0.25);
+      function saveSave() {
+        localStorage.setItem("zipmaster_save", JSON.stringify(save));
+
+        // 🔥 NEW: Send data to React (index.tsx)
+        window.parent.postMessage(
+          {
+            type: "ZIP_MASTER_UPDATE",
+            payload: {
+              coins: save.coins,
+              stars: save.stars,
+              unlocked: save.unlocked,
+            },
+          },
+          "*",
+        );
+      }
+
+      // ============================================================
+      // SCREENS
+      // ============================================================
+      function showScreen(id) {
+        document
+          .querySelectorAll(".screen")
+          .forEach((s) => s.classList.remove("active"));
+        const el = document.getElementById(id);
+        if (el) el.classList.add("active");
+        if (id === "levelSelect") buildLevelSelect();
+        if (id === "home") updateHomeStats();
+        if (id === "settings") buildSettings();
+      }
+
+      function updateHomeStats() {
+        const solved = save.stars.filter((s) => s > 0).length;
+        const totalStars = save.stars.reduce((a, b) => a + b, 0);
+
+        document.getElementById("h-levels").textContent = solved;
+        document.getElementById("h-stars").textContent = totalStars;
+
+        const walletBalance =
+          Number(localStorage.getItem("walletCoins")) ||
+          Number(save.coins) ||
+          0;
+
+        document.getElementById("h-coins").textContent = walletBalance;
+      }
+
+      function updateZipWalletCoins(amount) {
+        save.coins = Number(amount) || 0;
+        localStorage.setItem("walletCoins", String(save.coins));
+        localStorage.setItem("zipMasterCoins", String(save.coins));
+
+        const coinEl = document.getElementById("h-coins");
+        if (coinEl) coinEl.textContent = save.coins;
+
+        window.parent.postMessage(
+          {
+            type: "ZIP_MASTER_UPDATE",
+            payload: {
+              coins: save.coins,
+              stars: save.stars,
+              unlocked: save.unlocked,
+            },
+          },
+          "*",
+        );
+      }
+
+      async function initZipWalletCoins() {
+        const saved =
+          Number(localStorage.getItem("walletCoins")) ||
+          Number(localStorage.getItem("zipMasterCoins")) ||
+          Number(save.coins) ||
+          0;
+
+        updateZipWalletCoins(saved);
+
+        try {
+          if (window.gameSDK) {
+            const balance = await window.gameSDK.getBalance();
+            if (balance !== undefined && balance !== null) {
+              updateZipWalletCoins(balance);
+            }
+          }
+        } catch (err) {
+          console.warn("Could not fetch Zip Master wallet balance:", err);
+        }
+      }
+
+      window.addEventListener("walletUpdated", (e) => {
+        const balance = e.detail?.balance;
+        if (balance !== undefined) {
+          updateZipWalletCoins(balance);
+        }
       });
-    }
-  } catch(e) {}
-}
 
-// ============================================================
-// VIBRATION
-// ============================================================
-function vibrate(pattern) {
-  if (!save.haptic) return;
-  try { navigator.vibrate && navigator.vibrate(pattern); } catch(e) {}
-}
+      // ============================================================
+      // LEVEL SELECT
+      // ============================================================
+      const DIFF_COLORS = {
+        Tutorial: "diff-easy",
+        Easy: "diff-easy",
+        Medium: "diff-medium",
+        Hard: "diff-hard",
+        Expert: "diff-expert",
+      };
 
-// ============================================================
-// THEME
-// ============================================================
-function applyTheme() {
-  theme = THEMES.find(t => t.id === save.theme) || THEMES[0];
-  const r = document.documentElement.style;
-  r.setProperty('--path', theme.path);
-  r.setProperty('--accent', theme.path);
-  r.setProperty('--accent2', theme.num);
-  r.setProperty('--bg', theme.bg);
-  r.setProperty('--surface', theme.tile);
-  r.setProperty('--card', theme.tile);
-  r.setProperty('--txt', theme.text);
-}
+      function buildLevelSelect() {
+        const grid = document.getElementById("ls-grid");
+        grid.innerHTML = "";
+        const solved = save.stars.filter((s) => s > 0).length;
+        document.getElementById("ls-progress").textContent = solved + "/25";
 
-// ============================================================
-// SETTINGS
-// ============================================================
-function buildSettings() {
-  document.getElementById('sound-toggle').className = 'toggle' + (save.sound ? ' on' : '');
-  document.getElementById('haptic-toggle').className = 'toggle' + (save.haptic ? ' on' : '');
-  document.getElementById('timer-toggle').className = 'toggle' + (save.timer ? ' on' : '');
+        LEVELS.forEach((lv, i) => {
+          const card = document.createElement("div");
+          const unlocked = i < save.unlocked;
+          const stars = save.stars[i] || 0;
+          card.className =
+            "level-card " +
+            (stars > 0 ? "completed" : unlocked ? "unlocked" : "locked");
+          card.innerHTML = `
+      <div class="lc-num">${i + 1}</div>
+      <div class="lc-stars">${[1, 2, 3].map((s) => `<span class="lc-star">${stars >= s ? "⭐" : "☆"}</span>`).join("")}</div>
+      <div class="lc-diff">${lv.difficulty}</div>
+      <div class="diff-badge ${DIFF_COLORS[lv.difficulty] || "diff-easy"}"></div>
+    `;
+          if (unlocked) card.onclick = () => startLevel(i);
+          grid.appendChild(card);
+        });
+      }
 
-  const tg = document.getElementById('theme-grid');
-  tg.innerHTML = '';
-  THEMES.forEach(t => {
-    const chip = document.createElement('div');
-    chip.className = 'theme-chip' + (t.id === save.theme ? ' active' : '');
-    chip.style.background = `linear-gradient(135deg, ${t.grad[0]}, ${t.grad[1]})`;
-    chip.title = t.name;
-    chip.onclick = () => {
-      save.theme = t.id;
-      saveSave();
-      applyTheme();
-      buildSettings();
-    };
-    tg.appendChild(chip);
-  });
-}
+      // ============================================================
+      // GAME START
+      // ============================================================
+      function startLevel(idx) {
+        currentLevel = idx;
+        const lv = LEVELS[idx];
+        path = [];
+        hintsUsed = 0;
+        mistakes = 0;
+        paused = false;
 
-function toggleSetting(key) {
-  save[key] = !save[key];
-  saveSave();
-  buildSettings();
-}
+        document.getElementById("g-lvl-title").textContent =
+          `Level ${idx + 1}: ${lv.name}`;
+        document.getElementById("g-diff-name").textContent = lv.difficulty;
+        document.getElementById("hint-lbl").textContent = "Hint";
 
-function resetGame() {
-  if (!confirm('Reset all progress?')) return;
-  save = {unlocked:1, stars:Array(25).fill(0), coins:0, theme:'neon', sound:true, haptic:true, timer:true, hints:5};
-  saveSave();
-  buildSettings();
-  updateHomeStats();
-}
+        setupCanvas();
+        drawGrid();
+        startTimer();
+        showScreen("game");
+        updateProgress();
+        saveSave(); // sync current progress
+      }
 
-// ============================================================
-// INIT
-// ============================================================
-document.addEventListener('touchstart', () => {
-  try { getAudio().resume(); } catch(e) {}
-}, {once: true});
-document.addEventListener('click', () => {
-  try { getAudio().resume(); } catch(e) {}
-}, {once: true});
+      function setupCanvas() {
+        const lv = LEVELS[currentLevel];
+        const area = document.getElementById("puzzle-area");
+        const maxW = Math.min(area.clientWidth - 24, area.clientHeight - 24);
+        cellSize = Math.floor(maxW / lv.size);
+        const total = cellSize * lv.size;
+        canvas.width = total;
+        canvas.height = total;
+        canvas.style.width = total + "px";
+        canvas.style.height = total + "px";
+        offsetX = 0;
+        offsetY = 0;
+      }
 
-window.addEventListener('resize', () => {
-  if (document.getElementById('game').classList.contains('active')) {
-    setupCanvas();
-  }
-});
+      // ============================================================
+      // TIMER
+      // ============================================================
+      function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerVal = 0;
+        levelStartTime = Date.now();
+        timerInterval = setInterval(() => {
+          if (!paused) {
+            timerVal = Math.floor((Date.now() - levelStartTime) / 1000);
+            const m = Math.floor(timerVal / 60);
+            const s = timerVal % 60;
+            document.getElementById("g-timer").textContent =
+              m + ":" + String(s).padStart(2, "0");
+          }
+        }, 200);
+      }
 
-// Splash → Home
-document.addEventListener('keydown', handleArrowKeys);
-window.onload = () => {
-  loadSave();
-  setTimeout(async () => {
-  document.getElementById('splash').classList.remove('active');
+      function stopTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+      }
 
-  if (window.gameSDK) {
-    await window.gameSDK.init();
-  }
+      // ============================================================
+      // DRAW GRID
+      // ============================================================
+      function drawGrid() {
+        const lv = LEVELS[currentLevel];
+        const cs = cellSize;
+        const sz = lv.size;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  loadSave();
-  await initZipWalletCoins();
+        // Background
+        ctx.fillStyle = theme.tile;
+        ctx.beginPath();
+        roundRect(ctx, 0, 0, cs * sz, cs * sz, 12);
+        ctx.fill();
 
-  showScreen('home');
-}, 1400);
-};
-</script>
-</body>
+        // Grid lines
+        ctx.strokeStyle = "rgba(255,255,255,0.06)";
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= sz; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * cs, 0);
+          ctx.lineTo(i * cs, sz * cs);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i * cs);
+          ctx.lineTo(sz * cs, i * cs);
+          ctx.stroke();
+        }
+
+        // Draw path
+        if (path.length > 1) {
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.lineWidth = cs * 0.45;
+          ctx.strokeStyle = theme.path + "cc";
+          ctx.shadowColor = theme.path;
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.moveTo(path[0][1] * cs + cs / 2, path[0][0] * cs + cs / 2);
+          for (let i = 1; i < path.length; i++) {
+            ctx.lineTo(path[i][1] * cs + cs / 2, path[i][0] * cs + cs / 2);
+          }
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+
+          // Dotted inner line
+          ctx.lineWidth = cs * 0.12;
+          ctx.strokeStyle = "rgba(255,255,255,0.25)";
+          ctx.setLineDash([cs * 0.15, cs * 0.1]);
+          ctx.beginPath();
+          ctx.moveTo(path[0][1] * cs + cs / 2, path[0][0] * cs + cs / 2);
+          for (let i = 1; i < path.length; i++) {
+            ctx.lineTo(path[i][1] * cs + cs / 2, path[i][0] * cs + cs / 2);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Path start dot
+        if (path.length === 1) {
+          const [r, c] = path[0];
+          ctx.fillStyle = theme.path;
+          ctx.shadowColor = theme.path;
+          ctx.shadowBlur = 20;
+          ctx.beginPath();
+          ctx.arc(c * cs + cs / 2, r * cs + cs / 2, cs * 0.18, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+
+        // Black walls / borders for special levels
+        if (lv.walls) {
+          ctx.save();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = cs * 0.18;
+          ctx.lineCap = "butt";
+
+          if (lv.walls.horizontal) {
+            lv.walls.horizontal.forEach(([gridLineRow, startCol, endCol]) => {
+              ctx.beginPath();
+              ctx.moveTo(startCol * cs, gridLineRow * cs);
+              ctx.lineTo((endCol + 1) * cs, gridLineRow * cs);
+              ctx.stroke();
+            });
+          }
+
+          if (lv.walls.vertical) {
+            lv.walls.vertical.forEach(([row, gridLineCol]) => {
+              ctx.beginPath();
+              ctx.moveTo(gridLineCol * cs, row * cs);
+              ctx.lineTo(gridLineCol * cs, (row + 1) * cs);
+              ctx.stroke();
+            });
+          }
+
+          ctx.restore();
+        }
+        // Draw blocked cells (red X)
+        if (lv.blocked) {
+          lv.blocked.forEach(([r, c]) => {
+            const x = c * cs;
+            const y = r * cs;
+
+            // light red background
+            ctx.fillStyle = "rgba(255,0,0,0.15)";
+            ctx.fillRect(x, y, cs, cs);
+
+            // red cross
+            ctx.strokeStyle = "#ff0000";
+            ctx.lineWidth = 5;
+
+            ctx.beginPath();
+            ctx.moveTo(x + 10, y + 10);
+            ctx.lineTo(x + cs - 10, y + cs - 10);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + cs - 10, y + 10);
+            ctx.lineTo(x + 10, y + cs - 10);
+            ctx.stroke();
+          });
+        }
+        // Number tiles
+        const numMap = {};
+        lv.numbers.forEach(([r, c, n]) => (numMap[r + "," + c] = n));
+
+        lv.numbers.forEach(([r, c, n]) => {
+          const px = c * cs + cs / 2;
+          const py = r * cs + cs / 2;
+          const inPath = path.some(([pr, pc]) => pr === r && pc === c);
+          const isLast =
+            path.length > 0 &&
+            path[path.length - 1][0] === r &&
+            path[path.length - 1][1] === c;
+          const pathIdx = path.findIndex(([pr, pc]) => pr === r && pc === c);
+          const visited = pathIdx !== -1;
+
+          // Tile background
+          const radius = cs * 0.32;
+          ctx.save();
+          ctx.shadowColor = visited ? theme.path : "rgba(0,0,0,0.4)";
+          ctx.shadowBlur = visited ? 18 : 8;
+
+          if (visited) {
+            const grad = ctx.createRadialGradient(px, py, 0, px, py, radius);
+            grad.addColorStop(
+              0,
+              theme.grad
+                ? THEMES.find((t) => t.id === save.theme).grad[0]
+                : theme.path,
+            );
+            grad.addColorStop(
+              1,
+              theme.grad
+                ? THEMES.find((t) => t.id === save.theme).grad[1]
+                : theme.num,
+            );
+            ctx.fillStyle = grad;
+          } else {
+            ctx.fillStyle = theme.tile;
+          }
+          ctx.beginPath();
+          ctx.arc(px, py, radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Border
+          ctx.strokeStyle = visited ? theme.path : "rgba(255,255,255,0.2)";
+          ctx.lineWidth = visited ? 2.5 : 1.5;
+          ctx.stroke();
+          ctx.restore();
+
+          // Number
+          ctx.fillStyle = visited ? "#fff" : theme.num;
+          ctx.font = `900 ${cs * 0.32}px Fredoka One, sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(n, px, py + 1);
+
+          // Pulse ring for current endpoint
+          if (isLast) {
+            ctx.strokeStyle = theme.path + "88";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(
+              px,
+              py,
+              radius + 4 + Math.sin(Date.now() / 300) * 3,
+              0,
+              Math.PI * 2,
+            );
+            ctx.stroke();
+          }
+        });
+
+        requestAnimationFrame(drawGrid);
+      }
+
+      function roundRect(ctx, x, y, w, h, r) {
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+      }
+
+      // ============================================================
+      // INPUT HANDLING
+      // ============================================================
+      function getCell(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        const c = Math.floor(x / cellSize);
+        const r = Math.floor(y / cellSize);
+        const lv = LEVELS[currentLevel];
+        if (r >= 0 && r < lv.size && c >= 0 && c < lv.size) return [r, c];
+        return null;
+      }
+
+      function cellKey(r, c) {
+        return r + "," + c;
+      }
+      function pathHasCell(r, c) {
+        return path.some(([pr, pc]) => pr === r && pc === c);
+      }
+      function isBlockedCell(r, c) {
+        const lv = LEVELS[currentLevel];
+        return lv.blocked?.some(([br, bc]) => br === r && bc === c);
+      }
+      function isAdjacent(r1, c1, r2, c2) {
+        return Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1;
+      }
+      function isWallBetween(r1, c1, r2, c2) {
+        const lv = LEVELS[currentLevel];
+        if (!lv.walls) return false;
+
+        // Vertical movement: moving up/down crosses horizontal wall
+        if (c1 === c2) {
+          const gridLineRow = Math.max(r1, r2);
+          const col = c1;
+
+          return lv.walls.horizontal?.some(
+            ([row, startCol, endCol]) =>
+              row === gridLineRow && col >= startCol && col <= endCol,
+          );
+        }
+
+        // Horizontal movement: moving left/right crosses vertical wall
+        if (r1 === r2) {
+          const row = r1;
+          const gridLineCol = Math.max(c1, c2);
+
+          return lv.walls.vertical?.some(
+            ([wallRow, col]) => wallRow === row && col === gridLineCol,
+          );
+        }
+
+        return false;
+      }
+
+      function warnWallTouch() {
+        showStreakMsg("❌ Wrong move! Don't touch the border");
+        playSound("wrong");
+        vibrate([30, 20, 30]);
+        canvas.classList.add("shake");
+        setTimeout(() => canvas.classList.remove("shake"), 300);
+      }
+      function onDragStart(clientX, clientY) {
+        if (paused) return;
+        const cell = getCell(clientX, clientY);
+        if (!cell) return;
+        const [r, c] = cell;
+        const lv = LEVELS[currentLevel];
+        const startNum = lv.numbers.find(
+          ([nr, nc, n]) => nr === r && nc === c && n === 1,
+        );
+
+        if (startNum || path.length === 0) {
+          // Start from number 1
+          if (startNum) {
+            path = [[r, c]];
+          } else if (pathHasCell(r, c)) {
+            // Resume from existing path point
+            const idx = path.findIndex(([pr, pc]) => pr === r && pc === c);
+            path = path.slice(0, idx + 1);
+          } else return;
+        } else {
+          const last = path[path.length - 1];
+          if (pathHasCell(r, c)) {
+            // Backtrack
+            const idx = path.findIndex(([pr, pc]) => pr === r && pc === c);
+            path = path.slice(0, idx + 1);
+          } else if (isAdjacent(last[0], last[1], r, c)) {
+            path.push([r, c]);
+          } else return;
+        }
+        isDragging = true;
+        playSound("click");
+        vibrate(10);
+        updateProgress();
+      }
+
+      function onDragMove(clientX, clientY) {
+        if (!isDragging || paused || path.length === 0) return;
+        const cell = getCell(clientX, clientY);
+        if (!cell) return;
+        const [r, c] = cell;
+        const last = path[path.length - 1];
+        if (last[0] === r && last[1] === c) return;
+
+        if (!isAdjacent(last[0], last[1], r, c)) return;
+        if (isBlockedCell(r, c)) {
+          showStreakMsg("❌ Blocked Cell");
+          playSound("wrong");
+          return;
+        }
+        if (isWallBetween(last[0], last[1], r, c)) {
+          warnWallTouch();
+          return;
+        }
+        // Backtrack if revisiting
+        if (pathHasCell(r, c)) {
+          const idx = path.findIndex(([pr, pc]) => pr === r && pc === c);
+          if (idx === path.length - 2) {
+            path.pop();
+            playSound("undo");
+          }
+          return;
+        }
+
+        path.push([r, c]);
+        playSound("click");
+        vibrate(5);
+
+        // Check if we hit a number in wrong order
+        const lv = LEVELS[currentLevel];
+        const numHit = lv.numbers.find(([nr, nc, n]) => nr === r && nc === c);
+        if (numHit) {
+          const expectedNum = getNextExpectedNum();
+          if (numHit[2] !== expectedNum) {
+            mistakes++;
+            playSound("wrong");
+            vibrate([30, 20, 30]);
+            canvas.classList.add("shake");
+            setTimeout(() => canvas.classList.remove("shake"), 300);
+          } else {
+            playSound("success");
+            vibrate(30);
+            checkStreak();
+          }
+        }
+
+        updateProgress();
+      }
+
+      function onDragEnd() {
+        isDragging = false;
+      }
+
+      function handleArrowKeys(e) {
+        if (!document.getElementById("game").classList.contains("active"))
+          return;
+        if (paused) return;
+
+        const key = e.key;
+
+        let dir = null;
+
+        if (key === "ArrowUp") dir = [-1, 0];
+        else if (key === "ArrowDown") dir = [1, 0];
+        else if (key === "ArrowLeft") dir = [0, -1];
+        else if (key === "ArrowRight") dir = [0, 1];
+        else return;
+
+        e.preventDefault();
+
+        // ============================
+        // START PATH (if empty)
+        // ============================
+        if (path.length === 0) {
+          const lv = LEVELS[currentLevel];
+          const start = lv.numbers.find((n) => n[2] === 1);
+          if (start) {
+            path = [[start[0], start[1]]];
+            playSound("click");
+            vibrate(10);
+            updateProgress();
+          }
+          return;
+        }
+
+        const last = path[path.length - 1];
+        const newR = last[0] + dir[0];
+        const newC = last[1] + dir[1];
+
+        const lv = LEVELS[currentLevel];
+
+        // Check bounds
+        if (newR < 0 || newR >= lv.size || newC < 0 || newC >= lv.size) return;
+        if (isBlockedCell(newR, newC)) {
+          showStreakMsg("❌ Blocked Cell");
+          playSound("wrong");
+          return;
+        }
+
+        // Backtrack if going backward
+        if (path.length > 1) {
+          const prev = path[path.length - 2];
+          if (prev[0] === newR && prev[1] === newC) {
+            path.pop();
+            playSound("undo");
+            updateProgress();
+            return;
+          }
+        }
+
+        // Prevent revisiting random cell
+        if (pathHasCell(newR, newC)) return;
+        if (isWallBetween(last[0], last[1], newR, newC)) {
+          warnWallTouch();
+          return;
+        }
+        // Add new cell
+        path.push([newR, newC]);
+        playSound("click");
+        vibrate(5);
+
+        // ============================
+        // CHECK NUMBER ORDER
+        // ============================
+        const numHit = lv.numbers.find(([r, c, n]) => r === newR && c === newC);
+
+        if (numHit) {
+          const expectedNum = getNextExpectedNum();
+
+          if (numHit[2] !== expectedNum) {
+            playSound("wrong");
+            vibrate([30, 20, 30]);
+            canvas.classList.add("shake");
+            setTimeout(() => canvas.classList.remove("shake"), 300);
+          } else {
+            playSound("success");
+            vibrate(30);
+            checkStreak();
+          }
+        }
+
+        updateProgress();
+      }
+
+      function getNextExpectedNum() {
+        const lv = LEVELS[currentLevel];
+        const visited = new Set(path.map(([r, c]) => cellKey(r, c)));
+        let maxVisited = 0;
+        lv.numbers.forEach(([r, c, n]) => {
+          if (visited.has(cellKey(r, c))) maxVisited = Math.max(maxVisited, n);
+        });
+        return maxVisited + 1;
+      }
+
+      // Touch events
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          const t = e.touches[0];
+          onDragStart(t.clientX, t.clientY);
+        },
+        { passive: false },
+      );
+      canvas.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          const t = e.touches[0];
+          onDragMove(t.clientX, t.clientY);
+        },
+        { passive: false },
+      );
+      canvas.addEventListener(
+        "touchend",
+        (e) => {
+          e.preventDefault();
+          onDragEnd();
+        },
+        { passive: false },
+      );
+
+      // Mouse events
+      canvas.addEventListener("mousedown", (e) =>
+        onDragStart(e.clientX, e.clientY),
+      );
+      canvas.addEventListener("mousemove", (e) => {
+        if (e.buttons > 0) onDragMove(e.clientX, e.clientY);
+      });
+      canvas.addEventListener("mouseup", onDragEnd);
+
+      // ============================================================
+      // WIN DETECTION
+      // ============================================================
+      function checkWin() {
+        const lv = LEVELS[currentLevel];
+        const totalCells = lv.size * lv.size;
+
+        const isFullGrid = path.length === totalCells;
+
+        // Check order
+        const visited = path.map(([r, c]) => cellKey(r, c));
+        const numsSorted = [...lv.numbers].sort((a, b) => a[2] - b[2]);
+
+        let lastIdx = -1;
+        let correctOrder = true;
+
+        for (const [r, c, n] of numsSorted) {
+          const idx = visited.indexOf(cellKey(r, c));
+          if (idx === -1 || idx <= lastIdx) {
+            correctOrder = false;
+            break;
+          }
+          lastIdx = idx;
+        }
+
+        // ============================
+        // SCENARIOS HANDLING
+        // ============================
+
+        // ✅ Scenario 3: Perfect
+        if (isFullGrid && correctOrder) {
+          stopTimer();
+          isDragging = false;
+          setTimeout(showWin, 300);
+          return;
+        }
+
+        // ❌ Scenario 1: Full grid but wrong order
+        if (isFullGrid && !correctOrder) {
+          showStreakMsg("❌ Wrong order followed!");
+          playSound("wrong");
+          canvas.classList.add("shake");
+          setTimeout(() => canvas.classList.remove("shake"), 300);
+          return;
+        }
+
+        // ❌ Scenario 2: Correct order but incomplete grid
+        if (!isFullGrid && correctOrder) {
+          showStreakMsg("⚠️ Some cells are left!");
+          return;
+        }
+
+        // ❌ Scenario 4: Both wrong
+        if (!isFullGrid && !correctOrder) {
+          showStreakMsg("❌ Wrong path!");
+          playSound("wrong");
+          return;
+        }
+      }
+
+      function submitPath() {
+        const lv = LEVELS[currentLevel];
+        const totalCells = lv.size * lv.size;
+
+        const isFullGrid = path.length === totalCells;
+
+        // Check order
+        const visited = path.map(([r, c]) => cellKey(r, c));
+        const numsSorted = [...lv.numbers].sort((a, b) => a[2] - b[2]);
+
+        let lastIdx = -1;
+        let correctOrder = true;
+
+        for (const [r, c, n] of numsSorted) {
+          const idx = visited.indexOf(cellKey(r, c));
+          if (idx === -1 || idx <= lastIdx) {
+            correctOrder = false;
+            break;
+          }
+          lastIdx = idx;
+        }
+
+        // ============================
+        // VALIDATION LOGIC (ON SUBMIT)
+        // ============================
+
+        // ✅ PERFECT
+        if (isFullGrid && correctOrder) {
+          stopTimer();
+          setTimeout(showWin, 300);
+          return;
+        }
+
+        // ❌ Cells missing
+        if (!isFullGrid && correctOrder) {
+          showStreakMsg("⚠️ Cover all grid cells!");
+          return;
+        }
+
+        // ❌ Wrong order
+        if (isFullGrid && !correctOrder) {
+          showStreakMsg("❌ Wrong order/path followed!");
+          playSound("wrong");
+          canvas.classList.add("shake");
+          setTimeout(() => canvas.classList.remove("shake"), 300);
+          return;
+        }
+
+        // ❌ Both wrong
+        if (!isFullGrid && !correctOrder) {
+          showStreakMsg("❌ Wrong path and incomplete grid!");
+          playSound("wrong");
+          return;
+        }
+      }
+
+      let streakCount = 0;
+      function checkStreak() {
+        streakCount++;
+        if (streakCount >= 3) {
+          const msgs = [
+            "🔥 On Fire!",
+            "⚡ Unstoppable!",
+            "✨ Perfect Flow!",
+            "🎯 Laser Focus!",
+          ];
+          showStreakMsg(msgs[(streakCount - 3) % msgs.length]);
+        }
+      }
+
+      function showStreakMsg(msg) {
+        const el = document.getElementById("streak-popup");
+        el.textContent = msg;
+        el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 1800);
+      }
+
+      function updateProgress() {
+        const lv = LEVELS[currentLevel];
+        const total = lv.size * lv.size;
+        const pct = (path.length / total) * 100;
+        document.getElementById("g-progress").style.width = pct + "%";
+      }
+
+      // ============================================================
+      // WIN SCREEN
+      // ============================================================
+      async function showWin() {
+        const lv = LEVELS[currentLevel];
+        const timeTaken = timerVal;
+        let stars = 1;
+        if (hintsUsed === 0) {
+          if (timeTaken <= lv.starTimes[0]) stars = 3;
+          else if (timeTaken <= lv.starTimes[1]) stars = 2;
+        }
+
+        save.stars[currentLevel] = Math.max(
+          save.stars[currentLevel] || 0,
+          stars,
+        );
+
+        const coinsEarned = 20;
+        let totalCoins =
+          Number(localStorage.getItem("walletCoins")) ||
+          Number(save.coins) ||
+          0;
+
+        try {
+          const rewardResult = await window.gameSDK.rewardCoins({
+            amount: coinsEarned,
+            description: `Zip Master Level ${currentLevel + 1} Complete`,
+            game: "zip_master",
+            level: currentLevel + 1,
+            score: coinsEarned,
+          });
+
+          if (rewardResult && rewardResult.balance !== undefined) {
+            totalCoins = Number(rewardResult.balance);
+          } else if (window.gameSDK) {
+            const freshBalance = await window.gameSDK.getBalance();
+            if (freshBalance !== undefined && freshBalance !== null) {
+              totalCoins = Number(freshBalance);
+            }
+          }
+        } catch (err) {
+          console.error("Zip Master reward error:", err);
+          totalCoins = totalCoins + coinsEarned;
+        }
+
+        save.coins = totalCoins;
+
+        if (currentLevel + 1 > save.unlocked) {
+          save.unlocked = Math.min(25, currentLevel + 2);
+        }
+
+        saveSave();
+        updateZipWalletCoins(totalCoins);
+
+        const m = Math.floor(timeTaken / 60);
+        const s = timeTaken % 60;
+        document.getElementById("win-time").textContent =
+          m + ":" + String(s).padStart(2, "0");
+        document.getElementById("win-coins").textContent = "+" + coinsEarned;
+
+        const starMessages = [
+          "",
+          "Nice Job! ⭐",
+          "Great Work! 🌟",
+          "PERFECT! 🏆",
+        ];
+        document.getElementById("win-title").textContent = starMessages[stars];
+
+        const starsEl = document.getElementById("win-stars");
+        starsEl.innerHTML = "";
+        for (let i = 1; i <= 3; i++) {
+          const s2 = document.createElement("span");
+          s2.className = "big-star";
+          s2.textContent = i <= stars ? "⭐" : "☆";
+          starsEl.appendChild(s2);
+          setTimeout(() => s2.classList.add("show"), i * 200);
+        }
+
+        document.getElementById("win-next-btn").style.display =
+          currentLevel < 24 ? "flex" : "none";
+
+        document.getElementById("win-popup").classList.add("show");
+        playSound("win");
+        vibrate([50, 30, 50, 30, 100]);
+        spawnConfetti();
+      }
+
+      function hideWin() {
+        document.getElementById("win-popup").classList.remove("show");
+      }
+
+      function nextLevel() {
+        hideWin();
+        if (currentLevel < 24) startLevel(currentLevel + 1);
+        else showScreen("levelSelect");
+      }
+
+      // ============================================================
+      // CONFETTI
+      // ============================================================
+      function spawnConfetti() {
+        const colors = [
+          "#7c3aed",
+          "#06b6d4",
+          "#fbbf24",
+          "#10b981",
+          "#f472b6",
+          "#f97316",
+        ];
+        for (let i = 0; i < 60; i++) {
+          setTimeout(() => {
+            const p = document.createElement("div");
+            p.className = "confetti-piece";
+            p.style.left = Math.random() * 100 + "vw";
+            p.style.top = "-20px";
+            p.style.background =
+              colors[Math.floor(Math.random() * colors.length)];
+            p.style.width = 6 + Math.random() * 8 + "px";
+            p.style.height = 6 + Math.random() * 8 + "px";
+            p.style.animationDuration = 1 + Math.random() * 1 + "s";
+            p.style.animationDelay = Math.random() * 0.5 + "s";
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 2500);
+          }, i * 30);
+        }
+      }
+
+      // ============================================================
+      // CONTROLS
+      // ============================================================
+      function undoMove() {
+        if (path.length > 1) {
+          path.pop();
+          updateProgress();
+          playSound("undo");
+        }
+      }
+
+      function restartLevel() {
+        path = [];
+        hintsUsed = 0;
+        mistakes = 0;
+        streakCount = 0;
+        startTimer();
+        updateProgress();
+      }
+
+      function useHint() {
+        if (save.hints <= 0) {
+          showStreakMsg("No hints left!");
+          return;
+        }
+        document.getElementById("h-tokens").textContent = save.hints;
+        document.getElementById("hint-popup").classList.add("show");
+      }
+
+      function confirmHint() {
+        document.getElementById("hint-popup").classList.remove("show");
+        if (save.hints <= 0) return;
+        save.hints--;
+        hintsUsed++;
+        saveSave();
+
+        // Show next correct cell
+        const lv = LEVELS[currentLevel];
+        const sol = lv.solution;
+        const pathLen = path.length;
+        if (pathLen < sol.length) {
+          const nextCell = sol[pathLen];
+          if (nextCell) {
+            // Flash the hint cell
+            const [r, c] = nextCell;
+            canvas.classList.add("hint-glow");
+            setTimeout(() => canvas.classList.remove("hint-glow"), 2400);
+            showStreakMsg(`💡 Go to (${r},${c})`);
+          }
+        }
+      }
+
+      async function skipLevel() {
+        const skipCost = 10;
+
+        let currentCoins =
+          Number(localStorage.getItem("walletCoins")) ||
+          Number(save.coins) ||
+          0;
+
+        if (currentCoins < skipCost) {
+          showStreakMsg("Need 10 coins to skip!");
+          return;
+        }
+
+        try {
+          const result = await window.gameSDK.rewardCoins({
+            amount: -skipCost,
+            description: `Zip Master Level ${currentLevel + 1} Skipped`,
+            game: "zip_master",
+            level: currentLevel + 1,
+            score: -skipCost,
+          });
+
+          if (result && result.balance !== undefined) {
+            save.coins = Number(result.balance);
+          } else {
+            save.coins = currentCoins - skipCost;
+          }
+        } catch (err) {
+          console.error("Skip coin deduction failed:", err);
+          save.coins = currentCoins - skipCost;
+        }
+
+        localStorage.setItem("walletCoins", String(save.coins));
+        localStorage.setItem("zipMasterCoins", String(save.coins));
+
+        save.stars[currentLevel] = Math.max(save.stars[currentLevel] || 0, 1);
+
+        if (currentLevel + 1 > save.unlocked) {
+          save.unlocked = Math.min(25, currentLevel + 2);
+        }
+
+        saveSave();
+        updateHomeStats();
+
+        showStreakMsg("⏭ Level skipped! -10 coins");
+
+        if (currentLevel < 24) startLevel(currentLevel + 1);
+        else showScreen("levelSelect");
+      }
+
+      function confirmBack() {
+        stopTimer();
+        showScreen("levelSelect");
+      }
+
+      function showPause() {
+        paused = true;
+        document.getElementById("pause-popup").classList.add("show");
+      }
+
+      function hidePause() {
+        paused = false;
+        levelStartTime = Date.now() - timerVal * 1000;
+        document.getElementById("pause-popup").classList.remove("show");
+      }
+
+      // ============================================================
+      // SOUND
+      // ============================================================
+      let audioCtx = null;
+      function getAudio() {
+        if (!audioCtx)
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        return audioCtx;
+      }
+      function playSound(type) {
+        if (!save.sound) return;
+        try {
+          const ac = getAudio();
+          if (ac.state === "suspended") ac.resume();
+          const osc = ac.createOscillator();
+          const gain = ac.createGain();
+          osc.connect(gain);
+          gain.connect(ac.destination);
+          const now = ac.currentTime;
+          if (type === "click") {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(600, now + 0.05);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+          } else if (type === "wrong") {
+            osc.type = "square";
+            osc.frequency.setValueAtTime(150, now);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+            osc.start(now);
+            osc.stop(now + 0.15);
+          } else if (type === "success") {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(900, now + 0.1);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+          } else if (type === "undo") {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(300, now + 0.08);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+          } else if (type === "win") {
+            [523, 659, 784, 1047].forEach((f, i) => {
+              const o = ac.createOscillator();
+              const g = ac.createGain();
+              o.connect(g);
+              g.connect(ac.destination);
+              const t = now + i * 0.12;
+              o.type = "sine";
+              o.frequency.setValueAtTime(f, t);
+              g.gain.setValueAtTime(0.25, t);
+              g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+              o.start(t);
+              o.stop(t + 0.25);
+            });
+          }
+        } catch (e) {}
+      }
+
+      // ============================================================
+      // VIBRATION
+      // ============================================================
+      function vibrate(pattern) {
+        if (!save.haptic) return;
+        try {
+          navigator.vibrate && navigator.vibrate(pattern);
+        } catch (e) {}
+      }
+
+      // ============================================================
+      // THEME
+      // ============================================================
+      function applyTheme() {
+        theme = THEMES.find((t) => t.id === save.theme) || THEMES[0];
+        const r = document.documentElement.style;
+        r.setProperty("--path", theme.path);
+        r.setProperty("--accent", theme.path);
+        r.setProperty("--accent2", theme.num);
+        r.setProperty("--bg", theme.bg);
+        r.setProperty("--surface", theme.tile);
+        r.setProperty("--card", theme.tile);
+        r.setProperty("--txt", theme.text);
+      }
+
+      // ============================================================
+      // SETTINGS
+      // ============================================================
+      function buildSettings() {
+        document.getElementById("sound-toggle").className =
+          "toggle" + (save.sound ? " on" : "");
+        document.getElementById("haptic-toggle").className =
+          "toggle" + (save.haptic ? " on" : "");
+        document.getElementById("timer-toggle").className =
+          "toggle" + (save.timer ? " on" : "");
+
+        const tg = document.getElementById("theme-grid");
+        tg.innerHTML = "";
+        THEMES.forEach((t) => {
+          const chip = document.createElement("div");
+          chip.className =
+            "theme-chip" + (t.id === save.theme ? " active" : "");
+          chip.style.background = `linear-gradient(135deg, ${t.grad[0]}, ${t.grad[1]})`;
+          chip.title = t.name;
+          chip.onclick = () => {
+            save.theme = t.id;
+            saveSave();
+            applyTheme();
+            buildSettings();
+          };
+          tg.appendChild(chip);
+        });
+      }
+
+      function toggleSetting(key) {
+        save[key] = !save[key];
+        saveSave();
+        buildSettings();
+      }
+
+      function resetGame() {
+        if (!confirm("Reset all progress?")) return;
+        save = {
+          unlocked: 1,
+          stars: Array(25).fill(0),
+          coins: 0,
+          theme: "neon",
+          sound: true,
+          haptic: true,
+          timer: true,
+          hints: 5,
+        };
+        saveSave();
+        buildSettings();
+        updateHomeStats();
+      }
+
+      // ============================================================
+      // INIT
+      // ============================================================
+      document.addEventListener(
+        "touchstart",
+        () => {
+          try {
+            getAudio().resume();
+          } catch (e) {}
+        },
+        { once: true },
+      );
+      document.addEventListener(
+        "click",
+        () => {
+          try {
+            getAudio().resume();
+          } catch (e) {}
+        },
+        { once: true },
+      );
+
+      window.addEventListener("resize", () => {
+        if (document.getElementById("game").classList.contains("active")) {
+          setupCanvas();
+        }
+      });
+
+      // Splash → Home
+      document.addEventListener("keydown", handleArrowKeys);
+      window.onload = () => {
+        loadSave();
+        setTimeout(async () => {
+          document.getElementById("splash").classList.remove("active");
+
+          if (window.gameSDK) {
+            await window.gameSDK.init();
+          }
+
+          loadSave();
+          await initZipWalletCoins();
+
+          showScreen("home");
+        }, 1400);
+      };
+    </script>
+  </body>
 </html>

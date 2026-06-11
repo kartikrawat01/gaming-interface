@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { UserCircle } from "lucide-react";
+import { supabase } from "../supabaseClient";
 import {
   Outlet,
   createFileRoute,
@@ -28,7 +31,19 @@ const menuItems = [
 
 function LayoutPage() {
   const location = useLocation();
+  const [userEmail, setUserEmail] = useState<string>("");
 
+useEffect(() => {
+  const getUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    setUserEmail(user?.email || "Guest User");
+  };
+
+  getUser();
+}, []);
   return (
     <div className="flex h-screen bg-[#dfeef7] text-gray-900 overflow-hidden">
       {/* LEFT SIDEBAR */}
@@ -79,6 +94,21 @@ function LayoutPage() {
             );
           })}
         </nav>
+        {/* USER PROFILE */}
+<div className="mt-6 rounded-2xl bg-white/15 border border-white/20 p-4 flex items-center gap-3 text-white">
+  <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+    <UserCircle className="h-7 w-7 text-white" />
+  </div>
+
+  <div className="min-w-0">
+    <p className="text-sm font-semibold truncate">
+      {userEmail.split("@")[0]}
+    </p>
+    <p className="text-xs text-white/70 truncate">
+      {userEmail}
+    </p>
+  </div>
+</div>
       </aside>
 
       {/* RIGHT CONTENT */}
