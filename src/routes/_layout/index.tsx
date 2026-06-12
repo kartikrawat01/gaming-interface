@@ -41,6 +41,7 @@ type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 type Game = {
   title: string;
   icon: string;
+  image?: string;
   difficulty: Difficulty;
   progress: number;
   xp: number;
@@ -50,14 +51,14 @@ type Game = {
 };
 
 const games: Game[] = [
-  { title: "Logic Maze", icon: "🧩", difficulty: "Beginner", progress: 72, xp: 120, time: "10 min", accent: "from-secondary/30 to-primary/10" },
-  { title: "Brain Blast", icon: "🔁", difficulty: "Intermediate", progress: 45, xp: 150, time: "12 min", accent: "from-indigo-500/20 to-indigo-500/5" },
-  { title: "Trivia", icon: "🐛", difficulty: "Intermediate", progress: 30, xp: 220, time: "18 min", accent: "from-violet-500/20 to-violet-500/5" },
-  { title: "Zip", icon: "⚔️", difficulty: "Intermediate", progress: 100, xp: 240, time: "20 min", accent: "from-emerald-500/20 to-emerald-500/5" },
-  { title: "Stop Motion Studio", icon: "📦", difficulty: "Beginner", progress: 88, xp: 130, time: "8 min", accent: "from-secondary/30 to-primary/10" },
-  { title: "Piano", icon: "🎯", difficulty: "Intermediate", progress: 12, xp: 260, time: "22 min", accent: "from-indigo-500/20 to-indigo-500/5" },
-  { title: "Math Shop Game", icon: "⚡", difficulty: "Advanced", progress: 0, xp: 380, time: "30 min", locked: true, accent: "from-rose-500/20 to-rose-500/5" },
-  { title: "AI Escape", icon: "🤖", difficulty: "Advanced", progress: 0, xp: 420, time: "35 min", locked: true, accent: "from-violet-500/20 to-violet-500/5" },
+  { title: "Logic Maze", icon: "🧩", image: "/images/logic-maze.png", difficulty: "Beginner", progress: 0, xp: 120, time: "10 min", accent: "from-secondary/30 to-primary/10" },
+  { title: "Brain Blast", icon: "🔁", image: "/images/brain-blast.png", difficulty: "Intermediate", progress: 0, xp: 150, time: "12 min", accent: "from-indigo-500/20 to-indigo-500/5" },
+  { title: "Trivia", icon: "🐛", image: "/images/trivia.png",difficulty: "Intermediate", progress: 30, xp: 220, time: "18 min", accent: "from-violet-500/20 to-violet-500/5" },
+  { title: "Zip", icon: "⚔️", image: "/images/zip-master.png", difficulty: "Intermediate", progress: 0, xp: 240, time: "20 min", accent: "from-emerald-500/20 to-emerald-500/5" },
+  { title: "Stop Motion Studio",image: "/images/stop-motion.png", icon: "📦", difficulty: "Beginner", progress: 88, xp: 130, time: "8 min", accent: "from-secondary/30 to-primary/10" },
+  { title: "Piano", icon: "🎯",image: "/images/piano.png", difficulty: "Intermediate", progress: 12, xp: 260, time: "22 min", accent: "from-indigo-500/20 to-indigo-500/5" },
+  { title: "Math Shop Game", icon: "⚡", image: "/images/math-shop.png",difficulty: "Advanced", progress: 0, xp: 380, time: "30 min", accent: "from-rose-500/20 to-rose-500/5" },
+  { title: "Mini Suduko", icon: "🤖", difficulty: "Advanced", progress: 0, xp: 420, time: "35 min", accent: "from-violet-500/20 to-violet-500/5" },
 ];
 
 // const sidebarItems = [
@@ -346,6 +347,12 @@ const [triviaStats, setTriviaStats] = useState({
   time: "0 min",
 });
 const [zipStats, setZipStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+const [mathShopStats, setMathShopStats] = useState({
   progress: 0,
   coins: 0,
   completed: 0,
@@ -655,6 +662,200 @@ useEffect(() => {
   fetchWallet();
 
 }, [user]);
+useEffect(() => {
+  const loadLogicMazeProgress = () => {
+    const completed =
+      Number(localStorage.getItem("logicMazeCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("logicMazeProgress")) ||
+      completed * 5 ||
+      0;
+
+    setLogicMazeStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadLogicMazeProgress();
+
+  window.addEventListener("focus", loadLogicMazeProgress);
+  window.addEventListener("storage", loadLogicMazeProgress);
+
+  return () => {
+    window.removeEventListener("focus", loadLogicMazeProgress);
+    window.removeEventListener("storage", loadLogicMazeProgress);
+  };
+}, []);
+
+useEffect(() => {
+  const loadBrainBlastProgress = () => {
+    const completed =
+      Number(localStorage.getItem("brainBlastCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("brainBlastProgress")) ||
+      Math.round((completed / 44) * 100) ||
+      0;
+
+    setBrainBlastStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadBrainBlastProgress();
+
+  const handleBrainBlastMessage = (event: MessageEvent) => {
+    if (event.data?.type === "BRAIN_BLAST_UPDATE") {
+      setBrainBlastStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+        time: `${event.data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadBrainBlastProgress);
+  window.addEventListener("storage", loadBrainBlastProgress);
+  window.addEventListener("message", handleBrainBlastMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadBrainBlastProgress);
+    window.removeEventListener("storage", loadBrainBlastProgress);
+    window.removeEventListener("message", handleBrainBlastMessage);
+  };
+}, []);
+
+useEffect(() => {
+  const loadZipProgress = () => {
+    const completed =
+      Number(localStorage.getItem("zipCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("zipProgress")) ||
+      Math.round((completed / 25) * 100) ||
+      0;
+
+    setZipStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadZipProgress();
+
+  const handleZipMessage = (event: MessageEvent) => {
+    if (event.data?.type === "ZIP_MASTER_UPDATE") {
+      const data = event.data.payload;
+
+      setZipStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(data.progress) || 0, 100),
+        completed: Number(data.completed) || 0,
+        coins: Number(data.coins) || prev.coins,
+        time: `${data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadZipProgress);
+  window.addEventListener("storage", loadZipProgress);
+  window.addEventListener("message", handleZipMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadZipProgress);
+    window.removeEventListener("storage", loadZipProgress);
+    window.removeEventListener("message", handleZipMessage);
+  };
+}, []);
+
+useEffect(() => {
+  const loadMathShopProgress = () => {
+    const completed =
+      Number(localStorage.getItem("mathShopCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("mathShopProgress")) ||
+      Math.round((completed / 10) * 100) ||
+      0;
+
+    setMathShopStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadMathShopProgress();
+
+  const handleMathShopMessage = (event: MessageEvent) => {
+    if (event.data?.type === "MATH_SHOP_UPDATE") {
+      setMathShopStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadMathShopProgress);
+  window.addEventListener("storage", loadMathShopProgress);
+  window.addEventListener("message", handleMathShopMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadMathShopProgress);
+    window.removeEventListener("storage", loadMathShopProgress);
+    window.removeEventListener("message", handleMathShopMessage);
+  };
+}, []);
+
+useEffect(() => {
+  const loadTriviaProgress = () => {
+    const progress =
+      Number(localStorage.getItem("triviaProgress")) || 0;
+
+    const completed =
+      Number(localStorage.getItem("triviaCompleted")) || progress || 0;
+
+    setTriviaStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadTriviaProgress();
+
+  const handleTriviaMessage = (event: MessageEvent) => {
+    if (event.data?.type === "TRIVIA_UPDATE") {
+      setTriviaStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+        time: `${event.data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadTriviaProgress);
+  window.addEventListener("storage", loadTriviaProgress);
+  window.addEventListener("message", handleTriviaMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadTriviaProgress);
+    window.removeEventListener("storage", loadTriviaProgress);
+    window.removeEventListener("message", handleTriviaMessage);
+  };
+}, []);
 
   return (
     <div className="min-h-screen text-foreground bg-background">
@@ -725,6 +926,7 @@ useEffect(() => {
   brainBlastStats={brainBlastStats}
   triviaStats={triviaStats}
   zipStats={zipStats}
+  mathShopStats={mathShopStats}
   searchTerm={searchTerm}
 />
               <SidePanel />
@@ -1016,10 +1218,10 @@ const Hero = memo(function Hero() {
             <Sparkles className="h-3 w-3" /> Daily Challenge live
           </div>
           <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
-            Learn Coding Through Games
+            Fun, Challenges & Rewards
           </h2>
           <p className="mt-2 text-sm sm:text-base text-white/80 max-w-lg">
-            Solve challenges, build logic, level up. Each game teaches a new programming concept.
+            Play exciting games, collect coins, and redeem awesome rewards.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <motion.button
@@ -1061,6 +1263,7 @@ const GamesSection = memo(function GamesSection({
   brainBlastStats,
   triviaStats,
   zipStats,
+  mathShopStats,
   searchTerm,
 }: any) {
 const filteredGames = games.filter((g) =>
@@ -1107,14 +1310,22 @@ const filteredGames = games.filter((g) =>
     progress: triviaStats.progress,
     xp: triviaStats.coins,
     time: triviaStats.time,
-  }: g.title === "Zip"
+  }
+: g.title === "Zip"
 ? {
     ...g,
     progress: zipStats.progress,
     xp: zipStats.coins,
     time: zipStats.time,
-  }:g
-
+  }
+: g.title === "Math Shop Game"
+? {
+    ...g,
+    progress: mathShopStats.progress,
+    xp: mathShopStats.coins,
+    time: mathShopStats.time,
+  }
+:g
       return <GameCard key={g.title} game={updatedGame} index={i} />;
     })
   )}
@@ -1160,6 +1371,9 @@ function GameCard({ game, index }: { game: Game; index: number }) {
   if (game.title === "Math Shop Game") {
   window.open("/math_shop_final.html", "_blank");
 }
+if (game.title === "Mini Suduko") {
+  window.open("/suduko.html", "_blank");
+}
   }}
 
       className={`group relative flex flex-col h-full rounded-2xl border border-border bg-card overflow-hidden shadow-card transition-colors ${
@@ -1167,20 +1381,30 @@ function GameCard({ game, index }: { game: Game; index: number }) {
       }`}
     >
       {/* gradient header */}
-      <div className={`relative h-28 bg-gradient-to-br ${game.accent} border-b border-border overflow-hidden`}>
-        <div className="absolute inset-0 grid place-items-center text-5xl">
-          <motion.span
-            whileHover={{ scale: 1.15, rotate: 6 }}
-            transition={{ type: "spring", damping: 14 }}
-          >
-            {game.icon}
-          </motion.span>
-        </div>
-        <span
+      <div className={`relative h-44 bg-gradient-to-br ${game.accent} border-b border-border overflow-hidden`}>
+        <div className="absolute inset-0">
+  {game.image ? (
+    <img
+      src={game.image}
+      alt={game.title}
+      className="h-full w-full object-cover object-top rounded-t-2xl"
+    />
+  ) : (
+    <div className="h-full w-full grid place-items-center text-5xl">
+      <motion.span
+        whileHover={{ scale: 1.15, rotate: 6 }}
+        transition={{ type: "spring", damping: 14 }}
+      >
+        {game.icon}
+      </motion.span>
+    </div>
+  )}
+</div>
+        {/* <span
           className={`absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border ${difficultyStyles[game.difficulty]}`}
         >
           {game.difficulty}
-        </span>
+        </span> */}
         {locked && (
           <div className="absolute inset-0 grid place-items-center bg-muted/80">
             <div className="grid place-items-center h-10 w-10 rounded-full bg-surface-elevated border border-border">
@@ -1211,7 +1435,7 @@ function GameCard({ game, index }: { game: Game; index: number }) {
         </div>
 
         {/* Meta */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto pt-1">
+        {/* <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto pt-1">
           <div className="flex items-center gap-1.5">
             <span className="text-sm">🪙</span>
             <span className="font-medium text-foreground">{game.xp}</span> Coins
@@ -1220,7 +1444,7 @@ function GameCard({ game, index }: { game: Game; index: number }) {
             <Clock className="h-3.5 w-3.5" />
             {game.time}
           </div>
-        </div>
+        </div> */}
 
         <motion.button
           whileHover={!locked ? { scale: 1.02 } : {}}
