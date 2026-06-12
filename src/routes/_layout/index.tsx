@@ -374,6 +374,12 @@ const [sudokuStats, setSudokuStats] = useState({
   completed: 0,
   time: "0 min",
 });
+const [memoryCardStats, setMemoryCardStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
   const {
   coins: walletCoins,
   setCoins: setWalletCoins,
@@ -952,6 +958,84 @@ useEffect(() => {
 
 }, []);
 
+useEffect(() => {
+
+  const loadMemoryCardProgress = () => {
+
+    const progress =
+      Number(localStorage.getItem("memoryCardProgress")) || 0;
+
+    const completed =
+      Number(localStorage.getItem("memoryCardCompleted")) || 0;
+
+    setMemoryCardStats((prev) => ({
+      ...prev,
+      progress,
+      completed,
+    }));
+  };
+
+  loadMemoryCardProgress();
+
+  const handleMemoryCardMessage = (
+    event: MessageEvent
+  ) => {
+
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "memory_card"
+    ) {
+
+      setMemoryCardStats((prev) => ({
+        ...prev,
+        progress:
+          Number(event.data.progress) || 0,
+
+        completed:
+          Number(event.data.completed) || 0,
+
+        coins:
+          Number(event.data.coins) ||
+          prev.coins,
+      }));
+    }
+  };
+
+  window.addEventListener(
+    "focus",
+    loadMemoryCardProgress
+  );
+
+  window.addEventListener(
+    "storage",
+    loadMemoryCardProgress
+  );
+
+  window.addEventListener(
+    "message",
+    handleMemoryCardMessage
+  );
+
+  return () => {
+
+    window.removeEventListener(
+      "focus",
+      loadMemoryCardProgress
+    );
+
+    window.removeEventListener(
+      "storage",
+      loadMemoryCardProgress
+    );
+
+    window.removeEventListener(
+      "message",
+      handleMemoryCardMessage
+    );
+  };
+
+}, []);
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -1023,6 +1107,7 @@ useEffect(() => {
   zipStats={zipStats}
   mathShopStats={mathShopStats}
   sudokuStats={sudokuStats}
+  memoryCardStats={memoryCardStats}
   searchTerm={searchTerm}
 />
               <SidePanel />
@@ -1361,6 +1446,7 @@ const GamesSection = memo(function GamesSection({
   zipStats,
   mathShopStats,
   sudokuStats,
+  memoryCardStats,
   searchTerm,
 }: any) {
 const filteredGames = games.filter((g) =>
@@ -1422,7 +1508,6 @@ const filteredGames = games.filter((g) =>
     xp: mathShopStats.coins,
     time: mathShopStats.time,
   }
-
 : g.title === "Mini Sudoku"
 ? {
     ...g,
@@ -1431,7 +1516,16 @@ const filteredGames = games.filter((g) =>
     time: sudokuStats.time,
   }
 
+: g.title === "Match the Pairs"
+? {
+    ...g,
+    progress: memoryCardStats.progress,
+    xp: memoryCardStats.coins,
+    time: memoryCardStats.time,
+  }
+
 : g
+
       return <GameCard key={g.title} game={updatedGame} index={i} />;
     })
   )}

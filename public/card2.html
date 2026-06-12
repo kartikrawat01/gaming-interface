@@ -939,6 +939,38 @@ async function creditMemoryCardCoins(amount, level) {
   return totalCoins;
 }
 
+function getMemoryCardProgress() {
+  let completedLevels = 0;
+
+  levels.forEach((lvl) => {
+    const stars =
+      parseInt(localStorage.getItem(`mem_card_stars_lvl_${lvl.id}`)) || 0;
+
+    if (stars > 0) completedLevels++;
+  });
+
+  return Math.round((completedLevels / levels.length) * 100);
+}
+
+function syncMemoryCardProgressToParent() {
+  const progress = getMemoryCardProgress();
+
+  localStorage.setItem("memoryCardProgress", String(progress));
+  localStorage.setItem("memoryCardCompleted", String(progress === 100 ? 1 : 0));
+
+  window.parent.postMessage(
+    {
+      type: "GAME_PROGRESS_UPDATE",
+      game: "memory_card",
+      progress,
+      coins: totalCoins,
+      level: currentLevelId,
+      completed: progress === 100 ? 1 : 0,
+    },
+    "*"
+  );
+}
+
 window.addEventListener("walletUpdated", (e) => {
   const balance = e.detail?.balance;
 
@@ -983,6 +1015,7 @@ window.addEventListener("walletUpdated", (e) => {
 
             const percent = Math.round((completedLevels / levels.length) * 100);
             document.getElementById('completedPercentage').textContent = `${percent}% Clear`;
+            syncMemoryCardProgressToParent();
         }
 
         // Initialize Level Board
@@ -1301,6 +1334,7 @@ window.addEventListener("walletUpdated", (e) => {
             if (stars > currentStarRecord) {
                 localStorage.setItem(`mem_card_stars_lvl_${level.id}`, stars);
             }
+            syncMemoryCardProgressToParent();
 
             // Populate Modal Statistics
             document.getElementById('winLevelName').textContent = `${level.emoji} ${level.name}`;
@@ -1459,13 +1493,14 @@ window.addEventListener("walletUpdated", (e) => {
         }, { once: true });
 
         // Bootstrap on screen load
-        window.onload = async () => {
+window.onload = async () => {
     if (window.gameSDK) {
         await window.gameSDK.init();
     }
 
     await syncMemoryCardWalletBalance();
     selectLevel(1);
+    syncMemoryCardProgressToParent();
 };
     </script>
 </body>
