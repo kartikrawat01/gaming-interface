@@ -69,16 +69,6 @@ const games: Game[] = [
   time: "10 min",
   accent: "from-pink-500/20 to-purple-500/5"
 },
-{
-  title: "Connect the Water Pipes",
-  icon: "🚰",
-  image: "/images/connect-pipes.png",
-  difficulty: "Beginner",
-  progress: 0,
-  xp: 180,
-  time: "12 min",
-  accent: "from-cyan-500/20 to-blue-500/5"
-},
 ];
 
 // const sidebarItems = [
@@ -385,12 +375,6 @@ const [sudokuStats, setSudokuStats] = useState({
   time: "0 min",
 });
 const [memoryCardStats, setMemoryCardStats] = useState({
-  progress: 0,
-  coins: 0,
-  completed: 0,
-  time: "0 min",
-});
-const [pipesStats, setPipesStats] = useState({
   progress: 0,
   coins: 0,
   completed: 0,
@@ -1052,51 +1036,6 @@ useEffect(() => {
 
 }, []);
 
-useEffect(() => {
-  const loadPipesProgress = () => {
-    const completed =
-      Number(localStorage.getItem("pipesCompleted")) || 0;
-
-    const progress =
-      Number(localStorage.getItem("pipesProgress")) ||
-      Math.round((completed / 10) * 100) ||
-      0;
-
-    setPipesStats((prev) => ({
-      ...prev,
-      progress: Math.min(progress, 100),
-      completed,
-    }));
-  };
-
-  loadPipesProgress();
-
-  const handlePipesMessage = (event: MessageEvent) => {
-    if (
-      event.data?.type === "GAME_PROGRESS_UPDATE" &&
-      event.data?.game === "pipes"
-    ) {
-      setPipesStats((prev) => ({
-        ...prev,
-        progress: Number(event.data.progress) || 0,
-        completed: Number(event.data.completed) || 0,
-        coins: Number(event.data.coins) || prev.coins,
-        time: `${event.data.time || 0} min`,
-      }));
-    }
-  };
-
-  window.addEventListener("focus", loadPipesProgress);
-  window.addEventListener("storage", loadPipesProgress);
-  window.addEventListener("message", handlePipesMessage);
-
-  return () => {
-    window.removeEventListener("focus", loadPipesProgress);
-    window.removeEventListener("storage", loadPipesProgress);
-    window.removeEventListener("message", handlePipesMessage);
-  };
-}, []);
-
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -1169,7 +1108,6 @@ useEffect(() => {
   mathShopStats={mathShopStats}
   sudokuStats={sudokuStats}
   memoryCardStats={memoryCardStats}
-  pipesStats={pipesStats}
   searchTerm={searchTerm}
 />
               <SidePanel />
@@ -1509,7 +1447,6 @@ const GamesSection = memo(function GamesSection({
   mathShopStats,
   sudokuStats,
   memoryCardStats,
-  pipesStats,
   searchTerm,
 }: any) {
 const filteredGames = games.filter((g) =>
@@ -1586,13 +1523,6 @@ const filteredGames = games.filter((g) =>
     xp: memoryCardStats.coins,
     time: memoryCardStats.time,
   }
-: g.title === "Connect the Water Pipes"
-? {
-    ...g,
-    progress: pipesStats.progress,
-    xp: pipesStats.coins,
-    time: pipesStats.time,
-  }
 
 : g
 
@@ -1646,9 +1576,6 @@ if (game.title === "Mini Sudoku") {
 }
 if (game.title === "Match the Pairs") {
   window.open("/card2.html", "_blank");
-}
-if (game.title === "Connect the Water Pipes") {
-  window.open("/pipes.html", "_blank");
 }
   }}
 
@@ -1843,5 +1770,3 @@ const SidePanel = memo(function SidePanel() {
     </aside>
   );
 });
-
-

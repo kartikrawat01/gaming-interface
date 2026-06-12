@@ -147,15 +147,6 @@ const games: Game[] = [
   progress: 0,
   accent: "from-pink-400/30 to-purple-500/20",
 },
-{
-  title: "Connect the Water Pipes",
-  icon: "🚰",
-  image: "/images/connect-pipes.png",
-  category: "Logic & Puzzles",
-  difficulty: "Beginner",
-  progress: 0,
-  accent: "from-cyan-400/30 to-blue-500/20",
-},
 ];
 
 const difficultyStyles = {
@@ -176,7 +167,6 @@ const [gameProgress, setGameProgress] = useState<Record<string, number>>({
   "Math Shop Game": 0,
   "Mini Sudoku": 0,
   "Match the Pairs": 0,
-  "Connect the Water Pipes": 0,
 });
 useEffect(() => {
   const loadAllGameProgress = () => {
@@ -226,12 +216,6 @@ useEffect(() => {
     const memoryCardProgress =
       Number(localStorage.getItem("memoryCardProgress")) || 0;
 
-      const pipesCompleted =
-  Number(localStorage.getItem("pipesCompleted")) || 0;
-      const pipesProgress =
-  Number(localStorage.getItem("pipesProgress")) ||
-  Math.round((pipesCompleted / 10) * 100) ||
-  0;
     setGameProgress({
       "Logic Maze": Math.min(logicMazeProgress, 100),
       "Brain Blast": Math.min(brainBlastProgress, 100),
@@ -240,7 +224,6 @@ useEffect(() => {
       "Math Shop Game": Math.min(mathShopProgress, 100),
       "Mini Sudoku": Math.min(sudokuProgress, 100),
       "Match the Pairs": Math.min(memoryCardProgress, 100),
-      "Connect the Water Pipes": Math.min(pipesProgress, 100),
     });
   };
 
@@ -386,9 +369,6 @@ onClick={() => {
 if (game.title === "Match the Pairs") {
   window.open("/card2.html", "_blank");
 }
-if (game.title === "Connect the Water Pipes") {
-  window.open("/pipes.html", "_blank");
-}
 }}
               >
                 {/* Top */}
@@ -472,9 +452,6 @@ if (game.title === "Mini Sudoku") {
   if (game.title === "Match the Pairs") {
     window.open("/card2.html", "_blank");
   }
-  if (game.title === "Connect the Water Pipes") {
-  window.open("/pipes.html", "_blank");
-}
 }}
                   >
                     {locked ? "Locked" : (
