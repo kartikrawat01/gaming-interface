@@ -358,6 +358,12 @@ const [mathShopStats, setMathShopStats] = useState({
   completed: 0,
   time: "0 min",
 });
+const [sudokuStats, setSudokuStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
   const {
   coins: walletCoins,
   setCoins: setWalletCoins,
@@ -857,6 +863,85 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  const loadSudokuProgress = () => {
+
+    const completedLevels =
+      JSON.parse(
+        localStorage.getItem("mini_sudoku_completed") || "[]"
+      ).filter(Boolean).length;
+
+    const progress =
+      Math.round((completedLevels / 12) * 100);
+
+    setSudokuStats((prev) => ({
+      ...prev,
+      progress,
+      completed: completedLevels,
+    }));
+  };
+
+  loadSudokuProgress();
+
+  const handleSudokuMessage = (
+    event: MessageEvent
+  ) => {
+
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "mini_sudoku"
+    ) {
+
+      setSudokuStats((prev) => ({
+        ...prev,
+        progress:
+          Number(event.data.progress) || 0,
+
+        completed:
+          Number(event.data.completedLevels) || 0,
+
+        coins:
+          Number(event.data.coins) ||
+          prev.coins,
+      }));
+    }
+  };
+
+  window.addEventListener(
+    "focus",
+    loadSudokuProgress
+  );
+
+  window.addEventListener(
+    "storage",
+    loadSudokuProgress
+  );
+
+  window.addEventListener(
+    "message",
+    handleSudokuMessage
+  );
+
+  return () => {
+
+    window.removeEventListener(
+      "focus",
+      loadSudokuProgress
+    );
+
+    window.removeEventListener(
+      "storage",
+      loadSudokuProgress
+    );
+
+    window.removeEventListener(
+      "message",
+      handleSudokuMessage
+    );
+  };
+
+}, []);
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -927,6 +1012,7 @@ useEffect(() => {
   triviaStats={triviaStats}
   zipStats={zipStats}
   mathShopStats={mathShopStats}
+  sudokuStats={sudokuStats}
   searchTerm={searchTerm}
 />
               <SidePanel />
@@ -1264,6 +1350,7 @@ const GamesSection = memo(function GamesSection({
   triviaStats,
   zipStats,
   mathShopStats,
+  sudokuStats,
   searchTerm,
 }: any) {
 const filteredGames = games.filter((g) =>
@@ -1325,7 +1412,16 @@ const filteredGames = games.filter((g) =>
     xp: mathShopStats.coins,
     time: mathShopStats.time,
   }
-:g
+
+: g.title === "Mini Suduko"
+? {
+    ...g,
+    progress: sudokuStats.progress,
+    xp: sudokuStats.coins,
+    time: sudokuStats.time,
+  }
+
+: g
       return <GameCard key={g.title} game={updatedGame} index={i} />;
     })
   )}

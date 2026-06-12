@@ -669,6 +669,17 @@ async function creditSudokuCoins(amount) {
     level: state.currentLevel + 1,
   }, "*");
 
+  const completedLevels =
+  state.completed.filter(Boolean).length + 1;
+
+window.parent.postMessage({
+  type: "GAME_PROGRESS_UPDATE",
+  game: "mini_sudoku",
+  completedLevels,
+  totalLevels: 12,
+  progress: Math.round((completedLevels / 12) * 100)
+}, "*");
+
   return totalCoins;
 }
 
@@ -1005,10 +1016,23 @@ async function checkWin() {
   const reward = getCoinReward(state.currentLevel);
   const alreadyCompleted = state.completed[state.currentLevel];
 
-  if (!alreadyCompleted) {
-  await creditSudokuCoins(reward);
+if (!alreadyCompleted) {
   state.completed[state.currentLevel] = true;
+
+  await creditSudokuCoins(reward);
+
   saveState();
+
+  const completedLevels =
+    state.completed.filter(Boolean).length;
+
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "mini_sudoku",
+    completedLevels,
+    totalLevels: 12,
+    progress: Math.round((completedLevels / 12) * 100)
+  }, "*");
 }
 
   buildLevelButtons();
@@ -1088,9 +1112,20 @@ window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer
   }
 
   loadStorage();
-  await syncSudokuWalletBalance();
+await syncSudokuWalletBalance();
 
-  loadLevel(0);
+const completedLevels =
+  state.completed.filter(Boolean).length;
+
+window.parent.postMessage({
+  type: "GAME_PROGRESS_UPDATE",
+  game: "mini_sudoku",
+  completedLevels,
+  totalLevels: 12,
+  progress: Math.round((completedLevels / 12) * 100)
+}, "*");
+
+loadLevel(0);
 })();
 </script>
 </body>
