@@ -2027,10 +2027,7 @@ state.sessionHighScore = 0;
           grid.appendChild(btn);
         });
         window.dispatchEvent(new Event("brainblastUpdated"));
-        localStorage.setItem(
- "brainblastProgress",
- JSON.stringify(state.progress)
-);
+
       }
 
       // ==================== LEVELS ====================
@@ -3614,6 +3611,29 @@ state.levelStars = state.levelStars || {};
     state.progress[state.currentLevel]?.stars || 0
   )
 };
+const completedLevels = state.progress.filter(
+  (level) => level?.completed
+).length;
+
+const progressPercent = Math.round(
+  (completedLevels / levels.length) * 100
+);
+
+localStorage.setItem("brainBlastProgress", progressPercent);
+localStorage.setItem("brainBlastCompleted", completedLevels);
+
+if (window.opener) {
+  window.opener.postMessage(
+    {
+      type: "BRAIN_BLAST_UPDATE",
+      progress: progressPercent,
+      completed: completedLevels,
+      coins: state.coins,
+      time: localStorage.getItem("brainBlastTime") || 0,
+    },
+    "*"
+  );
+}
 
   const levelKey = String(state.currentLevel);
 
