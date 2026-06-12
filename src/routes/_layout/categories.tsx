@@ -5,7 +5,6 @@ import {
   Search,
   Play,
   Lock,
-  Clock,
   ChevronRight,
 } from "lucide-react";
 
@@ -18,11 +17,10 @@ type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 type Game = {
   title: string;
   icon: string;
+  image?: string;
   category: string;
   difficulty: Difficulty;
   progress: number;
-  coins: number;
-  time: string;
   locked?: boolean;
   accent: string;
 };
@@ -71,84 +69,84 @@ const games: Game[] = [
   {
     title: "Logic Maze",
     icon: "🧩",
+    image: "/images/logic-maze.png",
     category: "Logic & Puzzles",
     difficulty: "Beginner",
-    progress: 72,
-    coins: 120,
-    time: "10 min",
+    progress: 0,
     accent: "from-cyan-400/30 to-blue-500/20",
   },
   {
     title: "Brain Blast",
     icon: "➗",
+    image: "/images/brain-blast.png",
     category: "Maths",
     difficulty: "Beginner",
-    progress: 50,
-    coins: 140,
-    time: "8 min",
+    progress: 0,
     accent: "from-yellow-400/30 to-orange-400/20",
   },
   {
     title: "Trivia",
     icon: "🧪",
+    image: "/images/trivia.png",
     category: "Science",
     difficulty: "Intermediate",
-    progress: 28,
-    coins: 220,
-    time: "15 min",
+    progress: 0,
     accent: "from-green-400/30 to-emerald-500/20",
   },
   {
     title: "Zip",
     icon: "📚",
+    image: "/images/zip-master.png",
     category: "Language",
     difficulty: "Beginner",
-    progress: 90,
-    coins: 130,
-    time: "7 min",
+    progress: 0,
     accent: "from-pink-400/30 to-rose-500/20",
   },
   {
     title: "Stop Motion Studio",
     icon: "🎨",
+    image: "/images/stop-motion.png",
     category: "Creative",
     difficulty: "Intermediate",
-    progress: 35,
-    coins: 180,
-    time: "12 min",
+    progress: 0,
     accent: "from-violet-400/30 to-purple-500/20",
   },
   {
     title: "Piano",
     icon: "⚡",
+    image: "/images/piano.png",
     category: "Memory & Speed",
     difficulty: "Advanced",
-    progress: 10,
-    coins: 300,
-    time: "20 min",
+    progress: 0,
     accent: "from-indigo-400/30 to-sky-500/20",
   },
   {
     title: "Math Shop Game",
     icon: "🎯",
+    image: "/images/math-shop.png",
     category: "Logic & Puzzles",
     difficulty: "Intermediate",
-    progress: 15,
-    coins: 260,
-    time: "18 min",
+    progress: 0,
     accent: "from-blue-400/30 to-cyan-500/20",
   },
   {
-    title: "Quantum Rush",
+    title: "Mini Sudoku",
     icon: "🚀",
+    image: "/images/mini-suduko.png",
     category: "Science",
     difficulty: "Advanced",
     progress: 0,
-    coins: 400,
-    time: "25 min",
-    locked: true,
     accent: "from-teal-400/30 to-green-500/20",
   },
+  {
+  title: "Match the Pairs",
+  icon: "🃏",
+  image: "/images/match-the-pairs.png",
+  category: "Memory & Speed",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-pink-400/30 to-purple-500/20",
+},
 ];
 
 const difficultyStyles = {
@@ -160,48 +158,93 @@ const difficultyStyles = {
 function CategoriesPage() {
   const [active, setActive] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-    const [logicMazeStats, setLogicMazeStats] = useState({
-      
-    progress: 72,
-    coins: 120,
-    time: "10 min",
-  });
-  const [walletCoins, setWalletCoins] = useState(0);
-
-    useEffect(() => {
-    const loadStats = () => {
-      const progress =
-        Number(localStorage.getItem("logicMazeProgress")) || 0;
-        const wallet =
-Number(localStorage.getItem("walletCoins")) ||
-Number(localStorage.getItem("logicMazeCoins")) ||
-0;
-
-      const coins =
-        Number(localStorage.getItem("logicMazeCoins")) || 0;
-
-      const time =
-        Number(localStorage.getItem("logicMazeTime")) || 0;
-
-      setLogicMazeStats({
-  progress,
-  coins,
-  time: `${time} min`,
+  
+const [gameProgress, setGameProgress] = useState<Record<string, number>>({
+  "Logic Maze": 0,
+  "Brain Blast": 0,
+  "Trivia": 0,
+  "Zip": 0,
+  "Math Shop Game": 0,
+  "Mini Sudoku": 0,
+  "Match the Pairs": 0,
 });
+useEffect(() => {
+  const loadAllGameProgress = () => {
+    const logicMazeCompleted =
+      Number(localStorage.getItem("logicMazeCompleted")) || 0;
 
-setWalletCoins(wallet);
-    };
+    const logicMazeProgress =
+      Number(localStorage.getItem("logicMazeProgress")) ||
+      logicMazeCompleted * 5 ||
+      0;
 
-    loadStats();
+    const brainBlastCompleted =
+      Number(localStorage.getItem("brainBlastCompleted")) || 0;
 
-    window.addEventListener("focus", loadStats);
-    window.addEventListener("storage", loadStats);
+    const brainBlastProgress =
+      Number(localStorage.getItem("brainBlastProgress")) ||
+      Math.round((brainBlastCompleted / 44) * 100) ||
+      0;
 
-    return () => {
-      window.removeEventListener("focus", loadStats);
-      window.removeEventListener("storage", loadStats);
-    };
-  }, []);
+    const triviaProgress =
+      Number(localStorage.getItem("triviaProgress")) || 0;
+
+    const zipCompleted =
+      Number(localStorage.getItem("zipCompleted")) || 0;
+
+    const zipProgress =
+      Number(localStorage.getItem("zipProgress")) ||
+      Math.round((zipCompleted / 25) * 100) ||
+      0;
+
+    const mathShopCompleted =
+      Number(localStorage.getItem("mathShopCompleted")) || 0;
+
+    const mathShopProgress =
+      Number(localStorage.getItem("mathShopProgress")) ||
+      Math.round((mathShopCompleted / 10) * 100) ||
+      0;
+
+    const sudokuCompleted =
+      JSON.parse(
+        localStorage.getItem("mini_sudoku_completed") || "[]"
+      ).filter(Boolean).length;
+
+    const sudokuProgress =
+      Math.round((sudokuCompleted / 12) * 100);
+
+    const memoryCardProgress =
+      Number(localStorage.getItem("memoryCardProgress")) || 0;
+
+    setGameProgress({
+      "Logic Maze": Math.min(logicMazeProgress, 100),
+      "Brain Blast": Math.min(brainBlastProgress, 100),
+      "Trivia": Math.min(triviaProgress, 100),
+      "Zip": Math.min(zipProgress, 100),
+      "Math Shop Game": Math.min(mathShopProgress, 100),
+      "Mini Sudoku": Math.min(sudokuProgress, 100),
+      "Match the Pairs": Math.min(memoryCardProgress, 100),
+    });
+  };
+
+  loadAllGameProgress();
+
+  const handleGameMessage = (event: MessageEvent) => {
+    if (!event.data) return;
+
+    loadAllGameProgress();
+  };
+
+  window.addEventListener("focus", loadAllGameProgress);
+  window.addEventListener("storage", loadAllGameProgress);
+  window.addEventListener("message", handleGameMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadAllGameProgress);
+    window.removeEventListener("storage", loadAllGameProgress);
+    window.removeEventListener("message", handleGameMessage);
+  };
+}, []);
 
   const filteredGames = games.filter((game) => {
   const categoryMatch =
@@ -217,16 +260,10 @@ setWalletCoins(wallet);
   return categoryMatch && searchMatch;
 });
 
-    const updatedGames = filteredGames.map((game) =>
-  game.title === "Logic Maze"
-    ? {
-        ...game,
-        progress: logicMazeStats.progress,
-        coins: logicMazeStats.coins,
-        time: logicMazeStats.time,
-      }
-    : game
-);
+const updatedGames = filteredGames.map((game) => ({
+  ...game,
+  progress: gameProgress[game.title] ?? game.progress,
+}));
 
   return (
     <div className="min-h-screen bg-[#dfeef7] text-gray-900 p-6">
@@ -243,13 +280,7 @@ setWalletCoins(wallet);
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
 
-  {/* Wallet Coins */}
-  <div className="flex items-center gap-2 h-11 px-4 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200 shadow-md">
-    <span className="text-yellow-500">🪙</span>
-    <span className="font-bold text-gray-800">
-      {walletCoins}
-    </span>
-  </div>
+  
 
   {/* Search */}
   <div className="relative w-full lg:w-80">
@@ -332,21 +363,27 @@ onClick={() => {
   if (game.title === "Math Shop Game") {
     window.open("/math_shop_final.html", "_blank");
   }
+  if (game.title === "Mini Sudoku") {
+  window.open("/suduko.html", "_blank");
+}
+if (game.title === "Match the Pairs") {
+  window.open("/card2.html", "_blank");
+}
 }}
               >
                 {/* Top */}
-                <div className={`h-32 relative bg-gradient-to-br ${game.accent} flex items-center justify-center`}>
-                  <div className="text-5xl">
-                    {game.icon}
-                  </div>
-
-                  <span
-                    className={`absolute top-3 left-3 text-[10px] px-2 py-1 rounded-md border font-semibold ${
-                      difficultyStyles[game.difficulty]
-                    }`}
-                  >
-                    {game.difficulty}
-                  </span>
+                <div className={`h-48 relative bg-gradient-to-br ${game.accent} overflow-hidden`}>
+  {game.image ? (
+    <img
+      src={game.image}
+      alt={game.title}
+      className="h-full w-full object-cover object-center"
+    />
+  ) : (
+    <div className="h-full w-full flex items-center justify-center text-5xl">
+      {game.icon}
+    </div>
+  )}
 
                   {locked && (
                     <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center text-sm font-semibold">
@@ -360,9 +397,7 @@ onClick={() => {
                 {/* Bottom */}
                 <div className="p-5">
                   <h3 className="font-semibold text-lg text-gray-800">{game.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Fun learning challenge game
-                  </p>
+              
 
                   {/* Progress */}
                   <div className="mt-4">
@@ -376,15 +411,6 @@ onClick={() => {
   className="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full transition-all"
   style={{ width: `${game.progress}%` }}
 />
-                    </div>
-                  </div>
-
-                  {/* Meta */}
-                  <div className="flex justify-between text-sm text-gray-500 mt-4">
-                    <div>🪙 {game.coins}</div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {game.time}
                     </div>
                   </div>
 
@@ -420,6 +446,12 @@ onClick={(e) => {
   if (game.title === "Math Shop Game") {
   window.open("/math_shop_final.html", "_blank");
 }
+if (game.title === "Mini Sudoku") {
+    window.open("/suduko.html", "_blank");
+  }
+  if (game.title === "Match the Pairs") {
+    window.open("/card2.html", "_blank");
+  }
 }}
                   >
                     {locked ? "Locked" : (
