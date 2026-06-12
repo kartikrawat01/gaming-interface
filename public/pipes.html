@@ -675,15 +675,71 @@ async function creditPipeCoins(amount) {
 
   document.getElementById("total-coins").innerText = totalCoins;
 
-  window.parent.postMessage({
-    type: "GAME_PROGRESS_UPDATE",
-    game: "water_pipes",
-    coins: totalCoins,
-    level: activeLevelIndex + 1,
-    score: totalScore,
-  }, "*");
+  const pipesCompleted =
+  Number(localStorage.getItem("pipesCompleted")) || 0;
+
+const pipesProgress =
+  Number(localStorage.getItem("pipesProgress")) || 0;
+
+window.parent.postMessage({
+  type: "GAME_PROGRESS_UPDATE",
+  game: "water_pipes",
+  coins: totalCoins,
+  level: activeLevelIndex + 1,
+  score: totalScore,
+  progress: pipesProgress,
+  completed: pipesCompleted,
+}, "*");
 
   return totalCoins;
+}
+
+function syncPipesProgress(completedLevelId) {
+  let completedLevels =
+    JSON.parse(
+      localStorage.getItem("pipesCompletedLevels") || "[]"
+    );
+
+  if (!completedLevels.includes(completedLevelId)) {
+    completedLevels.push(completedLevelId);
+  }
+
+  completedLevels = completedLevels.filter(
+    (lvl) => lvl >= 1 && lvl <= 10
+  );
+
+  const completed = completedLevels.length;
+
+  const progress =
+    Math.round((completed / 10) * 100);
+
+  localStorage.setItem(
+    "pipesCompletedLevels",
+    JSON.stringify(completedLevels)
+  );
+
+  localStorage.setItem(
+    "pipesCompleted",
+    String(completed)
+  );
+
+  localStorage.setItem(
+    "pipesProgress",
+    String(progress)
+  );
+
+  window.parent.postMessage(
+    {
+      type: "GAME_PROGRESS_UPDATE",
+      game: "water_pipes",
+      progress,
+      completed,
+      coins: totalCoins,
+      level: completedLevelId,
+      score: totalScore,
+    },
+    "*"
+  );
 }
 
 window.addEventListener("walletUpdated", (e) => {
@@ -1393,6 +1449,7 @@ document.getElementById("total-coins").innerText = totalCoins;
       }
 
       await creditPipeCoins(coinsEarned);
+      syncPipesProgress(activeLvl.id);
 
       // Populate Success Modals
       document.getElementById('success-title').innerText = activeLevelIndex === 9 ? "🏆 Grand Victory!" : "Garden Saved!";
