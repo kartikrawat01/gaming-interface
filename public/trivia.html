@@ -824,6 +824,8 @@ let GS = {
   score: 0, streak: 0, bestStreak: 0, correct: 0, coins: 0,
   lives: 5, timeLeft: 15, timer: null, taTimer: null, taLeft: 60,
   doubleActive: false, answering: false,
+  categoryCorrectCount: {},
+categoriesCompletedThisRun: new Set(),
   lifelines: {half:3, time:3, skip:3, double:3},
   party: {
     players: [], playerCount: 2, rounds: 5,
@@ -835,6 +837,73 @@ let GS = {
   }
 };
 
+const TRIVIA_MODES = ["classic", "challenge", "party", "timeattack"];
+const TRIVIA_CATS = CATS.map(c => c.id);
+
+function getTriviaProgressKey() {
+  const uid = window.currentUser?.id || "guest";
+  return `trivia_progress_${uid}`;
+}
+
+function loadTriviaProgress() {
+  const saved = JSON.parse(localStorage.getItem(getTriviaProgressKey()) || "{}");
+
+  TRIVIA_MODES.forEach(mode => {
+    if (!saved[mode]) saved[mode] = {};
+    TRIVIA_CATS.forEach(cat => {
+      if (saved[mode][cat] !== true) saved[mode][cat] = false;
+    });
+  });
+
+  return saved;
+}
+
+function saveTriviaProgress(data) {
+  localStorage.setItem(getTriviaProgressKey(), JSON.stringify(data));
+}
+
+function calculateTriviaProgress(data) {
+  let completed = 0;
+
+  TRIVIA_MODES.forEach(mode => {
+    TRIVIA_CATS.forEach(cat => {
+      if (data[mode]?.[cat]) completed++;
+    });
+  });
+
+  return Math.round((completed / 24) * 100);
+}
+
+function syncTriviaProgress() {
+  const data = loadTriviaProgress();
+  const progress = calculateTriviaProgress(data);
+
+  localStorage.setItem("triviaProgress", String(progress));
+  localStorage.setItem("triviaModeProgress", JSON.stringify(data));
+
+  window.parent.postMessage(
+    {
+      type: "TRIVIA_UPDATE",
+      progress,
+      completed: progress,
+      coins: Number(localStorage.getItem("walletCoins")) || Store.get().coins || 0,
+      modeProgress: data,
+    },
+    "*"
+  );
+}
+
+function markTriviaCategoryComplete(mode, category) {
+  if (!mode || !category) return;
+
+  const data = loadTriviaProgress();
+
+  if (!data[mode]) data[mode] = {};
+  data[mode][category] = true;
+
+  saveTriviaProgress(data);
+  syncTriviaProgress();
+}
 // ===== INIT =====
 async function init() {
   // DAILY LOGIN REWARD
@@ -846,6 +915,7 @@ dailyLoginReward();
 Store.get().coins = latestBalance;
 Store.save(Store.get());
 updateMenuUI();
+syncTriviaProgress();
   createBubbles();
   Audio.init();
   loadSettings();
@@ -1055,6 +1125,8 @@ function beginGame() {
 startGameSession();
   const d = Store.get();
   GS.score = 0; GS.streak = 0; GS.bestStreak = 0; GS.correct = 0; GS.coins = 0;
+  GS.categoryCorrectCount = {};
+GS.categoriesCompletedThisRun = new Set();
   GS.lives = d.lives; GS.answering = false;
   GS.lifelines = {...d.powerups};
   GS.doubleActive = false;
@@ -1191,6 +1263,25 @@ function selectAnswer(idx, btn) {
   if (correct) {
     Audio.play('correct');
     GS.correct++;
+    const catId = GS.currentQ.c;
+
+GS.categoryCorrectCount[catId] =
+  (GS.categoryCorrectCount[catId] || 0) + 1;
+
+/*
+  Classic / Challenge:
+  same category me 5 correct answers = category complete
+
+  Time Attack:
+  mixed categories hoti hain, isliye jis category ke 3 correct ho jaaye
+  us category ko complete maan rahe hain
+*/
+const neededCorrect =
+  GS.mode === "timeattack" ? 3 : 5;
+
+if (GS.categoryCorrectCount[catId] >= neededCorrect) {
+  markTriviaCategoryComplete(GS.mode, catId);
+}
     GS.streak++;
     if (GS.streak > GS.bestStreak) GS.bestStreak = GS.streak;
     let pts = 10 * (GS.currentQ.d === 'hard' ? 3 : GS.currentQ.d === 'medium' ? 2 : 1);
@@ -1427,6 +1518,7 @@ function startPartySetup() {
 function startPartyGame() {
   Audio.play('click');
   GS.party.players = [];
+  GS.party.categoryCorrectCount = {};
   for (let i = 0; i < partyCount; i++) {
     const name = document.getElementById('pname'+i)?.value || `Player ${i+1}`;
     GS.party.players.push({name, score:0, color:PARTY_COLORS[i], emoji:PARTY_EMOJIS[i], correct:0});
@@ -1529,6 +1621,18 @@ function selectPartyAnswer(idx, btn) {
     Audio.play('correct');
     GS.party.players[GS.party.currentPlayer].score += 10;
     GS.party.players[GS.party.currentPlayer].correct++;
+    const catId = GS.party.currentQ.c;
+
+GS.party.categoryCorrectCount[catId] =
+  (GS.party.categoryCorrectCount[catId] || 0) + 1;
+
+/*
+  Party mode me mixed questions hote hain,
+  isliye 3 correct per category = category complete
+*/
+if (GS.party.categoryCorrectCount[catId] >= 3) {
+  markTriviaCategoryComplete("party", catId);
+}
     document.getElementById('pscore'+GS.party.currentPlayer).textContent = GS.party.players[GS.party.currentPlayer].score;
   } else {
     Audio.play('wrong');

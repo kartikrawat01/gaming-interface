@@ -1259,6 +1259,32 @@ async function syncWalletBalance() {
   }
 }
 
+function syncMathShopProgress() {
+  const completed =
+    Number(localStorage.getItem("mathShopCompleted")) || 0;
+
+  const progress = Math.round(
+    (completed / state.totalLevels) * 100
+  );
+
+  localStorage.setItem("mathShopProgress", progress);
+  localStorage.setItem("mathShopCompleted", completed);
+  localStorage.setItem("mathShopCoins", state.coins);
+
+  if (window.opener) {
+    window.opener.postMessage(
+      {
+        type: "MATH_SHOP_UPDATE",
+        progress,
+        completed,
+        coins: state.coins,
+        level: state.level,
+      },
+      "*"
+    );
+  }
+}
+
 async function creditMathShopCoins(amount) {
   let totalCoins =
     Number(localStorage.getItem("walletCoins")) ||
@@ -1925,6 +1951,14 @@ function showLevelComplete() {
   const acc=state.totalAnswered?Math.round((state.totalCorrect/state.totalAnswered)*100):100;
   const levelCoins=state.coins-state.levelCoinsStart;
   const stars=acc>=90?3:acc>=70?2:1;
+  const oldCompleted =
+  Number(localStorage.getItem("mathShopCompleted")) || 0;
+
+const newCompleted = Math.max(oldCompleted, state.level);
+
+localStorage.setItem("mathShopCompleted", newCompleted);
+
+syncMathShopProgress();
   document.getElementById('lcCustomers').textContent=state.customersThisLevel;
   document.getElementById('lcAccuracy').textContent=acc+'%';
   document.getElementById('lcCombo').textContent='×'+state.bestCombo;
@@ -2016,6 +2050,7 @@ function goToStart() {
   document.getElementById('orderPanel').style.display='none';
   document.getElementById('bestLevelStat').textContent=state.bestLevel;
   document.getElementById('hiScoreStat').textContent = state.coins;
+  syncMathShopProgress();
   showScreen('startScreen');
 }
 

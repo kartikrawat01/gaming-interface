@@ -2570,22 +2570,57 @@ solution:[
         applyTheme();
         updateHomeStats();
       }
-      function saveSave() {
-        localStorage.setItem("zipmaster_save", JSON.stringify(save));
 
-        // 🔥 NEW: Send data to React (index.tsx)
-        window.parent.postMessage(
-          {
-            type: "ZIP_MASTER_UPDATE",
-            payload: {
-              coins: save.coins,
-              stars: save.stars,
-              unlocked: save.unlocked,
-            },
-          },
-          "*",
-        );
-      }
+      function syncZipMasterProgress() {
+  const completed = save.stars.filter((s) => s > 0).length;
+
+  const progress = Math.round(
+    (completed / LEVELS.length) * 100
+  );
+
+  localStorage.setItem("zipProgress", progress);
+  localStorage.setItem("zipCompleted", completed);
+  localStorage.setItem("zipCoins", save.coins);
+
+  if (window.opener) {
+    window.opener.postMessage(
+      {
+        type: "ZIP_MASTER_UPDATE",
+        payload: {
+          progress,
+          completed,
+          coins: save.coins,
+          stars: save.stars,
+          unlocked: save.unlocked,
+          time: 0,
+        },
+      },
+      "*"
+    );
+  }
+}
+      // function saveSave() {
+      //   localStorage.setItem("zipmaster_save", JSON.stringify(save));
+
+      //   // 🔥 NEW: Send data to React (index.tsx)
+      //   window.parent.postMessage(
+      //     {
+      //       type: "ZIP_MASTER_UPDATE",
+      //       payload: {
+      //         coins: save.coins,
+      //         stars: save.stars,
+      //         unlocked: save.unlocked,
+      //       },
+      //     },
+      //     "*",
+      //   );
+      // }
+
+      function saveSave() {
+  localStorage.setItem("zipmaster_save", JSON.stringify(save));
+
+  syncZipMasterProgress();
+}
 
       // ============================================================
       // SCREENS
@@ -2624,17 +2659,7 @@ solution:[
         const coinEl = document.getElementById("h-coins");
         if (coinEl) coinEl.textContent = save.coins;
 
-        window.parent.postMessage(
-          {
-            type: "ZIP_MASTER_UPDATE",
-            payload: {
-              coins: save.coins,
-              stars: save.stars,
-              unlocked: save.unlocked,
-            },
-          },
-          "*",
-        );
+        syncZipMasterProgress();
       }
 
       async function initZipWalletCoins() {
