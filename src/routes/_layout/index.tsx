@@ -58,7 +58,17 @@ const games: Game[] = [
   { title: "Stop Motion Studio",image: "/images/stop-motion.png", icon: "📦", difficulty: "Beginner", progress: 88, xp: 130, time: "8 min", accent: "from-secondary/30 to-primary/10" },
   { title: "Piano", icon: "🎯",image: "/images/piano.png", difficulty: "Intermediate", progress: 12, xp: 260, time: "22 min", accent: "from-indigo-500/20 to-indigo-500/5" },
   { title: "Math Shop Game", icon: "⚡", image: "/images/math-shop.png",difficulty: "Advanced", progress: 0, xp: 380, time: "30 min", accent: "from-rose-500/20 to-rose-500/5" },
-  { title: "Mini Suduko", icon: "🤖", difficulty: "Advanced", progress: 0, xp: 420, time: "35 min", accent: "from-violet-500/20 to-violet-500/5" },
+  { title: "Mini Suduko", icon: "🤖", image: "/images/mini-suduko.png",difficulty: "Advanced", progress: 0, xp: 420, time: "35 min", accent: "from-violet-500/20 to-violet-500/5" },
+  {
+  title: "Match the Pairs",
+  icon: "🃏",
+  image: "/images/match-the-pairs.png",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 150,
+  time: "10 min",
+  accent: "from-pink-500/20 to-purple-500/5"
+},
 ];
 
 // const sidebarItems = [
@@ -1469,6 +1479,9 @@ function GameCard({ game, index }: { game: Game; index: number }) {
 }
 if (game.title === "Mini Suduko") {
   window.open("/suduko.html", "_blank");
+}
+if (game.title === "Match the Pairs") {
+  window.open("/card2.html", "_blank");
 }
   }}
 
