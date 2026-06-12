@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect the Water Pipes - Garden Puzzle</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Kids Aesthetic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+    }
+    
+    /* Custom transition for pipe rotation */
+    .pipe-svg {
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    
+    /* Water Glow Effect */
+    .watered .water-path {
+      stroke: #3b82f6 !important;
+      filter: drop-shadow(0px 0px 6px #60a5fa);
+      stroke-dasharray: 12;
+      animation: dash 1s linear infinite;
+    }
+    
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -24;
+      }
+    }
+
+    /* Grow Animation for Flowers */
+    .watered .stem {
+      stroke-width: 6px !important;
+      transition: stroke-width 0.8s ease-in-out;
+    }
+    .watered .leaf-left, .watered .leaf-right {
+      opacity: 1 !important;
+      transition: opacity 0.8s ease-in-out 0.2s;
+    }
+    .watered .flower-group {
+      transform: scale(1) !important;
+    }
+
+    /* Wobble animation for dry/thirsty plants */
+    @keyframes wobble {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-8deg); }
+      75% { transform: rotate(8deg); }
+    }
+    .wobble-anim {
+      animation: wobble 0.5s ease-in-out 3;
+    }
+
+    /* Hint Glow Animation */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+      50% { box-shadow: 0 0 16px 6px rgba(234, 179, 8, 0.9); }
+    }
+    .hint-glow {
+      animation: pulse-glow 1.5s infinite;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-green-100 via-emerald-100 to-teal-200 min-h-screen flex flex-col items-center justify-between p-2 sm:p-4 text-emerald-900 select-none overflow-x-hidden">
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas" class="pointer-events-none fixed top-0 left-0 w-full h-full z-50"></canvas>
+
+  <!-- Top Navigation & Level Selection -->
+  <header class="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-2xl p-3 sm:p-4 shadow-xl border border-emerald-100 mb-4">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <!-- Logo & Theme Title -->
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-r from-emerald-400 to-teal-500 p-2.5 rounded-xl shadow-md text-white">
+          <!-- Cute Robot/Gardener Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+            <circle cx="12" cy="12" r="4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">Connect the Water Pipes!</h1>
+          <p class="text-xs sm:text-sm text-emerald-600/80 font-semibold flex items-center gap-1">
+            <span>👩‍🌾 Help our little gardener save the flowers!</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button onclick="openHowToPlay()" class="bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 px-3.5 py-1.5 rounded-xl text-amber-800 font-bold text-xs sm:text-sm transition shadow-sm flex items-center gap-1">
+          💡 How to Play
+        </button>
+        <div class="bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs sm:text-sm shadow-sm flex items-center gap-1.5">
+          ⭐ Score: <span id="total-score">0</span>
+        </div>
+        <div class="bg-amber-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs sm:text-sm shadow-sm flex items-center gap-1.5">
+          🪙 Coins: <span id="total-coins">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Levels Slider Bar (All 10 playable & unlocked) -->
+    <div class="mt-4 border-t border-emerald-100 pt-3">
+      <div class="text-xs font-bold text-emerald-700/60 uppercase tracking-wider mb-2">Jump to any Level:</div>
+      <div id="level-selector-bar" class="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-emerald-300">
+        <!-- Level pills will render here dynamically -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Game Layout Grid -->
+  <main class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-4 items-start flex-grow">
+    
+    <!-- LEFT SIDE: Board Game Panel -->
+    <section class="lg:col-span-8 flex flex-col items-center">
+      
+      <!-- Interactive Level Banner -->
+      <div class="w-full bg-white/80 backdrop-blur rounded-2xl p-3 shadow-lg border border-emerald-50/50 mb-3 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-bold text-teal-600 uppercase tracking-widest block" id="level-badge">Level 1</span>
+          <h2 class="text-base sm:text-lg font-bold text-emerald-800" id="level-name">Loading...</h2>
+        </div>
+        <!-- Challenges / Stats indicators -->
+        <div class="flex items-center gap-2">
+          <!-- Timed Challenge -->
+          <div id="timer-box" class="hidden bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-xl flex items-center gap-1 text-rose-700 font-bold text-xs sm:text-sm animate-pulse">
+            ⏱️ <span id="timer-text">00:00</span>
+          </div>
+          <!-- Limited Rotations -->
+          <div id="rotations-limit-box" class="hidden bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-xl flex items-center gap-1 text-orange-700 font-bold text-xs sm:text-sm">
+            🎯 Turns left: <span id="rotations-limit-text">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Game Grid Container -->
+      <div class="w-full max-w-md bg-emerald-900 border-[8px] border-amber-800 rounded-3xl shadow-2xl relative p-4 flex items-center justify-center min-h-[300px] sm:min-h-[400px]">
+        <!-- Grass Textured Decorative Overlay Background -->
+        <div class="absolute inset-0 opacity-10 pointer-events-none rounded-2xl" style="background-image: radial-gradient(circle, #fff 10%, transparent 11%), radial-gradient(circle, #fff 10%, transparent 11%); background-size: 20px 20px; background-position: 0 0, 10px 10px;"></div>
+        
+        <!-- Interactive Grid Elements -->
+        <div id="puzzle-grid" class="grid gap-2 w-full h-full relative z-10">
+          <!-- Created dynamically by JavaScript -->
+        </div>
+
+        <!-- Failure State Screen Overlay -->
+        <div id="fail-overlay" class="hidden absolute inset-0 bg-red-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-6 text-center rounded-2xl">
+          <div class="bg-red-500 text-white rounded-full p-4 mb-4 shadow-lg animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h3 id="fail-title" class="text-2xl font-bold text-white mb-2">Challenge Failed!</h3>
+          <p id="fail-message" class="text-red-200 text-sm max-w-xs mb-6">Don't worry, even master gardeners make mistakes. Let's try again!</p>
+          <button onclick="restartLevel()" class="bg-amber-400 hover:bg-amber-300 border-b-4 border-amber-600 hover:border-amber-500 text-amber-950 px-6 py-3 rounded-2xl font-extrabold text-base transition transform active:scale-95 shadow-md flex items-center gap-2">
+            🔄 Try Again
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Interactive Action Row -->
+      <div class="w-full max-w-md mt-4 flex gap-3 items-stretch">
+        <!-- Main Flow Button -->
+        <button id="btn-flow" onclick="startWaterSimulation()" class="flex-grow bg-blue-500 hover:bg-blue-400 border-b-4 border-blue-700 hover:border-blue-500 text-white font-extrabold text-base sm:text-lg py-3.5 px-6 rounded-2xl transition transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
+          🌊 Start Water Flow!
+        </button>
+        <!-- Restart Button -->
+        <button onclick="restartLevel()" title="Reset Pipes" class="bg-white hover:bg-neutral-100 border-2 border-emerald-200 hover:border-emerald-300 p-3.5 rounded-2xl text-emerald-800 transition transform active:scale-95 shadow-md flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.27 15" />
+          </svg>
+        </button>
+        <!-- Hint Button -->
+        <button id="btn-hint" onclick="useHint()" title="Get Hint" class="bg-amber-400 hover:bg-amber-300 border-b-4 border-amber-600 p-3.5 rounded-2xl text-amber-950 font-extrabold transition transform active:scale-95 shadow-md flex items-center justify-center">
+          🌟 Hint (<span id="hints-count">3</span>)
+        </button>
+      </div>
+
+    </section>
+
+    <!-- RIGHT SIDE: Gameplay Goals & Computational Skills -->
+    <aside class="lg:col-span-4 space-y-4">
+      
+      <!-- Current Status Tracker Card -->
+      <div class="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-emerald-100">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-700/60 mb-3">Live Progress Card</h3>
+        
+        <div class="space-y-3">
+          <!-- Total Clicks Tracker -->
+          <div class="flex items-center justify-between border-b border-emerald-50 pb-2">
+            <span class="text-emerald-800 font-semibold flex items-center gap-1">🔄 Turns Made:</span>
+            <span class="text-lg font-bold text-emerald-900 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100" id="stat-rotations">0</span>
+          </div>
+
+          <!-- Ideal Solution Target Rotations -->
+          <div class="flex items-center justify-between border-b border-emerald-50 pb-2">
+            <span class="text-emerald-800 font-semibold flex items-center gap-1">🌟 Target Turns:</span>
+            <span class="text-sm font-bold text-emerald-700 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200" id="stat-target">Level Spec</span>
+          </div>
+
+          <!-- Star Goal Tracker -->
+          <div class="flex items-center justify-between">
+            <span class="text-emerald-800 font-semibold">🏅 Expected Star:</span>
+            <div class="flex items-center gap-0.5 text-lg" id="expected-stars-container">
+              ⭐⭐⭐
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Computational Thinking Skills Panel -->
+      <div class="bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-100/80 rounded-2xl p-4 shadow-lg">
+        <h4 class="text-xs font-bold uppercase tracking-widest text-teal-800/80 mb-3 flex items-center gap-1.5">
+          🧠 Computational Thinking Skills
+        </h4>
+        <ul class="space-y-2 text-xs sm:text-sm text-teal-900/90 font-medium">
+          <li class="flex items-start gap-2">
+            <span class="text-base">🌲</span>
+            <div>
+              <strong>Systems Thinking:</strong> Observe how rotating a single piece shifts water dynamics across the network.
+            </div>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-base">🧩</span>
+            <div>
+              <strong>Pattern Recognition:</strong> Spot the matching connectors on endpoints of curves and standard junctions.
+            </div>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-base">🚀</span>
+            <div>
+              <strong>Planning:</strong> Trace water routes backwards from the dry plants to discover the perfect starting source loops.
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Helpful Gardener Character Dialog bubble -->
+      <div class="bg-white rounded-2xl p-4 shadow-md border border-emerald-100 flex items-start gap-3">
+        <div class="text-3xl bg-emerald-50 p-2 rounded-xl">👩‍🌾</div>
+        <div class="text-xs sm:text-sm text-emerald-800 leading-relaxed">
+          <p class="font-bold text-emerald-950 mb-0.5">Gardener Daisy says:</p>
+          <p id="daisy-bubble">"Rotate the pipes to build a path from the blue pump 🚰 to all the dry plants! Press the blue button when you are ready!"</p>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <footer class="w-full max-w-4xl mt-6 text-center text-xs text-emerald-700/50 font-semibold py-4 border-t border-emerald-600/10">
+    Connect the Water Pipes Game © Garden System Simulator • Help Nature Thrive! 🌸
+  </footer>
+
+  <!-- Modal: How to Play Popup -->
+  <div id="how-to-play-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border-4 border-emerald-500 relative transform transition">
+      <!-- Top Character Header -->
+      <div class="flex items-center gap-3 mb-4">
+        <div class="text-4xl">🤖</div>
+        <div>
+          <h3 class="text-xl font-bold text-emerald-900">How to Play!</h3>
+          <p class="text-xs text-emerald-600">Learning instructions made very simple</p>
+        </div>
+      </div>
+      
+      <!-- Bullet Instructions -->
+      <div class="space-y-3.5 text-sm text-emerald-800 leading-relaxed font-semibold">
+        <div class="flex items-start gap-2.5">
+          <div class="bg-emerald-100 text-emerald-800 rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5">1</div>
+          <p>Click or tap a pipe piece to <strong class="text-teal-700">turn it around</strong>. Each click turns the pipe 90 degrees!</p>
+        </div>
+        <div class="flex items-start gap-2.5">
+          <div class="bg-emerald-100 text-emerald-800 rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5">2</div>
+          <p>Create a complete path connecting the blue water pump 🚰 to all dry flower pots 🪵.</p>
+        </div>
+        <div class="flex items-start gap-2.5">
+          <div class="bg-emerald-100 text-emerald-800 rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5">3</div>
+          <p>Press the huge <strong class="text-blue-600">Start Water Flow</strong> button to test your system!</p>
+        </div>
+        <div class="flex items-start gap-2.5">
+          <div class="bg-emerald-100 text-emerald-800 rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5">4</div>
+          <p>Solve with as few moves as possible to win <strong class="text-amber-500">3 Gold Stars!</strong> ⭐</p>
+        </div>
+      </div>
+
+      <!-- Got it Button -->
+      <button onclick="closeHowToPlay()" class="mt-6 w-full bg-emerald-500 hover:bg-emerald-400 border-b-4 border-emerald-700 text-white font-extrabold py-3 rounded-2xl transition transform active:scale-95 shadow-md">
+        Yay, let's play! 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Success / Level Complete Popup -->
+  <div id="success-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border-4 border-amber-400 relative text-center">
+      <!-- Cute Cup icon -->
+      <div class="mx-auto w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-4 text-4xl animate-bounce shadow-inner">
+        🏆
+      </div>
+      
+      <h3 class="text-2xl font-bold text-emerald-900 mb-1" id="success-title">Amazing Job!</h3>
+      <p class="text-sm text-emerald-600/90 font-bold mb-4" id="success-subtitle">The plants bloomed successfully! 🌸</p>
+
+      <!-- Stars Rendered -->
+      <div class="flex justify-center gap-2 text-3xl mb-4" id="modal-stars">
+        ⭐⭐⭐
+      </div>
+
+      <!-- Score Breakdowns -->
+      <div class="bg-emerald-50 rounded-2xl p-4 mb-6 border border-emerald-100 text-emerald-900 font-bold text-sm space-y-1.5">
+        <div class="flex justify-between">
+          <span>🎯 Rotations Used:</span>
+          <span id="modal-moves" class="text-emerald-700">0</span>
+        </div>
+        <div class="flex justify-between">
+          <span>🌟 Level Target:</span>
+          <span id="modal-target" class="text-amber-600">0</span>
+        </div>
+        <div class="flex justify-between">
+          <span>💎 Level Points:</span>
+          <span id="modal-points" class="text-blue-600">+000</span>
+        </div>
+        <div class="flex justify-between border-t border-emerald-100 pt-1.5 mt-1.5">
+          <span>🪙 Coins Earned:</span>
+          <span id="modal-coins" class="text-amber-500">+0 Coins</span>
+        </div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="flex gap-3">
+        <button onclick="restartLevel(); closeSuccessModal();" class="flex-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold py-3.5 rounded-2xl transition shadow-md border border-neutral-300">
+          🔄 Replay
+        </button>
+        <button id="btn-next-level" onclick="goToNextLevel()" class="flex-1 bg-amber-400 hover:bg-amber-300 border-b-4 border-amber-600 text-amber-950 font-extrabold py-3.5 rounded-2xl transition transform active:scale-95 shadow-md">
+          Next Level ➔
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Game Implementation -->
+  <script>
+    // System Level Blueprint Designs
+    const levels = [
+      {
+        id: 1,
+        name: "Welcome to the Garden",
+        rows: 3,
+        cols: 3,
+        star3: 3,
+        star2: 5,
+        cells: [
+          { r: 0, c: 0, type: 'S', rot: 0, isLocked: true },
+          { r: 0, c: 1, type: 'L', rot: 1, targetRot: 2 },
+          { r: 1, c: 1, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 1, type: 'L', rot: 3, targetRot: 0 },
+          { r: 2, c: 2, type: 'P', rot: 0, isLocked: true }
+        ]
+      },
+      {
+        id: 2,
+        name: "The Winding Path",
+        rows: 3,
+        cols: 3,
+        star3: 5,
+        star2: 8,
+        cells: [
+          { r: 0, c: 0, type: 'S', rot: 0, isLocked: true },
+          { r: 0, c: 1, type: 'I', rot: 0, targetRot: 1 },
+          { r: 0, c: 2, type: 'L', rot: 3, targetRot: 2 },
+          { r: 1, c: 2, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 2, type: 'L', rot: 1, targetRot: 3 },
+          { r: 2, c: 1, type: 'I', rot: 0, targetRot: 1 },
+          { r: 2, c: 0, type: 'P', rot: 2, isLocked: true }
+        ]
+      },
+      {
+        id: 3,
+        name: "Spaghetti Pipes",
+        rows: 3,
+        cols: 3,
+        star3: 6,
+        star2: 9,
+        cells: [
+          { r: 1, c: 0, type: 'S', rot: 0, isLocked: true },
+          { r: 1, c: 1, type: 'T', rot: 1, targetRot: 3 },
+          { r: 0, c: 1, type: 'L', rot: 3, targetRot: 1 },
+          { r: 0, c: 2, type: 'L', rot: 0, targetRot: 2 },
+          { r: 1, c: 2, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 2, type: 'P', rot: 1, isLocked: true },
+          { r: 2, c: 0, type: 'I', rot: 0, targetRot: 1 },
+          { r: 2, c: 1, type: 'L', rot: 2, targetRot: 0 }
+        ]
+      },
+      {
+        id: 4,
+        name: "Snaky Suburbs",
+        rows: 4,
+        cols: 4,
+        star3: 7,
+        star2: 11,
+        cells: [
+          { r: 0, c: 0, type: 'S', rot: 1, isLocked: true }, 
+          { r: 1, c: 0, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 0, type: 'L', rot: 2, targetRot: 0 },
+          { r: 2, c: 1, type: 'L', rot: 0, targetRot: 2 },
+          { r: 3, c: 1, type: 'L', rot: 3, targetRot: 0 },
+          { r: 3, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 3, c: 3, type: 'P', rot: 0, isLocked: true },
+          { r: 0, c: 1, type: 'L', rot: 0, targetRot: 1 },
+          { r: 0, c: 2, type: 'I', rot: 1, targetRot: 0 },
+          { r: 0, c: 3, type: 'L', rot: 2, targetRot: 3 },
+          { r: 1, c: 1, type: 'I', rot: 0, targetRot: 1 },
+          { r: 1, c: 2, type: 'L', rot: 1, targetRot: 2 },
+          { r: 1, c: 3, type: 'T', rot: 0, targetRot: 1 },
+          { r: 2, c: 2, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 3, type: 'L', rot: 3, targetRot: 0 },
+          { r: 3, c: 0, type: 'I', rot: 0, targetRot: 1 }
+        ]
+      },
+      {
+        id: 5,
+        name: "Double Bloomer",
+        rows: 4,
+        cols: 4,
+        star3: 8,
+        star2: 12,
+        cells: [
+          { r: 0, c: 0, type: 'S', rot: 0, isLocked: true },
+          { r: 0, c: 1, type: 'T', rot: 0, targetRot: 2 },
+          { r: 0, c: 2, type: 'L', rot: 0, targetRot: 2 },
+          { r: 1, c: 2, type: 'L', rot: 1, targetRot: 0 },
+          { r: 1, c: 3, type: 'P', rot: 0, isLocked: true },
+          { r: 1, c: 1, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 1, type: 'L', rot: 3, targetRot: 0 },
+          { r: 2, c: 2, type: 'L', rot: 1, targetRot: 2 },
+          { r: 3, c: 2, type: 'P', rot: 1, isLocked: true },
+          { r: 0, c: 3, type: 'I', rot: 0, targetRot: 1 },
+          { r: 1, c: 0, type: 'L', rot: 0, targetRot: 1 },
+          { r: 2, c: 0, type: 'I', rot: 1, targetRot: 0 },
+          { r: 3, c: 0, type: 'L', rot: 2, targetRot: 3 },
+          { r: 3, c: 1, type: 'I', rot: 0, targetRot: 1 },
+          { r: 3, c: 3, type: 'L', rot: 1, targetRot: 2 },
+          { r: 2, c: 3, type: 'I', rot: 0, targetRot: 1 }
+        ]
+      },
+      {
+        id: 6,
+        name: "The Water Loop",
+        rows: 4,
+        cols: 4,
+        star3: 10,
+        star2: 15,
+        cells: [
+          { r: 0, c: 0, type: 'S', rot: 0, isLocked: true },
+          { r: 0, c: 1, type: 'T', rot: 0, targetRot: 2 },
+          { r: 0, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 0, c: 3, type: 'L', rot: 1, targetRot: 2 },
+          { r: 1, c: 3, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 3, type: 'L', rot: 1, targetRot: 3 },
+          { r: 2, c: 2, type: 'T', rot: 2, targetRot: 0 },
+          { r: 2, c: 1, type: 'L', rot: 3, targetRot: 0 },
+          { r: 1, c: 1, type: 'I', rot: 1, targetRot: 0 },
+          { r: 3, c: 2, type: 'P', rot: 1, isLocked: true },
+          { r: 1, c: 0, type: 'L', rot: 0, targetRot: 1 },
+          { r: 2, c: 0, type: 'I', rot: 1, targetRot: 0 },
+          { r: 3, c: 0, type: 'L', rot: 2, targetRot: 3 },
+          { r: 3, c: 1, type: 'I', rot: 0, targetRot: 1 },
+          { r: 3, c: 3, type: 'L', rot: 1, targetRot: 2 },
+          { r: 1, c: 2, type: 'I', rot: 0, targetRot: 1 }
+        ]
+      },
+      {
+        id: 7,
+        name: "Rocky Shrub Barrier",
+        rows: 4,
+        cols: 4,
+        star3: 11,
+        star2: 16,
+        cells: [
+          { r: 0, c: 0, type: 'S', rot: 0, isLocked: true },
+          { r: 0, c: 1, type: 'I', rot: 0, targetRot: 1 },
+          { r: 0, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 0, c: 3, type: 'L', rot: 1, targetRot: 2 },
+          { r: 1, c: 3, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 3, type: 'I', rot: 1, targetRot: 0 },
+          { r: 3, c: 3, type: 'L', rot: 0, targetRot: 3 },
+          { r: 3, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 3, c: 1, type: 'I', rot: 0, targetRot: 1 },
+          { r: 3, c: 0, type: 'L', rot: 2, targetRot: 0 },
+          { r: 2, c: 0, type: 'I', rot: 1, targetRot: 0 },
+          { r: 1, c: 0, type: 'P', rot: 3, isLocked: true },
+          { r: 1, c: 1, type: 'B' },
+          { r: 1, c: 2, type: 'B' },
+          { r: 2, c: 1, type: 'B' },
+          { r: 2, c: 2, type: 'B' }
+        ]
+      },
+      {
+        id: 8,
+        name: "Hurry, 12 Turns Limit!",
+        rows: 4,
+        cols: 4,
+        star3: 6,
+        star2: 9,
+        limitRotations: 12,
+        cells: [
+          { r: 0, c: 1, type: 'S', rot: 1, isLocked: true }, 
+          { r: 1, c: 1, type: 'L', rot: 1, targetRot: 0 },
+          { r: 1, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 1, c: 3, type: 'L', rot: 3, targetRot: 2 },
+          { r: 2, c: 3, type: 'I', rot: 1, targetRot: 0 },
+          { r: 3, c: 3, type: 'L', rot: 1, targetRot: 3 },
+          { r: 3, c: 2, type: 'P', rot: 2, isLocked: true }, 
+          { r: 0, c: 0, type: 'L', rot: 0 },
+          { r: 0, c: 2, type: 'I', rot: 1 },
+          { r: 0, c: 3, type: 'L', rot: 2 },
+          { r: 1, c: 0, type: 'I', rot: 0 },
+          { r: 2, c: 0, type: 'L', rot: 1 },
+          { r: 2, c: 1, type: 'I', rot: 0 },
+          { r: 2, c: 2, type: 'L', rot: 3 },
+          { r: 3, c: 0, type: 'I', rot: 1 },
+          { r: 3, c: 1, type: 'L', rot: 0 }
+        ]
+      },
+      {
+        id: 9,
+        name: "Beat the Timer Clock!",
+        rows: 4,
+        cols: 4,
+        star3: 10,
+        star2: 14,
+        timer: 45,
+        cells: [
+          { r: 0, c: 0, type: 'S', rot: 1, isLocked: true }, 
+          { r: 1, c: 0, type: 'L', rot: 1, targetRot: 0 },
+          { r: 1, c: 1, type: 'T', rot: 0, targetRot: 2 },
+          { r: 0, c: 1, type: 'L', rot: 3, targetRot: 1 },
+          { r: 0, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 0, c: 3, type: 'L', rot: 0, targetRot: 2 },
+          { r: 1, c: 3, type: 'I', rot: 1, targetRot: 0 },
+          { r: 2, c: 3, type: 'L', rot: 1, targetRot: 3 },
+          { r: 2, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 2, c: 1, type: 'L', rot: 3, targetRot: 0 },
+          { r: 3, c: 1, type: 'P', rot: 1, isLocked: true }, 
+          { r: 0, c: 0, type: 'B' },
+          { r: 2, c: 0, type: 'I', rot: 1 },
+          { r: 3, c: 0, type: 'L', rot: 0 },
+          { r: 3, c: 2, type: 'I', rot: 1 },
+          { r: 3, c: 3, type: 'L', rot: 2 }
+        ]
+      },
+      {
+        id: 10,
+        name: "Grand Botanical Garden",
+        rows: 5,
+        cols: 5,
+        star3: 15,
+        star2: 22,
+        cells: [
+          { r: 2, c: 0, type: 'S', rot: 0, isLocked: true }, 
+          { r: 2, c: 1, type: 'X', rot: 0, targetRot: 0 }, 
+          { r: 1, c: 1, type: 'I', rot: 1, targetRot: 0 },
+          { r: 0, c: 1, type: 'L', rot: 3, targetRot: 1 },
+          { r: 0, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 0, c: 3, type: 'L', rot: 0, targetRot: 2 },
+          { r: 1, c: 3, type: 'P', rot: 1, isLocked: true }, 
+          { r: 3, c: 1, type: 'I', rot: 1, targetRot: 0 },
+          { r: 4, c: 1, type: 'L', rot: 2, targetRot: 0 },
+          { r: 4, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 4, c: 3, type: 'L', rot: 1, targetRot: 3 },
+          { r: 3, c: 3, type: 'P', rot: 3, isLocked: true }, 
+          { r: 2, c: 2, type: 'I', rot: 0, targetRot: 1 },
+          { r: 2, c: 3, type: 'I', rot: 0, targetRot: 1 },
+          { r: 2, c: 4, type: 'P', rot: 0, isLocked: true }, 
+          { r: 0, c: 0, type: 'L', rot: 0 },
+          { r: 1, c: 0, type: 'I', rot: 1 },
+          { r: 3, c: 0, type: 'I', rot: 0 },
+          { r: 4, c: 0, type: 'L', rot: 1 },
+          { r: 0, c: 4, type: 'L', rot: 2 },
+          { r: 1, c: 4, type: 'I', rot: 1 },
+          { r: 3, c: 4, type: 'I', rot: 0 },
+          { r: 4, c: 4, type: 'L', rot: 3 },
+          { r: 1, c: 2, type: 'L', rot: 0 },
+          { r: 3, c: 2, type: 'L', rot: 2 }
+        ]
+      }
+    ];
+
+    // Game State Variables
+    let activeLevelIndex = 0;
+    let gridData = [];
+    let movesCount = 0;
+    let totalScore = 0;
+    let totalCoins = 0;
+    let hintsRemaining = 3;
+    let isFlowActive = false;
+    let isGameActive = true;
+    
+    // Interval Ref for Timer
+    let timerInterval = null;
+    let secondsLeft = 0;
+    async function syncPipeWalletBalance() {
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(localStorage.getItem("pipe-game-total-coins")) ||
+    0;
+
+  totalCoins = saved;
+  document.getElementById("total-coins").innerText = totalCoins;
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        totalCoins = Number(balance);
+        localStorage.setItem("walletCoins", String(totalCoins));
+        localStorage.setItem("pipe-game-total-coins", String(totalCoins));
+        document.getElementById("total-coins").innerText = totalCoins;
+      }
+    }
+  } catch (err) {
+    console.warn("Pipe wallet sync failed:", err);
+  }
+}
+
+async function creditPipeCoins(amount) {
+  let finalBalance =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(totalCoins) ||
+    0;
+
+  try {
+    const rewardResult = await window.gameSDK.rewardCoins({
+      amount,
+      description: `Water Pipes Level ${activeLevelIndex + 1} Complete`,
+      game: "water_pipes",
+      level: activeLevelIndex + 1,
+      score: amount,
+    });
+
+    if (rewardResult && rewardResult.balance !== undefined) {
+      finalBalance = Number(rewardResult.balance);
+    } else if (window.gameSDK) {
+      const freshBalance = await window.gameSDK.getBalance();
+      if (freshBalance !== undefined && freshBalance !== null) {
+        finalBalance = Number(freshBalance);
+      }
+    }
+  } catch (err) {
+    console.error("Pipe reward error:", err);
+    finalBalance = finalBalance + amount;
+  }
+
+  totalCoins = finalBalance;
+
+  localStorage.setItem("walletCoins", String(totalCoins));
+  localStorage.setItem("pipe-game-total-coins", String(totalCoins));
+
+  document.getElementById("total-coins").innerText = totalCoins;
+
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "water_pipes",
+    coins: totalCoins,
+    level: activeLevelIndex + 1,
+    score: totalScore,
+  }, "*");
+
+  return totalCoins;
+}
+
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+
+  if (balance !== undefined) {
+    totalCoins = Number(balance);
+    localStorage.setItem("walletCoins", String(totalCoins));
+    localStorage.setItem("pipe-game-total-coins", String(totalCoins));
+    document.getElementById("total-coins").innerText = totalCoins;
+  }
+});
+    // Web Audio Synthesizer Controls
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playSoundClick() {
+      initAudio();
+      if (!audioCtx) return;
+      let osc = audioCtx.createOscillator();
+      let gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function playSoundBubbling(steps) {
+      initAudio();
+      if (!audioCtx) return;
+      let now = audioCtx.currentTime;
+      for (let i = 0; i < steps; i++) {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        let freq = 200 + Math.random() * 200;
+        osc.frequency.setValueAtTime(freq, now + i * 0.18);
+        osc.frequency.exponentialRampToValueAtTime(freq + 80, now + i * 0.18 + 0.12);
+        gain.gain.setValueAtTime(0.12, now + i * 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.18 + 0.12);
+        osc.start(now + i * 0.18);
+        osc.stop(now + i * 0.18 + 0.15);
+      }
+    }
+
+    function playSoundSuccess() {
+      initAudio();
+      if (!audioCtx) return;
+      let now = audioCtx.currentTime;
+      let notes = [261.63, 329.63, 392.00, 523.25, 659.25]; // C E G C5 E5 Major
+      notes.forEach((freq, index) => {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + index * 0.1);
+        gain.gain.setValueAtTime(0.25, now + index * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + index * 0.1 + 0.35);
+        osc.start(now + index * 0.1);
+        osc.stop(now + index * 0.1 + 0.4);
+      });
+    }
+
+    function playSoundFail() {
+      initAudio();
+      if (!audioCtx) return;
+      let now = audioCtx.currentTime;
+      let osc = audioCtx.createOscillator();
+      let gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(170, now);
+      osc.frequency.linearRampToValueAtTime(80, now + 0.45);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+      osc.start();
+      osc.stop(now + 0.45);
+    }
+
+    // Connectors indices mapping based on clockwise rotation
+    // 0: Top, 1: Right, 2: Bottom, 3: Left
+    function getCellConnectors(type, rot) {
+      let base = [];
+      if (type === 'I') base = [0, 2];
+      else if (type === 'L') base = [0, 1];
+      else if (type === 'T') base = [3, 0, 1];
+      else if (type === 'X') base = [0, 1, 2, 3];
+      else if (type === 'S') base = [1]; // source exits Right
+      else if (type === 'P') base = [3]; // plant inputs Left
+      return base.map(c => (c + rot) % 4);
+    }
+
+    // Build SVG components dynamically based on Pipe Class
+    function getPipeSVGString(type, cell) {
+      const mainColor = "#475569";      // Slate 600
+      const capHighlight = "#64748B";   // Slate 500
+      const dryLine = "#E2E8F0";        // Slate 200 (Thirsty)
+      const wateredLine = "#3B82F6";    // Vibrant Blue
+      
+      let elements = "";
+
+      if (type === 'I') {
+        elements = `
+          <!-- Main Outer metal tube -->
+          <path d="M50,0 L50,100" stroke="${mainColor}" stroke-width="24" stroke-linecap="square" />
+          <path d="M50,0 L50,100" stroke="${capHighlight}" stroke-width="16" stroke-linecap="square" />
+          <!-- Inner flowing liquid tube -->
+          <path class="water-path" d="M50,0 L50,100" stroke="${dryLine}" stroke-width="8" stroke-linecap="square" />
+        `;
+      } 
+      else if (type === 'L') {
+        elements = `
+          <!-- Metal frame bent tube -->
+          <path d="M50,0 Q50,50 100,50" fill="none" stroke="${mainColor}" stroke-width="24" stroke-linecap="square" />
+          <path d="M50,0 Q50,50 100,50" fill="none" stroke="${capHighlight}" stroke-width="16" stroke-linecap="square" />
+          <!-- Flowing liquid core -->
+          <path class="water-path" d="M50,0 Q50,50 100,50" fill="none" stroke="${dryLine}" stroke-width="8" stroke-linecap="square" />
+        `;
+      } 
+      else if (type === 'T') {
+        elements = `
+          <!-- Three-way T Split tube body -->
+          <path d="M0,50 L100,50 M50,50 L50,0" fill="none" stroke="${mainColor}" stroke-width="24" stroke-linecap="square" />
+          <path d="M0,50 L100,50 M50,50 L50,0" fill="none" stroke="${capHighlight}" stroke-width="16" stroke-linecap="square" />
+          <!-- Liquid Core -->
+          <path class="water-path" d="M0,50 L100,50 M50,50 L50,0" fill="none" stroke="${dryLine}" stroke-width="8" />
+        `;
+      } 
+      else if (type === 'X') {
+        elements = `
+          <!-- Quad Cross-connect tube -->
+          <path d="M0,50 L100,50 M50,0 L50,100" stroke="${mainColor}" stroke-width="24" />
+          <path d="M0,50 L100,50 M50,0 L50,100" stroke="${capHighlight}" stroke-width="16" />
+          <!-- Liquid Core -->
+          <path class="water-path" d="M0,50 L100,50 M50,0 L50,100" stroke="${dryLine}" stroke-width="8" />
+        `;
+      } 
+      else if (type === 'S') {
+        // Cute Pump Source 🚰
+        elements = `
+          <!-- Output link nozzle -->
+          <path d="M50,50 L100,50" stroke="${mainColor}" stroke-width="24" stroke-linecap="square" />
+          <path d="M50,50 L100,50" stroke="${capHighlight}" stroke-width="16" stroke-linecap="square" />
+          <path class="water-path" d="M50,50 L100,50" stroke="${wateredLine}" stroke-width="8" stroke-linecap="square" />
+
+          <!-- Solid Station Tank -->
+          <rect x="18" y="18" width="54" height="64" rx="10" fill="#3b82f6" stroke="#1d4ed8" stroke-width="4" />
+          <!-- Pressure indicator gauge -->
+          <circle cx="45" cy="45" r="14" fill="#f8fafc" stroke="#1e293b" stroke-width="2" />
+          <!-- Red meter arrow -->
+          <path d="M45,45 L52,38" stroke="#ef4444" stroke-width="3" stroke-linecap="round" />
+          <circle cx="45" cy="45" r="2.5" fill="#1e293b" />
+          <!-- Cute water waves inside tank -->
+          <path d="M22,70 Q28,66 35,70 Q42,74 50,70 Q58,66 65,70" fill="none" stroke="#93c5fd" stroke-width="2" />
+          <!-- Gauge active ping -->
+          <circle cx="45" cy="45" r="14" fill="none" stroke="#60a5fa" stroke-width="2" opacity="0.4" class="animate-ping" style="animation-duration: 2s;" />
+        `;
+      } 
+      else if (type === 'P') {
+        // Wooden Pot with Interactive Blooming flower! 🌸
+        elements = `
+          <!-- Input stem link -->
+          <path d="M0,50 L50,50" stroke="${mainColor}" stroke-width="24" stroke-linecap="square" />
+          <path d="M0,50 L50,50" stroke="${capHighlight}" stroke-width="16" stroke-linecap="square" />
+          <path class="water-path" d="M0,50 L50,50" stroke="${dryLine}" stroke-width="8" stroke-linecap="square" />
+
+          <!-- Soil Clay Pot container -->
+          <polygon points="25,92 75,92 84,62 16,62" fill="#d97706" stroke="#92400e" stroke-width="3" />
+          <rect x="10" y="54" width="80" height="9" rx="2.5" fill="#b45309" stroke="#78350f" stroke-width="1" />
+
+          <!-- Cute Flower Stem (Blooms on watered connection!) -->
+          <path class="stem" d="M50,54 Q46,36 50,22" fill="none" stroke="#22c55e" stroke-width="0" stroke-linecap="round" />
+          <path class="leaf-left" d="M48,42 Q32,36 44,30" fill="#15803d" stroke="none" opacity="0" />
+          <path class="leaf-right" d="M52,47 Q68,41 56,35" fill="#15803d" stroke="none" opacity="0" />
+
+          <!-- Scaled Interactive Petals -->
+          <g class="flower-group" style="transform: scale(0); transform-origin: 50px 22px; transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <circle cx="50" cy="11" r="8" fill="#ec4899" />
+            <circle cx="61" cy="22" r="8" fill="#ec4899" />
+            <circle cx="50" cy="33" r="8" fill="#ec4899" />
+            <circle cx="39" cy="22" r="8" fill="#ec4899" />
+            <circle cx="50" cy="22" r="6" fill="#facc15" />
+          </g>
+        `;
+      } 
+      else if (type === 'B') {
+        // Blocked Bush cell (Grass decoration)
+        elements = `
+          <!-- Styled Bush -->
+          <circle cx="50" cy="50" r="32" fill="#15803d" opacity="0.3" />
+          <circle cx="50" cy="45" r="22" fill="#166534" opacity="0.4" />
+          <!-- Tiny Red Berries -->
+          <circle cx="44" cy="44" r="3" fill="#ef4444" />
+          <circle cx="56" cy="48" r="3" fill="#ef4444" />
+          <circle cx="50" cy="36" r="3" fill="#facc15" />
+        `;
+      }
+
+      return elements;
+    }
+
+    // Initialize Game Board Framework
+    function initLevelSelectionBar() {
+      const selectorBar = document.getElementById('level-selector-bar');
+      selectorBar.innerHTML = '';
+      
+      levels.forEach((lvl, idx) => {
+        const btn = document.createElement('button');
+        btn.id = `level-pill-${idx}`;
+        
+        // Load completed level stars state
+        const savedStars = localStorage.getItem(`pipe-game-lvl-${lvl.id}-stars`) || 0;
+        let starString = '';
+        if (savedStars > 0) {
+          starString = '<span class="text-[10px] text-amber-500 block leading-none">★'.repeat(savedStars) + '</span>';
+        } else {
+          starString = '<span class="text-[10px] text-neutral-300 block leading-none">☆☆☆</span>';
+        }
+
+        btn.className = `flex flex-col items-center justify-center min-w-[55px] h-[55px] rounded-xl border-2 transition-all shrink-0 font-bold text-sm ${
+          idx === activeLevelIndex 
+            ? 'bg-gradient-to-br from-emerald-500 to-teal-600 border-teal-300 text-white shadow-md transform scale-105' 
+            : 'bg-white hover:bg-emerald-50 border-emerald-100 text-emerald-800'
+        }`;
+        
+        btn.innerHTML = `
+          <span class="text-xs leading-tight">Lvl ${lvl.id}</span>
+          ${starString}
+        `;
+        
+        btn.onclick = () => {
+          playSoundClick();
+          loadLevel(idx);
+        };
+        selectorBar.appendChild(btn);
+      });
+    }
+
+    // Load Specific Level Data
+    function loadLevel(levelIdx) {
+      if (isFlowActive) return; // Prevent loading during active simulation
+      
+      activeLevelIndex = levelIdx;
+      const level = levels[activeLevelIndex];
+      
+      // Reset challenges & statistics state
+      movesCount = 0;
+      isGameActive = true;
+      document.getElementById('stat-rotations').innerText = '0';
+      document.getElementById('level-badge').innerText = `Level ${level.id} of 10`;
+      document.getElementById('level-name').innerText = level.name;
+      document.getElementById('fail-overlay').classList.add('hidden');
+      document.getElementById('btn-flow').disabled = false;
+      
+      // Update Level Selector bar focus
+      levels.forEach((_, idx) => {
+        const btn = document.getElementById(`level-pill-${idx}`);
+        if (btn) {
+          if (idx === activeLevelIndex) {
+            btn.className = "flex flex-col items-center justify-center min-w-[55px] h-[55px] rounded-xl border-2 transition-all shrink-0 font-bold text-sm bg-gradient-to-br from-emerald-500 to-teal-600 border-teal-300 text-white shadow-md transform scale-105";
+          } else {
+            btn.className = "flex flex-col items-center justify-center min-w-[55px] h-[55px] rounded-xl border-2 transition-all shrink-0 font-bold text-sm bg-white hover:bg-emerald-50 border-emerald-100 text-emerald-800";
+          }
+        }
+      });
+
+      // Clear existing game grid container children
+      const puzzleGrid = document.getElementById('puzzle-grid');
+      puzzleGrid.innerHTML = '';
+      puzzleGrid.className = `grid gap-2 w-full h-full relative z-10`;
+      
+      // Apply correct responsive grids template columns
+      puzzleGrid.style.gridTemplateColumns = `repeat(${level.cols}, minmax(0, 1fr))`;
+
+      // Build complete grid dataset (size: rows x cols)
+      gridData = [];
+      for (let r = 0; r < level.rows; r++) {
+        gridData[r] = [];
+        for (let c = 0; c < level.cols; c++) {
+          // Find if there is preset design cell
+          const preset = level.cells.find(cell => cell.r === r && cell.c === c);
+          if (preset) {
+            // Unlocked active pipes get scrambled randomly
+            let startRot = preset.rot;
+            if (!preset.isLocked && preset.type !== 'B') {
+              // Ensure we scramble rot to be different from targetRot
+              const rotChoices = [0, 1, 2, 3].filter(r => r !== preset.targetRot);
+              startRot = rotChoices[Math.floor(Math.random() * rotChoices.length)];
+            }
+            gridData[r][c] = {
+              r, c,
+              type: preset.type,
+              rot: startRot,
+              targetRot: preset.targetRot !== undefined ? preset.targetRot : preset.rot,
+              isLocked: !!preset.isLocked,
+              clickCount: startRot
+            };
+          } else {
+            // Default to Grass Obstacle tile
+            gridData[r][c] = { r, c, type: 'B', rot: 0, isLocked: true, targetRot: 0, clickCount: 0 };
+          }
+        }
+      }
+
+      // Build DOM structures for the initialized board matrix
+      for (let r = 0; r < level.rows; r++) {
+        for (let c = 0; c < level.cols; c++) {
+          const cell = gridData[r][c];
+          const cellEl = document.createElement('div');
+          cellEl.id = `cell-${r}-${c}`;
+          
+          // Outer card styling depending on block type
+          if (cell.type === 'B') {
+            cellEl.className = "aspect-square bg-emerald-950/20 border-none shadow-none rounded-xl flex items-center justify-center cursor-default";
+          } else if (cell.isLocked) {
+            cellEl.className = "aspect-square bg-emerald-850/70 border-2 border-emerald-700/60 rounded-2xl flex items-center justify-center cursor-default shadow-inner";
+          } else {
+            cellEl.className = "aspect-square bg-emerald-800/80 hover:bg-emerald-700 border-2 border-emerald-600/70 hover:border-emerald-500 rounded-2xl flex items-center justify-center cursor-pointer select-none transition shadow-lg relative active:scale-95";
+            // Attach mouse click events to rotate
+            cellEl.onclick = () => handleCellClick(r, c);
+          }
+
+          // Inner SVG canvas render
+          const svgWrapper = document.createElement('div');
+          svgWrapper.className = "w-full h-full p-1.5 flex items-center justify-center";
+          
+          const svgEl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svgEl.setAttribute("viewBox", "0 0 100 100");
+          svgEl.setAttribute("class", "w-full h-full pipe-svg pointer-events-none");
+          svgEl.id = `svg-${r}-${c}`;
+          svgEl.innerHTML = getPipeSVGString(cell.type, cell);
+          
+          // Rotate graphics instantly to match initial setup
+          svgEl.style.transform = `rotate(${cell.rot * 90}deg)`;
+
+          svgWrapper.appendChild(svgEl);
+          cellEl.appendChild(svgWrapper);
+          puzzleGrid.appendChild(cellEl);
+        }
+      }
+
+      // Initialize Live Progress Stats Display
+      updateStarsExpected();
+      document.getElementById('stat-target').innerText = `≤ ${level.star3} turns`;
+
+      // Active Challenge Timer settings
+      clearInterval(timerInterval);
+      const timerBox = document.getElementById('timer-box');
+      if (level.timer) {
+        secondsLeft = level.timer;
+        timerBox.classList.remove('hidden');
+        document.getElementById('timer-text').innerText = formatTime(secondsLeft);
+        timerInterval = setInterval(updateChallengeTimer, 1000);
+      } else {
+        timerBox.classList.add('hidden');
+      }
+
+      // Active Challenge Rotations Limit setup
+      const rotLimitBox = document.getElementById('rotations-limit-box');
+      if (level.limitRotations) {
+        rotLimitBox.classList.remove('hidden');
+        document.getElementById('rotations-limit-text').innerText = level.limitRotations;
+      } else {
+        rotLimitBox.classList.add('hidden');
+      }
+
+      // Restore stored game-wide score and coins
+      let savedScore = parseInt(localStorage.getItem('pipe-game-total-score') || '0');
+      totalScore = savedScore;
+      document.getElementById('total-score').innerText = totalScore;
+
+      const walletCoins =
+  Number(localStorage.getItem("walletCoins")) ||
+  Number(localStorage.getItem("pipe-game-total-coins")) ||
+  0;
+
+totalCoins = walletCoins;
+document.getElementById("total-coins").innerText = totalCoins;
+
+      // Initialize Level Specific Hints
+      hintsRemaining = (levelIdx < 8) ? 1 : 2;
+      document.getElementById('hints-count').innerText = hintsRemaining;
+      document.getElementById('btn-hint').disabled = false;
+
+      // Update character tips bubble
+      updateDaisyDialogue(`"Welcome to ${level.name}! Click the pipes to solve the system puzzle!"`);
+    }
+
+    // Handles rotating clicked tiles
+    function handleCellClick(r, c) {
+      if (!isGameActive || isFlowActive) return;
+
+      const cell = gridData[r][c];
+      if (cell.isLocked || cell.type === 'B') return;
+
+      // Reset any partial water simulations on click action to clear board
+      clearWaterVisualization();
+
+      // Sound pop cue
+      playSoundClick();
+
+      // Increment rotation values sequentially
+      cell.clickCount++;
+      cell.rot = (cell.rot + 1) % 4;
+
+      // Update rotation visual with continuous 3D rotating transform smoothly
+      const svgEl = document.getElementById(`svg-${r}-${c}`);
+      if (svgEl) {
+        svgEl.style.transform = `rotate(${cell.clickCount * 90}deg)`;
+      }
+
+      // Update rotations statistics
+      movesCount++;
+      document.getElementById('stat-rotations').innerText = movesCount;
+      updateStarsExpected();
+
+      // Check Turn Constraints
+      const activeLvl = levels[activeLevelIndex];
+      if (activeLvl.limitRotations) {
+        const remaining = activeLvl.limitRotations - movesCount;
+        document.getElementById('rotations-limit-text').innerText = remaining;
+        if (remaining <= 0) {
+          triggerGameFailure("Out of Turns!", "You used up all allowed movements! Try making a better strategy.");
+        }
+      }
+    }
+
+    // Interactive Star counter calculator
+    function updateStarsExpected() {
+      const activeLvl = levels[activeLevelIndex];
+      const starContainer = document.getElementById('expected-stars-container');
+      
+      let starCount = 3;
+      if (movesCount > activeLvl.star2) {
+        starCount = 1;
+      } else if (movesCount > activeLvl.star3) {
+        starCount = 2;
+      }
+
+      starContainer.innerHTML = '⭐'.repeat(starCount) + '☆'.repeat(3 - starCount);
+    }
+
+    // Synthesized Timer decrement calculations
+    function updateChallengeTimer() {
+      if (!isGameActive || isFlowActive) return;
+
+      secondsLeft--;
+      document.getElementById('timer-text').innerText = formatTime(secondsLeft);
+
+      if (secondsLeft <= 0) {
+        clearInterval(timerInterval);
+        triggerGameFailure("Time's Up!", "The sun set and the water pump turned off! Work faster to save the garden.");
+      }
+    }
+
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60).toString().padStart(2, '0');
+      const s = (secs % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    // Reset layout
+    function restartLevel() {
+      clearInterval(timerInterval);
+      loadLevel(activeLevelIndex);
+    }
+
+    // Return true if adjacent coordinates link up correctly based on rotation
+    function checkLink(r1, c1, dir, r2, c2) {
+      const rows = levels[activeLevelIndex].rows;
+      const cols = levels[activeLevelIndex].cols;
+
+      // Check bounds
+      if (r2 < 0 || r2 >= rows || c2 < 0 || c2 >= cols) return false;
+
+      const cell1 = gridData[r1][c1];
+      const cell2 = gridData[r2][c2];
+
+      if (cell1.type === 'B' || cell2.type === 'B') return false;
+
+      // Find connection arrays for original point exiting in "dir"
+      const conn1 = getCellConnectors(cell1.type, cell1.rot);
+      if (!conn1.includes(dir)) return false;
+
+      // Verify reciprocal incoming flow matching side on destination cell
+      const incomingDir = (dir + 2) % 4;
+      const conn2 = getCellConnectors(cell2.type, cell2.rot);
+      
+      return conn2.includes(incomingDir);
+    }
+
+    // Complete Water Pathfinding Simulation Algorithm
+    function runFlowBFS() {
+      const level = levels[activeLevelIndex];
+      
+      // Track visited cells
+      const visited = new Set();
+      const flowSteps = []; // Sequence ordering list for animation queue
+      
+      // Find the primary Source water tank
+      let sourceCell = null;
+      for (let r = 0; r < level.rows; r++) {
+        for (let c = 0; c < level.cols; c++) {
+          if (gridData[r][c].type === 'S') {
+            sourceCell = gridData[r][c];
+          }
+        }
+      }
+
+      if (!sourceCell) return { path: [], completed: false };
+
+      // Initialize dynamic exploration stack
+      // EnterDir is the incoming direction (0-3) to that cell
+      const queue = [{ r: sourceCell.r, c: sourceCell.c, step: 0 }];
+      visited.add(`${sourceCell.r},${sourceCell.c}`);
+
+      while (queue.length > 0) {
+        const curr = queue.shift();
+        flowSteps.push(curr);
+
+        const r = curr.r;
+        const c = curr.c;
+
+        // Trace paths across all 4 neighbors matching exit alignments
+        const activeExits = getCellConnectors(gridData[r][c].type, gridData[r][c].rot);
+        
+        activeExits.forEach(dir => {
+          let nr = r;
+          let nc = c;
+          if (dir === 0) nr--;      // Top
+          else if (dir === 1) nc++; // Right
+          else if (dir === 2) nr++; // Bottom
+          else if (dir === 3) nc--; // Left
+
+          const hash = `${nr},${nc}`;
+          if (!visited.has(hash)) {
+            if (checkLink(r, c, dir, nr, nc)) {
+              visited.add(hash);
+              queue.push({ r: nr, c: nc, step: curr.step + 1 });
+            }
+          }
+        });
+      }
+
+      // Check if all designated target flowers are covered by the visited list
+      let wateredPlants = 0;
+      let totalPlants = 0;
+      
+      for (let r = 0; r < level.rows; r++) {
+        for (let c = 0; c < level.cols; c++) {
+          if (gridData[r][c].type === 'P') {
+            totalPlants++;
+            if (visited.has(`${r},${c}`)) {
+              wateredPlants++;
+            }
+          }
+        }
+      }
+
+      return {
+        path: flowSteps,
+        completed: (wateredPlants === totalPlants && totalPlants > 0)
+      };
+    }
+
+    // Trigger sequential liquid dash animation on solved nodes
+    function startWaterSimulation() {
+      if (isFlowActive || !isGameActive) return;
+      isFlowActive = true;
+      document.getElementById('btn-flow').disabled = true;
+
+      const simulation = runFlowBFS();
+      const pathSteps = simulation.path;
+
+      // Bubbling sound cues duration scaling with node length
+      playSoundBubbling(pathSteps.length);
+
+      // Sequentially water nodes with timed interval dash highlights
+      pathSteps.forEach((cell, index) => {
+        setTimeout(() => {
+          const el = document.getElementById(`cell-${cell.r}-${cell.c}`);
+          if (el) {
+            el.classList.add('watered');
+          }
+        }, index * 240);
+      });
+
+      // Total wait duration for overall pipeline animations
+      const totalWaitTime = pathSteps.length * 240 + 200;
+
+      setTimeout(() => {
+        if (simulation.completed) {
+          triggerLevelComplete();
+        } else {
+          // Identify missing/thirsty plants and shake them for attention
+          shakeThirstyPlants();
+          playSoundFail();
+          updateDaisyDialogue(`"Oh no! The water got stuck before watering all the plants! Check for leaks or broken turns."`);
+          isFlowActive = false;
+          document.getElementById('btn-flow').disabled = false;
+        }
+      }, totalWaitTime);
+    }
+
+    // Clean visualization back to dry pipelines
+    function clearWaterVisualization() {
+      for (let r = 0; r < gridData.length; r++) {
+        for (let c = 0; c < gridData[r].length; c++) {
+          const el = document.getElementById(`cell-${r}-${c}`);
+          if (el) {
+            el.classList.remove('watered');
+          }
+        }
+      }
+    }
+
+    // Shake any plants that have not received water
+    function shakeThirstyPlants() {
+      for (let r = 0; r < gridData.length; r++) {
+        for (let c = 0; c < gridData[r].length; c++) {
+          if (gridData[r][c].type === 'P') {
+            const cellEl = document.getElementById(`cell-${r}-${c}`);
+            if (cellEl && !cellEl.classList.contains('watered')) {
+              cellEl.classList.add('wobble-anim');
+              setTimeout(() => {
+                cellEl.classList.remove('wobble-anim');
+              }, 1500);
+            }
+          }
+        }
+      }
+    }
+
+    // Displays Dialogue Box Tips
+    function updateDaisyDialogue(str) {
+      document.getElementById('daisy-bubble').innerHTML = str;
+    }
+
+    // Triggers Game Fail State Screen
+    function triggerGameFailure(title, msg) {
+      isGameActive = false;
+      document.getElementById('fail-title').innerText = title;
+      document.getElementById('fail-message').innerText = msg;
+      document.getElementById('fail-overlay').classList.remove('hidden');
+      playSoundFail();
+    }
+
+    // Triggers Level Victory Celebrations
+    async function triggerLevelComplete() {
+      clearInterval(timerInterval);
+      playSoundSuccess();
+      startConfetti();
+
+      const activeLvl = levels[activeLevelIndex];
+      
+      // Evaluate earned stars count
+      let starsEarned = 3;
+      if (movesCount > activeLvl.star2) {
+        starsEarned = 1;
+      } else if (movesCount > activeLvl.star3) {
+        starsEarned = 2;
+      }
+
+      // Add scores and save progress locally
+      const points = starsEarned * 100;
+      totalScore += points;
+      document.getElementById('total-score').innerText = totalScore;
+      localStorage.setItem('pipe-game-total-score', totalScore);
+
+      // Save level highstars
+      const currentHigh = parseInt(localStorage.getItem(`pipe-game-lvl-${activeLvl.id}-stars`) || '0');
+      if (starsEarned > currentHigh) {
+        localStorage.setItem(`pipe-game-lvl-${activeLvl.id}-stars`, starsEarned);
+      }
+
+      // Coin calculation
+      let baseCoins = 0;
+      let deduction = 0;
+      if (activeLevelIndex < 4) {
+        baseCoins = 25;
+        deduction = 5;
+      } else if (activeLevelIndex < 8) {
+        baseCoins = 40;
+        deduction = 10;
+      } else {
+        baseCoins = 60;
+        deduction = 10;
+      }
+
+      let coinsEarned = baseCoins;
+      if (movesCount > activeLvl.star3) {
+        coinsEarned -= deduction;
+      }
+
+      await creditPipeCoins(coinsEarned);
+
+      // Populate Success Modals
+      document.getElementById('success-title').innerText = activeLevelIndex === 9 ? "🏆 Grand Victory!" : "Garden Saved!";
+      document.getElementById('success-subtitle').innerText = activeLevelIndex === 9 
+        ? "Congratulations! You completed the whole Botanical Garden!" 
+        : `You successfully watered all dry plants in "${activeLvl.name}"!`;
+      
+      document.getElementById('modal-stars').innerHTML = '⭐'.repeat(starsEarned) + '☆'.repeat(3 - starsEarned);
+      document.getElementById('modal-moves').innerText = movesCount;
+      document.getElementById('modal-target').innerText = `${activeLvl.star3} turns`;
+      document.getElementById('modal-points').innerText = `+${points}`;
+      document.getElementById('modal-coins').innerText = `+${coinsEarned} Coins`;
+
+      const nextBtn = document.getElementById('btn-next-level');
+      if (activeLevelIndex >= 9) {
+        nextBtn.innerText = "🏆 Game Completed! Replay";
+      } else {
+        nextBtn.innerText = "Next Level ➔";
+      }
+
+      // Show level complete modal
+      document.getElementById('success-modal').classList.remove('hidden');
+      isFlowActive = false;
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('success-modal').classList.add('hidden');
+    }
+
+    // Load next level or reset back to level 1 on final wrap
+    function goToNextLevel() {
+      closeSuccessModal();
+      if (activeLevelIndex < 9) {
+        activeLevelIndex++;
+      } else {
+        activeLevelIndex = 0; // Wrap back to level 1
+      }
+      initLevelSelectionBar();
+      loadLevel(activeLevelIndex);
+    }
+
+    // Solves one out-of-alignment tile along the core solution map
+    function useHint() {
+      if (!isGameActive || isFlowActive || hintsRemaining <= 0) return;
+
+      const level = levels[activeLevelIndex];
+      let targets = [];
+
+      for (let r = 0; r < level.rows; r++) {
+        for (let c = 0; c < level.cols; c++) {
+          const cell = gridData[r][c];
+          // Filter down active non-locked incorrect pipes
+          if (!cell.isLocked && cell.type !== 'B' && cell.rot !== cell.targetRot) {
+            targets.push(cell);
+          }
+        }
+      }
+
+      if (targets.length > 0) {
+        // Find one target pipe and set its rotation correctly
+        const chosen = targets[Math.floor(Math.random() * targets.length)];
+        chosen.rot = chosen.targetRot;
+        chosen.clickCount = chosen.targetRot; // sync transitions
+        
+        // Update styling
+        const svgEl = document.getElementById(`svg-${chosen.r}-${chosen.c}`);
+        if (svgEl) {
+          svgEl.style.transform = `rotate(${chosen.rot * 90}deg)`;
+        }
+
+        // Apply a visual pulse highlights
+        const cellEl = document.getElementById(`cell-${chosen.r}-${chosen.c}`);
+        if (cellEl) {
+          cellEl.classList.add('hint-glow');
+          setTimeout(() => {
+            cellEl.classList.remove('hint-glow');
+          }, 2000);
+        }
+
+        hintsRemaining--;
+        document.getElementById('hints-count').innerText = hintsRemaining;
+
+        if (hintsRemaining <= 0) {
+          document.getElementById('btn-hint').disabled = true;
+        }
+
+        playSoundClick();
+        updateDaisyDialogue(`"I aligned a pipe for you! See the glowing golden star! ⭐"`);
+        
+        // Increment moves slightly for balanced design
+        movesCount++;
+        document.getElementById('stat-rotations').innerText = movesCount;
+        updateStarsExpected();
+      } else {
+        updateDaisyDialogue(`"All active pipes look perfect! Check your network paths to make sure everything links up!"`);
+      }
+    }
+
+    // Modals instructions popups helper functions
+    function openHowToPlay() {
+      playSoundClick();
+      document.getElementById('how-to-play-modal').classList.remove('hidden');
+    }
+
+    // Close and onboarding popup trigger
+    function closeHowToPlay() {
+      playSoundClick();
+      document.getElementById('how-to-play-modal').classList.add('hidden');
+    }
+
+    // ==========================================
+    // PURE HIGH-PERFORMANCE CANVAS CONFETTI
+    // ==========================================
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animationFrameId = null;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function createConfetti() {
+      particles = [];
+      const colors = ['#f43f5e', '#ec4899', '#eab308', '#22c55e', '#3b82f6', '#a855f7'];
+      for (let i = 0; i < 160; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 5,
+          d: Math.random() * canvas.height,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          tilt: Math.random() * 10 - 5,
+          tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+          tiltAngle: 0
+        });
+      }
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let remaining = false;
+      particles.forEach((p) => {
+        p.tiltAngle += p.tiltAngleIncremental;
+        p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+        p.x += Math.sin(p.tiltAngle);
+        p.tilt = Math.sin(p.tiltAngle - p.r / 2) * 15;
+
+        if (p.y < canvas.height) {
+          remaining = true;
+        }
+
+        ctx.beginPath();
+        ctx.lineWidth = p.r;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+        ctx.stroke();
+      });
+
+      if (remaining) {
+        animationFrameId = requestAnimationFrame(drawConfetti);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    function startConfetti() {
+      resizeCanvas();
+      createConfetti();
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      drawConfetti();
+    }
+
+    window.addEventListener('resize', () => {
+      if (canvas.width > 0) resizeCanvas();
+    });
+
+    // Start Up Application Setup on boot load
+    window.onload = async () => {
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+  }
+
+  initLevelSelectionBar();
+  loadLevel(0);
+  await syncPipeWalletBalance();
+
+  // Auto trigger instructions popup on first time load to onboard kids
+  if (!localStorage.getItem('pipe-game-returning-user')) {
+    setTimeout(openHowToPlay, 600);
+    localStorage.setItem('pipe-game-returning-user', 'true');
+  }
+};
+  </script>
+</body>
+</html>
