@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>🎹 PianoVerse – Play, Learn & Game</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -39,10 +39,11 @@
     font-family: 'Nunito', sans-serif;
     background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100dvh;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
+    touch-action: manipulation;
   }
 
   /* ── HEADER ── */
@@ -50,7 +51,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
+    gap: 10px;
+    padding: 10px 12px;
     background: linear-gradient(135deg, #0f0f1f 0%, #1a0a2e 100%);
     border-bottom: 1px solid rgba(124,58,237,.4);
     flex-shrink: 0;
@@ -99,17 +101,23 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    min-height: 0;
+    overflow: hidden;
   }
 
   /* ── CONTROL PANEL ── */
   .control-panel {
     background: linear-gradient(180deg, #0d0d1f 0%, #12121e 100%);
     border-bottom: 1px solid rgba(124,58,237,.2);
-    padding: 10px 16px;
+    padding: 8px 10px;
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
   }
 
   .ctrl-group {
@@ -202,6 +210,9 @@
     background: var(--surface);
     border-bottom: 1px solid rgba(124,58,237,.15);
     flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
   }
   .tab {
     padding: 8px 20px;
@@ -220,7 +231,13 @@
 
   /* ── PANELS ── */
   .panel { display: none; }
-  .panel.active { display: flex; flex-direction: column; flex: 1; }
+  .panel.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
 
   /* ── GAME AREA (falling notes) ── */
   #game-panel {
@@ -389,7 +406,7 @@
     position: relative;
     display: flex;
     height: 160px;
-    min-width: 700px;
+    min-width: 620px;
     margin: 0 auto;
     max-width: 1200px;
     user-select: none;
@@ -520,15 +537,158 @@
   .show-scale .scale-dot { display: block; }
 
   /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
-    header { flex-wrap: wrap; gap: 8px; }
-    .control-panel { padding: 8px; gap: 6px; }
-    .ctrl-group { padding: 4px 8px; }
-    .piano-kb { height: 120px; min-width: 500px; }
-    .key-white { min-width: 28px; border-radius: 0 0 6px 6px; }
-    .tab { padding: 6px 12px; font-size: .7rem; }
+  
+@media (max-width: 768px) {
+    header {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .logo {
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+
+    .note-display {
+      font-size: 1.2rem;
+      min-width: 54px;
+    }
+
+    .header-score {
+      gap: 8px;
+    }
+
+    .score-box {
+      padding: 4px 10px;
+    }
+
+    #header-coin-display {
+      font-size: .85rem;
+      padding: 5px 10px;
+    }
+
+    .control-panel {
+      padding: 8px;
+      gap: 6px;
+    }
+
+    .ctrl-group {
+      padding: 5px 8px;
+      flex-shrink: 0;
+    }
+
+    .ctrl-btn {
+      font-size: .65rem;
+      padding: 5px 8px;
+    }
+
+    .tempo-ctrl input[type=range],
+    .vol-slider {
+      width: 70px;
+    }
+
+    .tab {
+      padding: 8px 14px;
+      font-size: .68rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    #game-panel {
+      min-height: 220px;
+    }
+
+    .game-start-msg {
+      font-size: 1rem;
+    }
+
+    .song-list {
+      grid-template-columns: 1fr;
+    }
+
+    .chord-type-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .piano-section {
+      padding: 8px 8px 12px;
+    }
+
+    .piano-kb {
+      height: 125px;
+      min-width: 560px;
+      margin: 0;
+    }
+
+    .key-white {
+      min-width: 26px;
+      border-radius: 0 0 6px 6px;
+      padding-bottom: 6px;
+    }
+
+    .key-black {
+      max-width: 26px;
+      height: 56%;
+    }
+
+    .key-label {
+      font-size: .48rem;
+    }
+
+    .key-note-label {
+      font-size: .52rem;
+    }
   }
 
+  @media (max-width: 420px) {
+    .logo {
+      font-size: .9rem;
+    }
+
+    .note-display {
+      font-size: 1rem;
+    }
+
+    .score-box .val {
+      font-size: .9rem;
+    }
+
+    .score-box .lbl {
+      font-size: .55rem;
+    }
+
+    .control-panel label {
+      display: none;
+    }
+
+    .ctrl-group {
+      gap: 4px;
+    }
+
+    .piano-kb {
+      height: 110px;
+      min-width: 520px;
+    }
+
+    .key-white {
+      min-width: 24px;
+    }
+
+    .key-black {
+      max-width: 24px;
+    }
+
+    .scales-row {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scale-chip {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+  }
   /* Volume indicator */
   .vol-bar {
     height: 3px;
@@ -1498,9 +1658,12 @@ function initCanvas() {
 
 function resizeCanvas() {
   if (!canvasEl) return;
+
   const panel = document.getElementById('game-panel');
+  const h = Math.max(panel.offsetHeight - 50, 220);
+
   canvasEl.width = panel.offsetWidth;
-  canvasEl.height = panel.offsetHeight - 50;
+  canvasEl.height = h;
   canvasH = canvasEl.height;
 }
 
@@ -1805,8 +1968,11 @@ document.getElementById('btnKeys').classList.add('active');
 
 // Resize handling
 window.addEventListener('resize', () => {
-  buildPiano();
-  resizeCanvas();
+  clearTimeout(window._pianoResizeTimer);
+  window._pianoResizeTimer = setTimeout(() => {
+    buildPiano();
+    resizeCanvas();
+  }, 150);
 });
 
 // Init canvas lazily
