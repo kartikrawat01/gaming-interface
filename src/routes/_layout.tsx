@@ -61,8 +61,8 @@ setUserName(
       <Code2 className="h-5 w-5 text-white" />
     </div>
     <div>
-      <h1 className="font-bold text-lg">CodeArena</h1>
-      <p className="text-xs text-gray-500">Play. Code. Level up.</p>
+      <h1 className="font-bold text-lg">GameVerse</h1>
+      <p className="text-xs text-gray-500">Play. Learn. Earn Rewards.</p>
     </div>
   </div>
 
@@ -83,9 +83,9 @@ setUserName(
           </div>
 
           <div>
-            <h1 className="text-lg font-bold text-white">CodeArena</h1>
+            <h1 className="text-lg font-bold text-white">GameVerse</h1>
             <p className="text-xs text-white/80">
-              Play. Code. Level up.
+              Play. Learn. Earn Rewards.
             </p>
           </div>
         </div>
@@ -153,8 +153,8 @@ setUserName(
             <Code2 className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">CodeArena</h1>
-            <p className="text-xs text-white/80">Play. Code. Level up.</p>
+            <h1 className="text-lg font-bold text-white">GameVerse</h1>
+            <p className="text-xs text-white/80">Play. Learn. Earn Rewards.</p>
           </div>
         </div>
 

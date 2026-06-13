@@ -1527,7 +1527,7 @@ const filteredGames = games.filter((g) =>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-5">
 
   {filteredGames.length === 0 ? (
     <div className="col-span-full text-center py-10 text-gray-500 text-lg font-medium">
@@ -1657,7 +1657,7 @@ if (game.title === "Connect the Water Pipes") {
       }`}
     >
       {/* gradient header */}
-      <div className={`relative h-44 bg-gradient-to-br ${game.accent} border-b border-border overflow-hidden`}>
+      <div className={`relative h-28 sm:h-44 bg-gradient-to-br ${game.accent} border-b border-border overflow-hidden`}>
         <div className="absolute inset-0">
   {game.image ? (
     <img
@@ -1690,8 +1690,10 @@ if (game.title === "Connect the Water Pipes") {
         )}
       </div>
 
-      <div className="flex flex-col flex-1 p-4 gap-3">
-        <h3 className="font-display font-semibold text-base leading-tight">{game.title}</h3>
+      <div className="flex flex-col flex-1 p-3 sm:p-4 gap-2 sm:gap-3">
+        <h3 className="font-display font-semibold text-sm sm:text-base leading-tight line-clamp-2">
+  {game.title}
+</h3>
 
         {/* Progress */}
         <div>
@@ -1726,7 +1728,7 @@ if (game.title === "Connect the Water Pipes") {
           whileHover={!locked ? { scale: 1.02 } : {}}
           whileTap={!locked ? { scale: 0.98 } : {}}
           disabled={locked}
-          className={`mt-2 inline-flex items-center justify-center gap-2 h-10 rounded-lg text-sm font-semibold transition ${
+          className={`mt-2 inline-flex items-center justify-center gap-1 sm:gap-2 h-9 sm:h-10 rounded-lg text-xs sm:text-sm font-semibold transition ${
             locked
               ? "bg-surface-elevated text-muted-foreground cursor-not-allowed"
               : "bg-primary text-primary-foreground hover:opacity-90 hover:bg-primary hover:text-primary-foreground"
