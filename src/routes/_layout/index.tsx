@@ -1148,6 +1148,94 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
+  const loadBubbleMathProgress = () => {
+    const completed =
+      Number(localStorage.getItem("bubbleMathCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("bubbleMathProgress")) ||
+      Math.round((completed / 25) * 100) ||
+      0;
+
+    setBubbleMathStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadBubbleMathProgress();
+
+  const handleBubbleMathMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "bubble_math"
+    ) {
+      setBubbleMathStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+        time: `${event.data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadBubbleMathProgress);
+  window.addEventListener("storage", loadBubbleMathProgress);
+  window.addEventListener("message", handleBubbleMathMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadBubbleMathProgress);
+    window.removeEventListener("storage", loadBubbleMathProgress);
+    window.removeEventListener("message", handleBubbleMathMessage);
+  };
+}, []);
+useEffect(() => {
+  const loadMotorBoatProgress = () => {
+    const completed =
+      Number(localStorage.getItem("motorBoatCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("motorBoatProgress")) ||
+      Math.round((completed / 19) * 100) ||
+      0;
+
+    setMotorBoatStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadMotorBoatProgress();
+
+  const handleMotorBoatMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "motor_boat"
+    ) {
+      setMotorBoatStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+        time: `${event.data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadMotorBoatProgress);
+  window.addEventListener("storage", loadMotorBoatProgress);
+  window.addEventListener("message", handleMotorBoatMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadMotorBoatProgress);
+    window.removeEventListener("storage", loadMotorBoatProgress);
+    window.removeEventListener("message", handleMotorBoatMessage);
+  };
+}, []);
+useEffect(() => {
   const loadSortProgress = () => {
     const completed =
       Number(localStorage.getItem("sortCompleted")) || 0;

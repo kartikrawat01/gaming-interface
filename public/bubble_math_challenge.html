@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+<style>
+  :root{
+    --bg1:#fef6e4; --bg2:#e0f7fa; --accent:#ff8fab; --accent2:#7ed957;
+    --text:#3a3a5c; --warn:#ff6b6b;
+  }
+  html, body{height:100%;}
+  *{box-sizing:border-box; margin:0; padding:0; font-family:'Comic Sans MS','Trebuchet MS',sans-serif;}
+  body{
+    height:100vh; height:100dvh; overflow:hidden;
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    display:flex; flex-direction:column; align-items:center; color:var(--text);
+    padding:8px; gap:6px;
+  }
+  #topbar{
+    width:100%; max-width:900px; padding:0; display:flex; flex-direction:column; gap:6px;
+    flex-shrink:0;
+  }
+  #stats{
+    display:flex; justify-content:space-between; align-items:center;
+    background:rgba(255,255,255,0.7); border-radius:16px; padding:8px 16px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08); font-weight:bold; font-size:clamp(13px,2.5vw,18px);
+  }
+  #stats span{display:flex; align-items:center; gap:4px; white-space:nowrap;}
+  #levelbar{
+    display:flex; gap:4px; overflow-x:auto; padding:6px 4px; background:rgba(255,255,255,0.5);
+    border-radius:12px; scrollbar-width:thin;
+  }
+  .lvl{
+    min-width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:bold; background:#fff; border:2px solid #ddd; flex-shrink:0; color:#888;
+    cursor:pointer; transition:transform 0.15s;
+  }
+  .lvl:hover{ transform:scale(1.15); border-color:var(--accent); }
+  .lvl.current{
+    background:var(--accent); color:#fff; border-color:var(--accent); transform:scale(1.15);
+  }
+  .lvl.done{ background:var(--accent2); color:#fff; border-color:var(--accent2);}
+  #instruction{
+    text-align:center; background:#fff8e1; border-radius:14px; padding:8px;
+    font-size:clamp(14px,2.8vw,20px); font-weight:bold; box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    color:#d6336c;
+  }
+  #playarea{
+    position:relative; width:100%; max-width:900px; flex:1 1 auto; min-height:0;
+    background: radial-gradient(circle at 30% 30%, #ffffffaa, #ffffff33);
+    border-radius:24px; overflow:hidden;
+  }
+  .bubble{
+    position:absolute; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:22px; font-weight:bold; color:#fff; cursor:pointer; user-select:none;
+    box-shadow: inset -6px -6px 12px rgba(255,255,255,0.4), inset 6px 6px 12px rgba(0,0,0,0.1), 0 6px 14px rgba(0,0,0,0.15);
+    transform: scale(0); transition: background-color 0.25s, color 0.25s, transform 0.15s;
+    animation: popin 0.4s forwards;
+  }
+  .bubble:hover{ filter:brightness(1.08); }
+  .bubble:active{ transform:scale(0.94) !important; }
+  @keyframes popin{
+    0%{ transform:scale(0); }
+    70%{ transform:scale(1.15); }
+    100%{ transform:scale(1); }
+  }
+  .bubble.correct{
+    animation: correctPop 0.5s forwards;
+    background:var(--accent2) !important; color:#fff;
+  }
+  @keyframes correctPop{
+    0%{ transform:scale(1); }
+    50%{ transform:scale(1.35); }
+    100%{ transform:scale(0); opacity:0; }
+  }
+  .bubble.wrong{
+    animation: shake 0.5s;
+    background:var(--warn) !important;
+  }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-8px) rotate(-5deg); }
+    40%{ transform:translateX(8px) rotate(5deg); }
+    60%{ transform:translateX(-6px) rotate(-3deg); }
+    80%{ transform:translateX(6px) rotate(3deg); }
+  }
+  #overlay{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(255,255,255,0.85); border-radius:24px; z-index:50; flex-direction:column; gap:14px;
+    text-align:center; padding:20px;
+  }
+  #overlay h2{ font-size:32px; color:#d6336c; }
+  #overlay p{ font-size:18px; }
+  #overlay button{
+    padding:12px 28px; font-size:18px; border:none; border-radius:14px; background:var(--accent);
+    color:#fff; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.15);
+  }
+  #overlay button:active{ transform:scale(0.96); }
+  .coinpop{
+    position:absolute; font-size:24px; font-weight:bold; color:#f9a826; pointer-events:none;
+    animation: coinrise 1s forwards;
+  }
+  @keyframes coinrise{
+    0%{ opacity:1; transform:translateY(0) scale(1); }
+    100%{ opacity:0; transform:translateY(-60px) scale(1.4); }
+  }
+  .confetti{
+    position:absolute; width:10px; height:10px; top:-10px; border-radius:2px;
+    animation: fall 1.6s linear forwards;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(360deg); opacity:0.2; }
+  }
+  #timerbar{
+    height:8px; border-radius:6px; background:#ddd; overflow:hidden; margin-top:4px;
+  }
+  #timerfill{
+    height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); width:100%;
+    transition: width 1s linear;
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div id="stats">
+    <span>⭐ Score: <span id="score">0</span></span>
+    <span>🪙 Coins: <span id="coins">0</span></span>
+    <span>⏱️ Time: <span id="timer">15</span>s</span>
+  </div>
+  <div id="timerbar"><div id="timerfill"></div></div>
+  <div id="levelbar"></div>
+  <div id="instruction">Get Ready!</div>
+</div>
+
+<div id="playarea">
+  <div id="overlay">
+    <h2 id="overlayTitle"></h2>
+    <p id="overlayMsg"></p>
+    <button id="overlayBtn">Continue</button>
+  </div>
+</div>
+
+<script>
+const TOTAL_LEVELS = 25;
+let score = 0, coins = 0;
+let currentLevel = 1;
+let bubbleCompletedLevels = new Set(
+  JSON.parse(localStorage.getItem("bubbleMathCompletedLevels") || "[]")
+);
+let timeLeft, timerInterval, timerTotal;
+let bubbles = [], sequence = [], nextIndex = 0;
+let usedExpressions = new Set();
+let lockInput = false;
+
+const playarea = document.getElementById('playarea');
+const overlay = document.getElementById('overlay');
+const overlayTitle = document.getElementById('overlayTitle');
+const overlayMsg = document.getElementById('overlayMsg');
+const overlayBtn = document.getElementById('overlayBtn');
+const instruction = document.getElementById('instruction');
+const levelbar = document.getElementById('levelbar');
+const timerEl = document.getElementById('timer');
+const timerFill = document.getElementById('timerfill');
+
+const bubbleColors = ['#ff8fab','#7ed957','#5dade2','#ffd166','#bb8fce','#48c9b0','#f1948a','#85c1e9'];
+async function syncBubbleWalletBalance() {
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(localStorage.getItem("bubbleMathCoins")) ||
+    0;
+
+  coins = saved;
+  document.getElementById("coins").textContent = coins;
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        coins = Number(balance);
+        localStorage.setItem("walletCoins", String(coins));
+        localStorage.setItem("bubbleMathCoins", String(coins));
+        document.getElementById("coins").textContent = coins;
+      }
+    }
+  } catch (err) {
+    console.warn("Bubble Math wallet sync failed:", err);
+  }
+
+  return coins;
+}
+function syncBubbleMathProgressToParent() {
+  const completed = bubbleCompletedLevels.size;
+
+  const progress = Math.min(
+    Math.round((completed / TOTAL_LEVELS) * 100),
+    100
+  );
+
+  localStorage.setItem("bubbleMathCompleted", String(completed));
+  localStorage.setItem("bubbleMathProgress", String(progress));
+  localStorage.setItem(
+    "bubbleMathCompletedLevels",
+    JSON.stringify([...bubbleCompletedLevels])
+  );
+
+  window.parent.postMessage(
+    {
+      type: "GAME_PROGRESS_UPDATE",
+      game: "bubble_math",
+      progress,
+      completed,
+      coins,
+      level: currentLevel,
+      score,
+      time: 0,
+    },
+    "*"
+  );
+}
+
+async function creditBubbleCoins(amount) {
+  let finalBalance =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(coins) ||
+    0;
+
+  try {
+    const rewardResult = await window.gameSDK.rewardCoins({
+      amount,
+      description: `Bubble Math Level ${currentLevel} Complete`,
+      game: "bubble_math",
+      level: currentLevel,
+      score: amount,
+    });
+
+    if (rewardResult && rewardResult.balance !== undefined) {
+      finalBalance = Number(rewardResult.balance);
+    } else if (window.gameSDK) {
+      const freshBalance = await window.gameSDK.getBalance();
+      if (freshBalance !== undefined && freshBalance !== null) {
+        finalBalance = Number(freshBalance);
+      }
+    }
+  } catch (err) {
+    console.error("Bubble Math reward error:", err);
+    finalBalance = finalBalance + amount;
+  }
+
+  coins = finalBalance;
+
+  localStorage.setItem("walletCoins", String(coins));
+  localStorage.setItem("bubbleMathCoins", String(coins));
+
+  document.getElementById("coins").textContent = coins;
+
+  window.parent.postMessage({
+  type: "GAME_PROGRESS_UPDATE",
+  game: "bubble_math",
+  progress: Number(localStorage.getItem("bubbleMathProgress")) || 0,
+  completed: Number(localStorage.getItem("bubbleMathCompleted")) || 0,
+  coins: coins,
+  level: currentLevel,
+  score: score,
+  time: 0,
+}, "*");
+
+  return coins;
+}
+
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+
+  if (balance !== undefined) {
+    coins = Number(balance);
+    localStorage.setItem("walletCoins", String(coins));
+    localStorage.setItem("bubbleMathCoins", String(coins));
+    document.getElementById("coins").textContent = coins;
+  }
+});
+
+function buildLevelBar(){
+  levelbar.innerHTML = '';
+  for(let i=1;i<=TOTAL_LEVELS;i++){
+    const d = document.createElement('div');
+    d.className = 'lvl';
+    d.textContent = i;
+    d.id = 'lvl'+i;
+    if(bubbleCompletedLevels.has(i)) d.classList.add('done');
+    if(i === currentLevel) d.classList.add('current');
+    d.addEventListener('click', () => {
+      if(i === currentLevel) return;
+      currentLevel = i;
+      buildLevelBar();
+      startLevel();
+    });
+    levelbar.appendChild(d);
+  }
+}
+
+function getLevelConfig(level){
+  let bubbleCount, timer, coinReward, diffRange;
+  if(level <= 5){ bubbleCount = 3; timer = 15; coinReward = 20; diffRange = {max:20, ops:['+','-']}; }
+  else if(level <= 10){ bubbleCount = 4; timer = 20; coinReward = 20; diffRange = {max:30, ops:['+','-','×']}; }
+  else if(level <= 20){ bubbleCount = 6; timer = 30; coinReward = 35; diffRange = {max:50, ops:['+','-','×','÷']}; }
+  else { bubbleCount = 6; timer = 40; coinReward = 45; diffRange = {max:60, ops:['+','-','×','÷','()']}; }
+  return {bubbleCount, timer, coinReward, diffRange};
+}
+
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function genExpression(diffRange){
+  let expr, value, key;
+  let attempts = 0;
+  do{
+    attempts++;
+    const opPool = diffRange.ops;
+    const op = opPool[randInt(0,opPool.length-1)];
+    let a,b;
+    switch(op){
+      case '+':
+        a = randInt(1, diffRange.max); b = randInt(1, diffRange.max);
+        expr = `${a} + ${b}`; value = a+b;
+        break;
+      case '-':
+        a = randInt(1, diffRange.max); b = randInt(0, a);
+        expr = `${a} - ${b}`; value = a-b;
+        break;
+      case '×':
+        a = randInt(1, 12); b = randInt(1, 12);
+        expr = `${a} × ${b}`; value = a*b;
+        break;
+      case '÷':
+        b = randInt(1, 12); a = b * randInt(1, 12);
+        expr = `${a} ÷ ${b}`; value = a/b;
+        break;
+      case '()':
+        a = randInt(1,10); b = randInt(1,10); let c = randInt(1,10);
+        if(Math.random() < 0.5){
+          expr = `(${a} + ${b}) × ${c}`; value = (a+b)*c;
+        } else {
+          expr = `(${a} - ${b}) + ${c}`; value = (a-b)+c;
+        }
+        break;
+      default:
+        a = randInt(1,20); b = randInt(1,20);
+        expr = `${a} + ${b}`; value = a+b;
+    }
+    key = expr+'='+value;
+  } while((usedExpressions.has(key) || value < 0) && attempts < 50);
+  usedExpressions.add(key);
+  if(usedExpressions.size > 200) usedExpressions.clear();
+  return {expr, value};
+}
+
+function generateUniqueSet(count, diffRange){
+  const items = [];
+  const values = new Set();
+  let safety = 0;
+  while(items.length < count && safety < 500){
+    safety++;
+    const {expr, value} = genExpression(diffRange);
+    if(values.has(value)) continue;
+    values.add(value);
+    items.push({expr, value});
+  }
+  return items;
+}
+
+function clearPlayarea(){
+  [...playarea.querySelectorAll('.bubble, .coinpop, .confetti')].forEach(el => el.remove());
+}
+
+function getBubbleSize(count){
+  const w = playarea.clientWidth, h = playarea.clientHeight;
+  const area = w*h;
+  let size = Math.sqrt((area * 0.4) / count);
+  size = Math.max(50, Math.min(size, 120));
+  size = Math.min(size, w*0.9, h*0.9);
+  return size;
+}
+
+function placeBubbles(items){
+  clearPlayarea();
+  const w = playarea.clientWidth, h = playarea.clientHeight;
+  const size = getBubbleSize(items.length);
+  const placed = [];
+
+  items.forEach((item, idx) => {
+    let x, y, tries = 0, ok=false;
+    while(!ok && tries < 300){
+      tries++;
+      x = Math.random() * (w - size);
+      y = Math.random() * (h - size);
+      ok = true;
+      for(const p of placed){
+        const dx = (x+size/2) - (p.x+p.size/2);
+        const dy = (y+size/2) - (p.y+p.size/2);
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        if(dist < (size+p.size)/2 + 6){ ok=false; break; }
+      }
+    }
+    if(!ok){
+      // fallback grid placement
+      const cols = Math.ceil(Math.sqrt(items.length));
+      const cellW = w/cols, cellH = h/Math.ceil(items.length/cols);
+      const col = idx % cols, row = Math.floor(idx/cols);
+      x = col*cellW + (cellW-size)/2;
+      y = row*cellH + (cellH-size)/2;
+    }
+    placed.push({x,y,size});
+
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.style.width = size+'px';
+    b.style.height = size+'px';
+    b.style.left = x+'px';
+    b.style.top = y+'px';
+    b.style.fontSize = (size*0.22)+'px';
+    b.style.background = bubbleColors[idx % bubbleColors.length];
+    b.textContent = item.expr;
+    b.dataset.value = item.value;
+    b.dataset.order = idx;
+    b.addEventListener('click', () => onBubbleClick(b, item.value));
+    playarea.appendChild(b);
+    bubbles.push(b);
+  });
+}
+
+function onBubbleClick(bubbleEl, value){
+  if(lockInput) return;
+  const expected = sequence[nextIndex];
+  if(value === expected.value && !bubbleEl.classList.contains('used')){
+    bubbleEl.classList.add('correct','used');
+    bubbleEl.style.pointerEvents = 'none';
+    score += 10;
+    document.getElementById('score').textContent = score;
+    nextIndex++;
+    if(nextIndex === sequence.length){
+      lockInput = true;
+      score += 50;
+      document.getElementById('score').textContent = score;
+      setTimeout(()=> levelComplete(), 400);
+    }
+  } else {
+    lockInput = true;
+    bubbleEl.classList.add('wrong');
+    setTimeout(()=> levelFailed(), 600);
+  }
+}
+
+function spawnConfetti(){
+  const colors = bubbleColors;
+  for(let i=0;i<40;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*100+'%';
+    c.style.background = colors[randInt(0,colors.length-1)];
+    c.style.animationDelay = (Math.random()*0.5)+'s';
+    playarea.appendChild(c);
+  }
+}
+
+function showOverlay(title, msg, btnText, onClick){
+  overlayTitle.textContent = title;
+  overlayMsg.textContent = msg;
+  overlayBtn.textContent = btnText;
+  overlay.style.display = 'flex';
+  overlayBtn.onclick = () => {
+    overlay.style.display = 'none';
+    onClick();
+  };
+}
+
+async function levelComplete(){
+  clearInterval(timerInterval);
+  const config = getLevelConfig(currentLevel);
+
+bubbleCompletedLevels.add(currentLevel);
+syncBubbleMathProgressToParent();
+
+await creditBubbleCoins(config.coinReward);
+spawnConfetti();
+  if(currentLevel === TOTAL_LEVELS){
+    showOverlay('🏆 All Levels Complete!', `Amazing job! Final Score: ${score} | Coins: ${coins}`, 'Play Again', () => {
+      currentLevel = 1; score = 0;
+      document.getElementById('score').textContent = score;
+      buildLevelBar();
+      startLevel();
+    });
+  } else {
+    showOverlay('🎉 Level Complete!', `+${config.coinReward} coins earned!`, 'Next Level', () => {
+      currentLevel++;
+      buildLevelBar();
+      startLevel();
+    });
+  }
+}
+
+function levelFailed(reason){
+  clearInterval(timerInterval);
+  const msg = reason === 'time' ? "Time's up! Try again with new questions." : "Oops! Wrong order. Try again with new questions.";
+  showOverlay('😅 Level Failed', msg, 'Retry Level', () => {
+    startLevel();
+  });
+}
+
+function startTimer(seconds){
+  clearInterval(timerInterval);
+  timeLeft = seconds;
+  timerTotal = seconds;
+  timerEl.textContent = timeLeft;
+  timerFill.style.width = '100%';
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    if(timeLeft < 0){
+      clearInterval(timerInterval);
+      levelFailed('time');
+      return;
+    }
+    timerEl.textContent = timeLeft;
+    timerFill.style.width = (timeLeft/timerTotal*100)+'%';
+  }, 1000);
+}
+
+function startLevel(){
+  lockInput = false;
+  nextIndex = 0;
+  bubbles = [];
+  overlay.style.display = 'none';
+
+  const config = getLevelConfig(currentLevel);
+  const items = generateUniqueSet(config.bubbleCount, config.diffRange);
+
+  const ascending = Math.random() < 0.5;
+  instruction.textContent = ascending ? '⬆️ Select from Smallest to Largest' : '⬇️ Select from Largest to Smallest';
+
+  sequence = [...items].sort((a,b) => ascending ? a.value-b.value : b.value-a.value);
+
+  placeBubbles(items);
+  startTimer(config.timer);
+
+  document.querySelectorAll('.lvl').forEach(el => el.classList.remove('current'));
+  const cur = document.getElementById('lvl'+currentLevel);
+  if(cur) cur.classList.add('current');
+  cur && cur.scrollIntoView({inline:'center', block:'nearest'});
+}
+
+window.addEventListener("load", async () => {
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+  }
+
+  await syncBubbleWalletBalance();
+
+syncBubbleMathProgressToParent();
+
+buildLevelBar();
+setTimeout(startLevel, 300);
+});
+window.addEventListener('resize', () => {
+  // reposition bubbles for current sequence isn't tracked individually; simplest: restart layout on resize without penalty
+  if(playarea.querySelectorAll('.bubble').length > 0 && !lockInput){
+    const items = bubbles.map(b => ({expr:b.textContent, value:Number(b.dataset.value)}));
+    placeBubbles(items.filter((_,i)=> !bubbles[i].classList.contains('used')));
+  }
+});
+</script>
+</body>
+</html>

@@ -156,6 +156,33 @@ const games: Game[] = [
   progress: 0,
   accent: "from-cyan-400/30 to-blue-500/20",
 },
+{
+  title: "Sort and Think",
+  icon: "🧠",
+  image: "/images/sort-and-think.png",
+  category: "Logic & Puzzles",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-amber-400/30 to-yellow-500/20",
+},
+{
+  title: "Motor Boat",
+  icon: "🚤",
+  image: "/images/motor-boat.png",
+  category: "Memory & Speed",
+  difficulty: "Intermediate",
+  progress: 0,
+  accent: "from-sky-400/30 to-cyan-500/20",
+},
+{
+  title: "Bubble Maths Challenge",
+  icon: "🫧",
+  image: "/images/bubble-maths.png",
+  category: "Maths",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-purple-400/30 to-pink-500/20",
+},
 ];
 
 const difficultyStyles = {
@@ -177,6 +204,9 @@ const [gameProgress, setGameProgress] = useState<Record<string, number>>({
   "Mini Sudoku": 0,
   "Match the Pairs": 0,
   "Connect the Water Pipes": 0,
+    "Sort and Think": 0,
+  "Motor Boat": 0,
+  "Bubble Maths Challenge": 0,
 });
 useEffect(() => {
   const loadAllGameProgress = () => {
@@ -232,6 +262,29 @@ useEffect(() => {
   Number(localStorage.getItem("pipesProgress")) ||
   Math.round((pipesCompleted / 10) * 100) ||
   0;
+  const sortCompleted =
+  Number(localStorage.getItem("sortCompleted")) || 0;
+
+const sortProgress =
+  Number(localStorage.getItem("sortProgress")) ||
+  Math.round((sortCompleted / 50) * 100) ||
+  0;
+
+const motorBoatCompleted =
+  Number(localStorage.getItem("motorBoatCompleted")) || 0;
+
+const motorBoatProgress =
+  Number(localStorage.getItem("motorBoatProgress")) ||
+  Math.round((motorBoatCompleted / 10) * 100) ||
+  0;
+
+const bubbleMathCompleted =
+  Number(localStorage.getItem("bubbleMathCompleted")) || 0;
+
+const bubbleMathProgress =
+  Number(localStorage.getItem("bubbleMathProgress")) ||
+  Math.round((bubbleMathCompleted / 25) * 100) ||
+  0;
     setGameProgress({
       "Logic Maze": Math.min(logicMazeProgress, 100),
       "Brain Blast": Math.min(brainBlastProgress, 100),
@@ -241,6 +294,9 @@ useEffect(() => {
       "Mini Sudoku": Math.min(sudokuProgress, 100),
       "Match the Pairs": Math.min(memoryCardProgress, 100),
       "Connect the Water Pipes": Math.min(pipesProgress, 100),
+      "Sort and Think": Math.min(sortProgress, 100),
+"Motor Boat": Math.min(motorBoatProgress, 100),
+"Bubble Maths Challenge": Math.min(bubbleMathProgress, 100),
     });
   };
 
@@ -388,6 +444,17 @@ if (game.title === "Match the Pairs") {
 }
 if (game.title === "Connect the Water Pipes") {
   window.open("/pipes.html", "_blank");
+}
+if (game.title === "Sort and Think") {
+  window.open("/sort2.html", "_blank");
+}
+
+if (game.title === "Motor Boat") {
+  window.open("/motor_boat.html", "_blank");
+}
+
+if (game.title === "Bubble Maths Challenge") {
+  window.open("/bubble_math_challenge.html", "_blank");
 }
 }}
               >
