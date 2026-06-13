@@ -544,6 +544,17 @@ if (game.title === "Mini Sudoku") {
   if (game.title === "Connect the Water Pipes") {
   window.open("/pipes.html", "_blank");
 }
+if (game.title === "Sort and Think") {
+  window.open("/sort2.html", "_blank");
+}
+
+if (game.title === "Motor Boat") {
+  window.open("/motor_boat.html", "_blank");
+}
+
+if (game.title === "Bubble Maths Challenge") {
+  window.open("/bubble_math_challenge.html", "_blank");
+}
 }}
                   >
                     {locked ? "Locked" : (
