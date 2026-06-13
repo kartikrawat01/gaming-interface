@@ -2598,8 +2598,8 @@ state.sessionHighScore = 0;
       function renderPuzzle(lv) {
         const zone = document.getElementById("puzzle-zone");
         zone.innerHTML = "";
-        zone.style.minHeight='340px';
-        zone.style.overflow='visible';
+        zone.style.minHeight = window.innerWidth <= 480 ? "260px" : "340px";
+zone.style.overflow = "visible";
         const handlers = {
           options: renderOptions,
           "image-options": renderImageOptions,
@@ -2987,7 +2987,7 @@ state.sessionHighScore = 0;
         zone.appendChild(svg);
         const btns = document.createElement("div");
         btns.style.cssText =
-          "display:flex;gap:12px;justify-content:center;margin-top:14px;";
+  "display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;";
         ["A", "B", "C"].forEach((c) => {
           const b = document.createElement("button");
           b.className = "opt-btn";
@@ -3392,7 +3392,7 @@ state.sessionHighScore = 0;
         zone.appendChild(info);
         const grid = document.createElement("div");
         grid.style.cssText =
-          "display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:520px;margin:auto;";
+  `display:grid;grid-template-columns:repeat(${window.innerWidth <= 480 ? 2 : 4},1fr);gap:12px;width:100%;max-width:520px;margin:auto;`;
         lv.numbers.forEach((num) => {
           const btn = document.createElement("button");
           btn.className = "opt-btn";
@@ -3510,21 +3510,24 @@ const pos = isMobile
       }
 
       function renderMemoryOrder(zone, lv) {
-        zone.innerHTML = "";
-        let step = 0;
-        const info = document.createElement("div");
-        info.innerHTML = `Tap them in order:<br><b>${lv.order.join(", ")}</b>`;
-        wrap.style.cssText =
-  "position:relative;width:100%;height:320px;margin-top:10px;max-width:420px;";
-        zone.appendChild(info);
-        setTimeout(() => {
-          info.style.opacity = "0";
-          info.style.transform = "scale(.8)";
-        }, 6000);
-        const wrap = document.createElement("div");
-        wrap.style.cssText =
-          "position:relative;width:100%;height:320px;margin-top:10px;";
-        zone.appendChild(wrap);
+  zone.innerHTML = "";
+  let step = 0;
+
+  const info = document.createElement("div");
+  info.innerHTML = `Tap them in order:<br><b>${lv.order.join(", ")}</b>`;
+  info.style.cssText =
+    "text-align:center;font-weight:900;font-size:18px;margin-bottom:14px;color:#1E3A5F;transition:all .4s ease;";
+  zone.appendChild(info);
+
+  setTimeout(() => {
+    info.style.opacity = "0";
+    info.style.transform = "scale(.8)";
+  }, 6000);
+
+  const wrap = document.createElement("div");
+  wrap.style.cssText =
+    "position:relative;width:100%;height:320px;margin-top:10px;max-width:420px;";
+  zone.appendChild(wrap);
         const isMobile = window.innerWidth <= 480;
 
 const pos = isMobile
