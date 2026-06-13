@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Math Shop Master 🏪</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -40,11 +40,14 @@ body {
   margin: 0;
   overflow: hidden;
   user-select: none;
+  width: 100vw;
+  height: 100dvh;
+  touch-action: manipulation;
 }
 
 #gameContainer {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
   border-radius: 0;
@@ -902,6 +905,462 @@ body {
   z-index: 8; opacity: 0.55; transform: scale(0.72);
 }
 .next-label { font-size: 9px; color: #6D4C41; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+/* ===== MOBILE FIRST FIXES ===== */
+@media (max-width: 768px) {
+  #shopSign {
+    top: 8px;
+    font-size: 15px;
+    padding: 5px 16px;
+    max-width: 82vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #hud {
+    top: 48px;
+    left: 6px;
+    right: 6px;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .hud-item {
+    font-size: 12px;
+    gap: 3px;
+  }
+
+  #coinsDisplay {
+    font-size: 14px !important;
+  }
+
+  #scoreDisplay {
+    font-size: 11px !important;
+  }
+
+  #levelDisplay {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  #timerBarWrap {
+    width: 86px;
+    height: 8px;
+    margin-right: 0;
+  }
+
+  #pauseBtn {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+    margin-left: 4px;
+    flex-shrink: 0;
+  }
+
+  .heart-icon {
+    font-size: 13px;
+  }
+
+  #orderPanel {
+    top: 86px;
+    width: calc(100vw - 20px);
+    padding: 9px 10px;
+    border-radius: 14px;
+  }
+
+  #orderTitle {
+    font-size: 11px;
+    margin-bottom: 5px;
+  }
+
+  #itemsDisplay {
+    gap: 5px;
+    margin-bottom: 6px;
+  }
+
+  .item-group {
+    min-width: 54px;
+    padding: 4px 6px;
+  }
+
+  .item-emojis {
+    font-size: 16px;
+  }
+
+  .item-price {
+    font-size: 9px;
+  }
+
+  #mathExpr {
+    font-size: 17px;
+    padding: 6px 8px;
+    line-height: 1.2;
+  }
+
+  #powerUpsBar {
+    gap: 4px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+
+  .powerup-btn {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+
+  #inputUI {
+    height: 154px;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+
+  #answerRow {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  #answerLabel {
+    font-size: 11px;
+  }
+
+  #answerDisplay {
+    font-size: 22px;
+    padding: 3px 8px;
+    min-width: 70px;
+  }
+
+  #numpad {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+
+  .numkey {
+    width: 100%;
+    height: 38px;
+    font-size: 17px;
+  }
+
+  .numkey.del,
+  .numkey.submit {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  #wall {
+    height: 50%;
+  }
+
+  #floor {
+    height: 50%;
+  }
+
+  .wall-tile {
+    display: none;
+  }
+
+  .shelf {
+    transform: scale(0.85);
+  }
+
+  #shelf1 {
+    top: 115px;
+    left: 12px;
+  }
+
+  #shelf2 {
+    top: 170px;
+    left: 12px;
+  }
+
+  #shelf3 {
+    top: 115px;
+    right: 18px;
+  }
+
+  #shelf4 {
+    top: 170px;
+    right: 18px;
+  }
+
+  .shelf-item {
+    font-size: 22px;
+  }
+
+  #counter {
+    bottom: 144px;
+    width: 290px;
+  }
+
+  #counterFront {
+    height: 48px;
+  }
+
+  #counterItems {
+    bottom: 210px;
+    width: 280px;
+    height: 50px;
+    gap: 5px;
+  }
+
+  .counter-item {
+    font-size: 22px;
+  }
+
+  .price-tag {
+    font-size: 8px;
+    top: -15px;
+  }
+
+  #conveyorBelt {
+    bottom: 210px;
+    width: 280px;
+  }
+
+  #cashRegister {
+    bottom: 150px;
+    right: 20px;
+    width: 54px;
+    height: 44px;
+  }
+
+  #cashRegister::before {
+    font-size: 18px;
+  }
+
+  #customer {
+    bottom: 145px;
+    width: 54px;
+  }
+
+  .customer-head {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .customer-torso {
+    width: 32px;
+    height: 32px;
+  }
+
+  .leg {
+    width: 11px;
+    height: 18px;
+  }
+
+  #patienceBar {
+    width: 50px;
+    top: -18px;
+  }
+
+  #speechBubble {
+    top: -42px;
+    left: 36px;
+    font-size: 14px;
+    padding: 3px 8px;
+  }
+
+  #nextCustomerPreview {
+    display: none;
+  }
+
+  #packBag {
+    bottom: 145px;
+    right: 80px;
+    font-size: 32px;
+  }
+
+  #comboDisplay {
+    top: 118px;
+    right: 8px;
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+
+  #streakFire {
+    top: 118px;
+    left: 8px;
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  #doubleCoinsIndicator {
+    top: 118px;
+    right: 95px;
+    font-size: 10px;
+    padding: 4px 7px;
+  }
+
+  #starsRating {
+    top: 124px;
+    font-size: 16px;
+  }
+
+  #feedback {
+    font-size: 32px;
+    width: 90vw;
+    text-align: center;
+  }
+
+  #billAnim {
+    padding: 12px 18px;
+    min-width: 130px;
+  }
+
+  #billAnim .bill-amount {
+    font-size: 28px;
+  }
+
+  .screen {
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  #startScreen .logo {
+    font-size: 36px;
+    text-align: center;
+  }
+
+  #startScreen .sub {
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 18px;
+  }
+
+  #statsBar {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stat-box {
+    padding: 8px 14px;
+  }
+
+  .stat-val {
+    font-size: 22px;
+  }
+
+  .big-btn {
+    font-size: 19px;
+    padding: 13px 34px;
+  }
+
+  .setup-panel,
+  .pause-card,
+  .complete-card,
+  .upgrade-card,
+  .settings-modal {
+    width: calc(100vw - 28px) !important;
+    max-width: 420px;
+    padding: 20px;
+  }
+
+  .setup-title,
+  .pause-title,
+  .upgrade-title {
+    font-size: 25px;
+  }
+
+  .complete-title {
+    font-size: 30px;
+  }
+
+  .theme-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-btns {
+    flex-direction: column;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .upgrade-item {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .upgrade-icon {
+    font-size: 22px;
+  }
+
+  .upgrade-name {
+    font-size: 13px;
+  }
+
+  .upgrade-desc {
+    font-size: 11px;
+  }
+
+  .upgrade-buy {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  #levelSelectGrid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  #hud {
+    top: 44px;
+  }
+
+  #timerBarWrap {
+    width: 70px;
+  }
+
+  #orderPanel {
+    top: 82px;
+  }
+
+  #mathExpr {
+    font-size: 15px;
+  }
+
+  #numpad {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .numkey {
+    height: 34px;
+    font-size: 15px;
+  }
+
+  #inputUI {
+    height: 185px;
+  }
+
+  #counter {
+    width: 250px;
+  }
+
+  #counterItems,
+  #conveyorBelt {
+    width: 245px;
+  }
+
+  .shelf {
+    transform: scale(0.72);
+  }
+
+  #cashRegister {
+    right: 12px;
+  }
+
+  #customer {
+    bottom: 148px;
+  }
+}
 </style>
 </head>
 <body>
@@ -1646,7 +2105,7 @@ function nextCustomer() {
   document.getElementById('patienceFill').style.background='linear-gradient(90deg,#4CAF50,#8BC34A)';
 
   setTimeout(()=>{
-    $c.style.left='250px';
+    $c.style.left = window.innerWidth <= 768 ? '38px' : '250px';
     setTimeout(()=>{
       $c.classList.add('idle');
       $sb.textContent=['🛒','👋','😊','🤔'][Math.floor(Math.random()*4)];
@@ -1913,7 +2372,10 @@ function customerLeave(happy) {
     $c.style.transition='left 1s ease-in';
     $c.style.left = happy ? (window.innerWidth + 100) + 'px' : '-100px';
     document.getElementById('speechBubble').style.display='none';
-    setTimeout(()=>{ $c.style.transition='none'; $c.style.left='120px'; },1100);
+    setTimeout(()=>{
+  $c.style.transition='none';
+  $c.style.left = window.innerWidth <= 768 ? '38px' : '120px';
+},1100);
   },happy?1600:800);
 }
 
@@ -2082,6 +2544,14 @@ return {
 };
 
 })();
+window.addEventListener("resize", () => {
+  if (window.innerWidth <= 768 && G) {
+    const customer = document.getElementById("customer");
+    if (customer && customer.style.left !== "-80px") {
+      customer.style.left = "38px";
+    }
+  }
+});
 </script>
 </body>
 </html>
