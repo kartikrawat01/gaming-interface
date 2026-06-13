@@ -1106,7 +1106,7 @@ useEffect(() => {
   />
 )}
       {/* Mobile top bar */}
-      <div className="lg:hidden sticky top-0 z-40 glass flex items-center justify-between px-4 h-14 border-b border-border">
+      <div className="hidden">
         <div className="flex items-center gap-2">
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/15 text-primary">
             <Code2 className="h-4 w-4" />

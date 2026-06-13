@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { UserCircle } from "lucide-react";
+import { UserCircle, Menu, X } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import {
   Outlet,
@@ -32,7 +32,8 @@ const menuItems = [
 function LayoutPage() {
   const location = useLocation();
   const [userEmail, setUserEmail] = useState<string>("");
-const [userName, setUserName] = useState<string>("");
+const [userName, setUserName] = useState<string>("Guest User");
+const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 useEffect(() => {
   const getUser = async () => {
@@ -52,9 +53,28 @@ setUserName(
   getUser();
 }, []);
   return (
-    <div className="flex h-screen bg-[#dfeef7] text-gray-900 overflow-hidden">
+    <div className="min-h-screen lg:h-screen bg-[#dfeef7] text-gray-900 lg:overflow-hidden flex flex-col lg:flex-row">
+      {/* MOBILE TOP BAR */}
+<div className="lg:hidden sticky top-0 z-40 h-16 bg-[#dfeef7]/95 backdrop-blur border-b border-white/40 px-4 flex items-center justify-between">
+  <div className="flex items-center gap-3">
+    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+      <Code2 className="h-5 w-5 text-white" />
+    </div>
+    <div>
+      <h1 className="font-bold text-lg">CodeArena</h1>
+      <p className="text-xs text-gray-500">Play. Code. Level up.</p>
+    </div>
+  </div>
+
+  <button
+    onClick={() => setMobileMenuOpen(true)}
+    className="h-10 w-10 rounded-xl bg-white shadow flex items-center justify-center"
+  >
+    <Menu className="h-5 w-5" />
+  </button>
+</div>
       {/* LEFT SIDEBAR */}
-      <aside className="w-72 min-h-screen shrink-0 bg-gradient-to-b from-indigo-500 to-purple-600 border-r border-white/10 p-5 flex flex-col">
+      <aside className="hidden lg:flex w-72 min-h-screen shrink-0 bg-gradient-to-b from-indigo-500 to-purple-600 border-r border-white/10 p-5 flex-col">
 
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
@@ -118,8 +138,62 @@ setUserName(
 </div>
       </aside>
 
+      {/* MOBILE DRAWER */}
+{mobileMenuOpen && (
+  <div className="fixed inset-0 z-50 lg:hidden">
+    <div
+      className="absolute inset-0 bg-black/50"
+      onClick={() => setMobileMenuOpen(false)}
+    />
+
+    <aside className="absolute left-0 top-0 h-full w-[82%] max-w-[320px] bg-gradient-to-b from-indigo-500 to-purple-600 p-5 flex flex-col">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <Code2 className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-white">CodeArena</h1>
+            <p className="text-xs text-white/80">Play. Code. Level up.</p>
+          </div>
+        </div>
+
+        <button onClick={() => setMobileMenuOpen(false)}>
+          <X className="h-6 w-6 text-white" />
+        </button>
+      </div>
+
+      <nav className="space-y-2 flex-1">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            location.pathname === item.to ||
+            (item.to === "/" && location.pathname === "/");
+
+          return (
+            <Link
+              key={item.label}
+              to={item.to}
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                isActive
+                  ? "bg-white/20 text-white"
+                  : "text-white/75 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="font-medium">{item.label}</span>
+              {isActive && <ChevronRight className="h-4 w-4 ml-auto" />}
+            </Link>
+          );
+        })}
+      </nav>
+    </aside>
+  </div>
+)}
+
       {/* RIGHT CONTENT */}
-      <main className="flex-1 p-0 bg-[#dfeef7] overflow-auto">
+      <main className="w-full lg:flex-1 p-0 bg-[#dfeef7] overflow-auto">
         <Outlet />
       </main>
     </div>
