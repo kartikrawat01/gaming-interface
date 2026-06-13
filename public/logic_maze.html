@@ -969,17 +969,144 @@
       }
 
       /* Responsive */
-      @media (max-width: 900px) {
-        #main {
-          grid-template-columns: 1fr;
-        }
-        #right-col {
-          order: -1;
-        }
-        #blocklyDiv {
-          min-height: 300px;
-        }
-      }
+      /* Responsive */
+@media (max-width: 900px) {
+  body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  #header {
+    min-height: 70px;
+    height: auto;
+    padding: 8px 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  #header h1 {
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+
+  #level-indicator {
+    position: static;
+    transform: none;
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  #levels-bar {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 5px 8px;
+  }
+
+  .level-dot {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  #header-coin-display {
+    position: static;
+    margin-left: auto;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+  }
+
+  #main {
+    height: auto;
+    min-height: calc(100vh - 70px);
+    padding: 10px;
+    align-items: flex-start;
+  }
+
+  #game-panel {
+    width: 100%;
+    height: auto;
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+    overflow: visible;
+  }
+
+  #left-col,
+  #right-col {
+    height: auto;
+    min-height: 0;
+  }
+
+  #left-col {
+    order: 1;
+  }
+
+  #right-col {
+    order: 2;
+  }
+
+  #stage-panel {
+    height: 330px;
+    min-height: 330px;
+  }
+
+  #instructions-panel {
+    font-size: 0.95rem;
+    padding: 12px 14px;
+    line-height: 1.35;
+  }
+
+  #blockly-panel {
+    height: 430px;
+    min-height: 430px;
+  }
+
+  #blocklyDiv {
+    height: 360px;
+    min-height: 360px;
+  }
+
+  #controls-panel {
+    flex-direction: row;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .btn {
+    font-size: 0.95rem;
+    padding: 12px 16px;
+  }
+
+  #story-card {
+    width: 92vw;
+    max-width: 420px;
+    padding: 20px 14px 70px;
+  }
+
+  .speech {
+    font-size: 0.85rem;
+    max-width: 82%;
+  }
+
+  #kaia {
+    left: 20px;
+    font-size: 34px;
+  }
+
+  #player {
+    right: 90px;
+    font-size: 34px;
+  }
+
+  #overlay-card {
+    width: 90vw;
+    padding: 28px 20px;
+  }
+}
     </style>
   </head>
   <body>
@@ -1793,9 +1920,13 @@
           badge.textContent = `Level ${level.id}`;
         }
 
-        setTimeout(() => {
+setTimeout(() => {
   renderGrid();
-}, 50);
+
+  if (workspace) {
+    Blockly.svgResize(workspace);
+  }
+}, 100);
 
         document.getElementById("instructions-panel").innerHTML =
           getMissionText(level.id);
@@ -2326,6 +2457,15 @@ setInterval(() => {
   setTimeout(() => {
     Blockly.svgResize(workspace);
   }, 300);
+});
+window.addEventListener("resize", () => {
+  if (workspace) {
+    Blockly.svgResize(workspace);
+  }
+
+  setTimeout(() => {
+    renderGrid();
+  }, 100);
 });
     </script>
   </body>
