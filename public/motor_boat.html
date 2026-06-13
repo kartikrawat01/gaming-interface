@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motor Boat – Wayfinding with Code</title>
+<script src="https://unpkg.com/blockly@10.4.3/blockly.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+<style>
+  :root {
+    --coral: #e8604c;
+    --coral-dark: #c94a38;
+    --coral-light: #f07060;
+    --green-block: #3cb371;
+    --blue-block: #3a7bd5;
+    --purple-trigger: #8b6db5;
+    --workspace-bg: #d4e88a;
+    --panel-header: #4ab0d4;
+    --sand-dk: #e8c870;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--coral);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+  #header {
+    background: var(--coral-dark);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 68px;
+    flex-shrink: 0;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  #logo-box {
+    background: white;
+    border-radius: 8px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 14px;
+    color: #333;
+  }
+  #game-title { color: white; font-size: 18px; font-weight: 700; }
+  #level-dots {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.15);
+  }
+  #level-dots::-webkit-scrollbar {
+    height: 6px;
+  }
+  #level-dots::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+  #level-dots::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+  }
+  #level-dots::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.55);
+  }
+  .level-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.35);
+    color: white;
+    font-weight: 700;
+    font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .level-dot:hover { background: rgba(255,255,255,0.4); }
+  .level-dot.completed { background: #4caf50; border-color: #388e3c; }
+  .level-dot.current { background: #2196f3; border-color: #1565c0; box-shadow: 0 0 0 3px rgba(255,255,255,0.5); }
+  .level-dot.locked { opacity: 0.4; cursor: default; pointer-events: none; }
+  #finish-btn {
+    background: #ffd700;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #instruction-bar {
+    background: #fef9e7;
+    border-bottom: 3px solid var(--sand-dk);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    min-height: 58px;
+  }
+  #instruction-icon {
+    width: 40px; height: 40px;
+    background: var(--coral);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  #instruction-text { flex: 1; font-size: 14px; color: #333; line-height: 1.4; }
+  .cmd-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 12px;
+    color: white;
+    vertical-align: middle;
+    margin: 0 2px;
+  }
+  .cmd-tag.fwd, .cmd-tag.back { background: var(--green-block); }
+  .cmd-tag.turn { background: var(--blue-block); }
+  .cmd-tag.loop { background: #7b5ea7; }
+  .cmd-tag.collect { background: #c47a20; }
+  .cmd-tag.cond { background: #5ba35b; }
+  #level-badge {
+    background: var(--panel-header);
+    color: white;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #main { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+  #stage-column {
+    display: flex;
+    flex-direction: column;
+    width: 42%;
+    min-width: 320px;
+    flex-shrink: 0;
+  }
+  #stage-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Video background */
+  #ocean-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+  }
+  #ocean-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #1a9fd4 0%, #1278a8 40%, #0f5f8a 100%);
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .wave-layer {
+    position: absolute;
+    width: 200%; height: 100%;
+    background-image:
+      repeating-linear-gradient(90deg, transparent 0px, transparent 30px, rgba(255,255,255,0.04) 30px, rgba(255,255,255,0.04) 32px),
+      repeating-linear-gradient(0deg, transparent 0px, transparent 30px, rgba(255,255,255,0.03) 30px, rgba(255,255,255,0.03) 32px);
+    animation: waveFlow 8s linear infinite;
+  }
+  .wave-layer.w2 { opacity: 0.6; animation: waveFlow 12s linear infinite reverse; }
+  @keyframes waveFlow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .sparkle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.7);
+    animation: sparkleAnim 3s ease-in-out infinite;
+  }
+  @keyframes sparkleAnim {
+    0%,100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.5); }
+  }
+  /* Navigation path canvas */
+  #path-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+  #grid-container { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+  #boat-sprite {
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+    transform-origin: center center;
+  }
+  #boat-sprite img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+  }
+  #goal-sprite {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: goalPulse 1.5s ease-in-out infinite;
+    line-height: 1;
+  }
+  #goal-sprite img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  @keyframes goalPulse {
+    0%,100% { filter: drop-shadow(0 0 6px gold); transform: translate(-50%,-50%) scale(1); }
+    50% { filter: drop-shadow(0 0 14px gold); transform: translate(-50%,-50%) scale(1.15); }
+  }
+  .rock-el {
+    position: absolute;
+    z-index: 4;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+  }
+  .collectible-el {
+    position: absolute;
+    z-index: 4;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+    animation: collectPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes collectPulse {
+    0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%,-50%) scale(1.2); opacity: 0.8; }
+  }
+  #dir-badge {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: var(--coral);
+    color: white;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    z-index: 20;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  #run-bar {
+    background: linear-gradient(180deg, #e8c870 0%, #d4a84b 100%);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    border-top: 3px solid #c4922a;
+  }
+  #run-btn {
+    background: var(--coral);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 0 var(--coral-dark);
+    transition: all 0.1s;
+  }
+  #run-btn:hover:not(:disabled) { background: var(--coral-light); transform: translateY(-1px); }
+  #run-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 var(--coral-dark); }
+  #run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  #reset-btn {
+    background: rgba(255,255,255,0.3);
+    border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #5a3a00;
+  }
+  #reset-btn:hover { background: rgba(255,255,255,0.5); }
+  #coding-column { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  #panel-header {
+    display: flex;
+    background: var(--panel-header);
+    align-items: stretch;
+    height: 42px;
+    flex-shrink: 0;
+  }
+  #blocks-label {
+    width: 130px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: white;
+    background: #3a9ac4;
+    border-right: 2px solid rgba(255,255,255,0.3);
+  }
+  #workspace-label {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: white;
+    background: #5aad38;
+    gap: 10px;
+  }
+  #workspace-count {
+    background: rgba(255,255,255,0.3);
+    border-radius: 12px;
+    padding: 1px 10px;
+    font-size: 12px;
+  }
+  #startover-btn {
+    background: rgba(255,255,255,0.25);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 3px 10px;
+    margin-right: 6px;
+  }
+  #startover-btn:hover { background: rgba(255,255,255,0.4); }
+  #blocklyDiv {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+  }
+  .blocklyMainBackground { fill: #d4e88a !important; }
+  .blocklyFlyoutBackground { fill: #b8dff0 !important; }
+
+  #modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  #modal-overlay.show { opacity: 1; pointer-events: all; }
+  #modal {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    transform: scale(0.8);
+    transition: transform 0.3s;
+  }
+  #modal-overlay.show #modal { transform: scale(1); }
+  #modal .modal-icon { font-size: 60px; margin-bottom: 12px; }
+  #modal h2 { font-size: 24px; margin-bottom: 8px; color: #333; }
+  #modal p { color: #666; margin-bottom: 20px; font-size: 15px; line-height: 1.5; }
+  .stars-row { font-size: 36px; margin: 8px 0; letter-spacing: 4px; }
+  .modal-btn {
+    background: var(--coral);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--coral-dark);
+    margin: 4px;
+  }
+  .modal-btn:hover { background: var(--coral-light); }
+  .modal-btn.secondary { background: #888; box-shadow: 0 4px 0 #555; }
+  .modal-btn.secondary:hover { background: #999; }
+  .confetti-piece {
+    position: fixed;
+    opacity: 0;
+    animation: confettiFall linear forwards;
+    border-radius: 2px;
+    z-index: 99999;
+    pointer-events: none;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="logo-box"><span style="font-size:22px">🚤</span><span>MOTOR BOAT</span></div>
+  <div id="coin-box" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 4px 10px; color: #ffd700; font-weight: 800; display: flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap;"><span>🪙</span><span id="coin-count">0</span></div>
+  <span id="game-title">Wayfinding with Code</span>
+  <div id="level-dots"></div>
+  <button id="finish-btn">🏆 Finish your Hour of Code</button>
+</div>
+
+<div id="instruction-bar">
+  <div id="instruction-icon">🌀</div>
+  <div id="instruction-text">Loading level...</div>
+  <div id="level-badge">Level 1</div>
+</div>
+
+<div id="main">
+  <div id="stage-column">
+    <div id="stage-wrapper">
+      <video id="ocean-video" autoplay muted loop playsinline>
+        <source src="assets/water-bg.mp4" type="video/mp4">
+      </video>
+      <div id="ocean-bg">
+        <div class="wave-layer"></div>
+        <div class="wave-layer w2"></div>
+      </div>
+      <canvas id="path-canvas"></canvas>
+      <div id="grid-container"></div>
+      <div id="boat-sprite"><img id="boat-img" alt="boat" /></div>
+      <div id="goal-sprite"><img id="goal-img" alt="island" /></div>
+      <div id="dir-badge">North ↑</div>
+    </div>
+    <div id="run-bar">
+      <button id="run-btn"><span>▶</span> Run</button>
+      <button id="reset-btn">↺ Reset</button>
+    </div>
+  </div>
+
+  <div id="coding-column">
+    <div id="panel-header">
+      <div id="blocks-label">Blocks</div>
+      <div id="workspace-label">
+        Workspace <span id="workspace-count">0</span>
+        <button id="startover-btn">↺ Start Over</button>
+      </div>
+    </div>
+    <div id="blocklyDiv"></div>
+  </div>
+</div>
+
+<div id="modal-overlay">
+  <div id="modal">
+    <div class="modal-icon" id="modal-icon">⭐</div>
+    <h2 id="modal-title">Level Complete!</h2>
+    <div class="stars-row" id="modal-stars">⭐⭐⭐</div>
+    <p id="modal-msg">Great job!</p>
+    <button class="modal-btn" id="modal-next">Next Level ▶</button>
+    <button class="modal-btn secondary" id="modal-retry">Try Again ↺</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const BOAT_SRC = "assets/boat.png";
+  const ISLAND_SRC = "assets/iland.png";
+
+  const GRID = 8;
+  const DIR_N = 0, DIR_E = 1, DIR_S = 2, DIR_W = 3;
+  const DIR_NAMES = ['North ↑', 'East →', 'South ↓', 'West ←'];
+  const DIR_DEG   = [0, 90, 180, 270];
+  const DELTAS    = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+
+  // Hide fallback ocean-bg when video plays successfully
+  const videoEl = document.getElementById('ocean-video');
+  videoEl.addEventListener('canplay', function() {
+    document.getElementById('ocean-bg').style.opacity = '0';
+  });
+  videoEl.addEventListener('error', function() {
+    document.getElementById('ocean-bg').style.opacity = '1';
+  });
+
+  // Level path definitions: array of {c,r} grid cells the path passes through
+  // These are derived from the Moana screenshots showing the navigation route
+  const LEVEL_PATHS = [
+    // L1: straight north 1 step
+    [{c:3,r:6},{c:3,r:5}],
+    // L2: straight north 3 steps
+    [{c:3,r:6},{c:3,r:5},{c:3,r:4},{c:3,r:3}],
+    // L3: north then turn east — L-shape
+    [{c:1,r:5},{c:1,r:4},{c:1,r:3},{c:2,r:3},{c:3,r:3},{c:4,r:3},{c:5,r:3}],
+    // L4: north then east — longer L-shape
+    [{c:1,r:6},{c:1,r:5},{c:1,r:4},{c:1,r:3},{c:1,r:2},{c:2,r:2},{c:3,r:2},{c:4,r:2},{c:5,r:2},{c:6,r:2}],
+    // L5: north then east, avoiding rock at (2,4) — zigzag
+    [{c:0,r:6},{c:0,r:5},{c:0,r:4},{c:0,r:3},{c:1,r:3},{c:2,r:3},{c:3,r:3},{c:3,r:2},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:6,r:1}],
+    // L6: straight north 4 steps
+    [{c:3,r:7},{c:3,r:6},{c:3,r:5},{c:3,r:4},{c:3,r:3}],
+    // L7: turn right (east), move 4 steps
+    [{c:1,r:4},{c:2,r:4},{c:3,r:4},{c:4,r:4},{c:5,r:4}],
+    // L8: zigzag around rocks at (2,5) and (4,3)
+    [{c:3,r:7},{c:3,r:6},{c:3,r:5},{c:4,r:5},{c:4,r:4},{c:4,r:3},{c:3,r:3},{c:3,r:2},{c:3,r:1}],
+    // L9: zigzag diagonal path bottom-left to top-right
+    [{c:1,r:7},{c:1,r:6},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:4,r:3},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:6,r:1}],
+    // L10: two-segment zigzag bottom to top-right
+    [{c:0,r:7},{c:0,r:6},{c:0,r:5},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:4,r:3},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:7,r:2},{c:7,r:1}],
+    // L11: north then diagonal to top-right, passing collectibles
+    [{c:1,r:5},{c:1,r:4},{c:1,r:3},{c:2,r:3},{c:3,r:3},{c:3,r:2},{c:4,r:2},{c:5,r:2},{c:5,r:1}],
+    // L12: complex zigzag with collectibles
+    [{c:0,r:7},{c:0,r:6},{c:0,r:5},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:4,r:3},{c:4,r:4},{c:4,r:5},{c:5,r:5},{c:6,r:5},{c:6,r:4},{c:6,r:3},{c:6,r:2},{c:6,r:1}],
+    // L13: east then north-east diagonal
+    [{c:2,r:5},{c:3,r:5},{c:3,r:4},{c:3,r:3},{c:4,r:3},{c:5,r:3},{c:5,r:2},{c:6,r:2}],
+    // L14: straight north, dodging rocks
+    [{c:2,r:6},{c:2,r:5},{c:2,r:4},{c:2,r:3},{c:2,r:2},{c:2,r:1}],
+    // L15: straight north twice (repeat 2 outer), dodging rocks
+    [{c:3,r:7},{c:3,r:6},{c:3,r:5},{c:3,r:4},{c:3,r:3},{c:3,r:2},{c:3,r:1}],
+    // L16: diagonal zigzag with turns
+    [{c:1,r:7},{c:1,r:6},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:3,r:4},{c:3,r:3},{c:4,r:3},{c:4,r:2},{c:5,r:2},{c:5,r:1}],
+    // L17: branching path north-east
+    [{c:1,r:6},{c:1,r:5},{c:1,r:4},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:3,r:2},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:6,r:1}],
+    // L18: complex path around rocks
+    [{c:1,r:7},{c:1,r:6},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:3,r:4},{c:3,r:3},{c:4,r:3},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:6,r:1}],
+    // L19: full diagonal challenge
+    [{c:0,r:7},{c:1,r:7},{c:1,r:6},{c:1,r:5},{c:1,r:4},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:3,r:2},{c:4,r:2},{c:4,r:1},{c:5,r:1},{c:6,r:1},{c:6,r:0},{c:7,r:0}]
+  ];
+
+  const LEVELS = [
+    // 1
+    {
+      inst: 'Drag a <span class="cmd-tag fwd">Move Forward</span> block to the workspace and hit Run.',
+      boat: {c:3, r:6, d:DIR_N}, goal: {c:3, r:5},
+      rocks: [], collectibles: [], max: 3,
+      toolbox: ['forward','left','right']
+    },
+    // 2
+    {
+      inst: 'Use the <span class="cmd-tag fwd">Move Forward</span> block to reach the star.',
+      boat: {c:3, r:6, d:DIR_N}, goal: {c:3, r:3},
+      rocks: [], collectibles: [], max: 5,
+      toolbox: ['forward','left','right']
+    },
+    // 3
+    {
+      inst: 'Use <span class="cmd-tag fwd">Move Forward</span> and <span class="cmd-tag turn">Turn Right</span> blocks to reach the star.',
+      boat: {c:1, r:5, d:DIR_N}, goal: {c:5, r:3},
+      rocks: [], collectibles: [], max: 6,
+      toolbox: ['forward','left','right']
+    },
+    // 4
+    {
+      inst: 'Use <span class="cmd-tag fwd">Move Forward</span> and <span class="cmd-tag turn">Turn Right</span> blocks to navigate to the star.',
+      boat: {c:1, r:6, d:DIR_N}, goal: {c:6, r:2},
+      rocks: [], collectibles: [], max: 9,
+      toolbox: ['forward','left','right']
+    },
+    // 5
+    {
+      inst: 'Keep navigating using <span class="cmd-tag fwd">Move Forward</span> and <span class="cmd-tag turn">Turn Right</span> blocks to reach the star.',
+      boat: {c:0, r:6, d:DIR_N}, goal: {c:6, r:1},
+      rocks: [{c:2,r:4}], collectibles: [], max: 12,
+      toolbox: ['forward','left','right']
+    },
+    // 6
+    {
+      inst: 'Add the <span class="cmd-tag fwd">Move Forward</span> block inside the <span class="cmd-tag loop">Repeat 4 Times</span> loop to speed toward the star!',
+      boat: {c:3, r:7, d:DIR_N}, goal: {c:3, r:3},
+      rocks: [], collectibles: [], max: 4,
+      toolbox: ['forward','left','right','repeat']
+    },
+    // 7
+    {
+      inst: 'Use the <span class="cmd-tag loop">Repeat 4 Times</span> loop to move forward faster. Remember to rotate the boat first!',
+      boat: {c:1, r:4, d:DIR_N}, goal: {c:5, r:4},
+      rocks: [], collectibles: [], max: 5,
+      toolbox: ['forward','left','right','repeat']
+    },
+    // 8
+    {
+      inst: 'Zigzag using the <span class="cmd-tag turn">Turn Right</span> and <span class="cmd-tag turn">Turn Left</span> blocks to dodge rocks! Then use a <span class="cmd-tag loop">Repeat</span> loop.',
+      boat: {c:3, r:7, d:DIR_N}, goal: {c:3, r:1},
+      rocks: [], collectibles: [], max: 10,
+      toolbox: ['forward','left','right','repeat']
+    },
+    // 9
+    {
+      inst: 'Continue zigzagging! Use a <span class="cmd-tag loop">Repeat 6 Times</span> loop with 4 blocks inside to navigate to the star.',
+      boat: {c:1, r:7, d:DIR_N}, goal: {c:6, r:1},
+      rocks: [], collectibles: [], max: 10,
+      toolbox: ['forward','left','right','repeat']
+    },
+    // 10
+    {
+      inst: 'Use 2 different <span class="cmd-tag loop">Repeat X Times</span> blocks to zigzag and reach the star while dodging all rocks.',
+      boat: {c:0, r:7, d:DIR_N}, goal: {c:7, r:1},
+      rocks: [], collectibles: [], max: 12,
+      toolbox: ['forward','left','right','repeat']
+    },
+    // 11
+    {
+      inst: 'Use <span class="cmd-tag loop">Repeat 2 Times</span>, <span class="cmd-tag turn">Turn Right</span> and <span class="cmd-tag collect">Collect</span> blocks to gather the treasure!',
+      boat: {c:1, r:5, d:DIR_N}, goal: {c:5, r:1},
+      rocks: [], collectibles: [{c:3,r:3},{c:5,r:1}], max: 10,
+      toolbox: ['forward','left','right','repeat','collect']
+    },
+    // 12
+    {
+      inst: 'Keep collecting treasure! Use <span class="cmd-tag loop">Repeat 3 Times</span>, <span class="cmd-tag turn">Turn Left</span>, and <span class="cmd-tag collect">Collect</span> blocks.',
+      boat: {c:0, r:7, d:DIR_N}, goal: {c:6, r:1},
+      rocks: [], collectibles: [{c:2,r:3},{c:4,r:5},{c:6,r:1}], max: 14,
+      toolbox: ['forward','left','right','repeat','collect']
+    },
+    // 13
+    {
+      inst: 'Use the new <span class="cmd-tag loop">Repeat Until Goal</span> block. It will keep repeating until you reach the star. Add <span class="cmd-tag fwd">Move Forward</span> inside it!',
+      boat: {c:2, r:5, d:DIR_E}, goal: {c:6, r:2},
+      rocks: [{c:4,r:5},{c:6,r:5}], collectibles: [], max: 5,
+      toolbox: ['forward','left','right','repeat_until_goal','dodge','strike'],
+      prebuilt: 'repeat_until_goal'
+    },
+    // 14
+    {
+      inst: 'Use the <span class="cmd-tag cond">If Obstacle</span> block to dodge only when a rock is ahead.',
+      boat: {c:2, r:6, d:DIR_N}, goal: {c:2, r:1},
+      rocks: [{c:2,r:4},{c:2,r:2}], collectibles: [], max: 6,
+      toolbox: ['forward','left','right','repeat_until_goal','dodge','strike','if_obstacle'],
+      prebuilt: 'repeat_until_goal_with_forward_and_if'
+    },
+    // 15
+    {
+      inst: 'Cut the two nearby ropes using the <span class="cmd-tag cond">If Obstacle</span> block to dodge obstacles coming from ahead.',
+      boat: {c:3, r:7, d:DIR_N}, goal: {c:3, r:1},
+      rocks: [{c:3,r:5},{c:3,r:3}], collectibles: [], max: 8,
+      toolbox: ['forward','repeat_until_goal','repeat','dodge','strike','if_obstacle'],
+      prebuilt: 'repeat2_repeat_until_goal_strike'
+    },
+    // 16
+    {
+      inst: 'Keep cutting ropes while dodging! Use the <span class="cmd-tag loop">Repeat Until Goal</span> and the <span class="cmd-tag cond">If Obstacle</span> block together.',
+      boat: {c:1, r:7, d:DIR_N}, goal: {c:5, r:1},
+      rocks: [{c:1,r:5},{c:3,r:3},{c:5,r:1}], collectibles: [], max: 8,
+      toolbox: ['forward','left','right','repeat_until_goal','repeat','dodge','strike','if_obstacle'],
+      prebuilt: null
+    },
+    // 17
+    {
+      inst: 'Go for the main route as fast as possible. Use the <span class="cmd-tag cond">If Path Ahead / Else</span> block to find the right path.',
+      boat: {c:1, r:6, d:DIR_N}, goal: {c:6, r:1},
+      rocks: [{c:1,r:4},{c:3,r:2}], collectibles: [], max: 6,
+      toolbox: ['forward','left','right','repeat_until_goal','strike','if_path_else'],
+      prebuilt: 'repeat_until_goal_with_if_path_else'
+    },
+    // 18
+    {
+      inst: 'Combine the <span class="cmd-tag loop">Repeat Until Goal</span> and the <span class="cmd-tag cond">If Path Ahead / Else</span> blocks to reach the final star!',
+      boat: {c:1, r:7, d:DIR_N}, goal: {c:6, r:1},
+      rocks: [{c:1,r:5},{c:3,r:3},{c:5,r:5},{c:4,r:1}], collectibles: [], max: 6,
+      toolbox: ['forward','left','right','repeat_until_goal','strike','if_path_else'],
+      prebuilt: null
+    },
+    // 19
+    {
+      inst: 'The final challenge! Use everything you know to reach the star!',
+      boat: {c:0, r:7, d:DIR_N}, goal: {c:7, r:0},
+      rocks: [{c:2,r:6},{c:4,r:5},{c:1,r:3},{c:5,r:4},{c:3,r:2},{c:6,r:3}],
+      collectibles: [], max: 22,
+      toolbox: ['forward','backward','left','right','repeat','collect','repeat_until_goal','if_obstacle','if_path_else']
+    }
+  ];
+
+  let currentLevel = 0;
+  let boatState = { c: 0, r: 0, d: 0 };
+  let isRunning = false;
+  let currentRunId = 0;
+  let workspace = null;
+  let cellW = 0, cellH = 0;
+  let collectibleEls = [];
+  let remainingCollectibles = [];
+
+  let completedSet = {};
+  let totalCoins = 0;
+
+  try {
+    const raw = localStorage.getItem('mb_v4');
+    if (raw) { const a = JSON.parse(raw); if (Array.isArray(a)) a.forEach(v => completedSet[v] = true); }
+  } catch (e) {}
+  function saveCompleted() {
+    try { localStorage.setItem('mb_v4', JSON.stringify(Object.keys(completedSet).map(Number))); } catch (e) {}
+  }
+
+  // Initialize and load persistent coin rewards
+  try {
+    const storedCoins = localStorage.getItem('mb_coins_total');
+    if (storedCoins !== null) {
+      totalCoins = parseInt(storedCoins) || 0;
+    } else {
+      // Retroactively calculate coins based on completed levels if coins are missing but progress exists
+      let tempCoins = 0;
+      Object.keys(completedSet).forEach(lvlIdx => {
+        const lNum = parseInt(lvlIdx) + 1;
+        if (lNum >= 1 && lNum <= 5) tempCoins += 20;
+        else if (lNum >= 6 && lNum <= 10) tempCoins += 30;
+        else if (lNum >= 11 && lNum <= 15) tempCoins += 35;
+        else if (lNum >= 16 && lNum <= 19) tempCoins += 50;
+      });
+      totalCoins = tempCoins;
+      localStorage.setItem('mb_coins_total', totalCoins);
+    }
+  } catch (e) {
+    totalCoins = 0;
+  }
+
+  function updateCoinDisplay() {
+    const el = document.getElementById('coin-count');
+    if (el) el.textContent = totalCoins;
+  }
+
+
+  function syncMotorBoatProgress() {
+  const completed = Object.keys(completedSet).length;
+
+  const progress =
+    Math.round((completed / 19) * 100);
+
+  localStorage.setItem(
+    "motorBoatCompleted",
+    String(completed)
+  );
+
+  localStorage.setItem(
+    "motorBoatProgress",
+    String(Math.min(progress, 100))
+  );
+
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "motor_boat",
+    progress: Math.min(progress, 100),
+    completed,
+    coins: totalCoins,
+    level: currentLevel + 1,
+  }, "*");
+}
+
+  async function syncMotorBoatWalletBalance() {
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(localStorage.getItem("mb_coins_total")) ||
+    0;
+
+  totalCoins = saved;
+  updateCoinDisplay();
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        totalCoins = Number(balance);
+        localStorage.setItem("walletCoins", String(totalCoins));
+        localStorage.setItem("mb_coins_total", String(totalCoins));
+        updateCoinDisplay();
+      }
+    }
+  } catch (err) {
+    console.warn("Motor Boat wallet sync failed:", err);
+  }
+
+  return totalCoins;
+}
+
+async function creditMotorBoatCoins(amount) {
+  let finalBalance =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(totalCoins) ||
+    0;
+
+  try {
+    const rewardResult = await window.gameSDK.rewardCoins({
+      amount,
+      description: `Motor Boat Level ${currentLevel + 1} Complete`,
+      game: "motor_boat",
+      level: currentLevel + 1,
+      score: amount,
+    });
+
+    if (rewardResult && rewardResult.balance !== undefined) {
+      finalBalance = Number(rewardResult.balance);
+    } else if (window.gameSDK) {
+      const freshBalance = await window.gameSDK.getBalance();
+      if (freshBalance !== undefined && freshBalance !== null) {
+        finalBalance = Number(freshBalance);
+      }
+    }
+  } catch (err) {
+    console.error("Motor Boat reward error:", err);
+    finalBalance = finalBalance + amount;
+  }
+
+  totalCoins = finalBalance;
+
+  localStorage.setItem("walletCoins", String(totalCoins));
+  localStorage.setItem("mb_coins_total", String(totalCoins));
+
+  updateCoinDisplay();
+
+  syncMotorBoatProgress();
+
+  return totalCoins;
+}
+
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+
+  if (balance !== undefined) {
+    totalCoins = Number(balance);
+    localStorage.setItem("walletCoins", String(totalCoins));
+    localStorage.setItem("mb_coins_total", String(totalCoins));
+    updateCoinDisplay();
+  }
+});
+
+  const stageWrapper  = document.getElementById('stage-wrapper');
+  const gridContainer = document.getElementById('grid-container');
+  const boatEl        = document.getElementById('boat-sprite');
+  const goalEl        = document.getElementById('goal-sprite');
+  const dirBadge      = document.getElementById('dir-badge');
+  const instrText     = document.getElementById('instruction-text');
+  const levelBadge    = document.getElementById('level-badge');
+  const wsCount       = document.getElementById('workspace-count');
+  const runBtn        = document.getElementById('run-btn');
+  const resetBtn      = document.getElementById('reset-btn');
+  const startoverBtn  = document.getElementById('startover-btn');
+  const modalOverlay  = document.getElementById('modal-overlay');
+  const modalIcon     = document.getElementById('modal-icon');
+  const modalTitle    = document.getElementById('modal-title');
+  const modalStars    = document.getElementById('modal-stars');
+  const modalMsg      = document.getElementById('modal-msg');
+  const modalNext     = document.getElementById('modal-next');
+  const modalRetry    = document.getElementById('modal-retry');
+  const pathCanvas    = document.getElementById('path-canvas');
+  const pathCtx       = pathCanvas.getContext('2d');
+
+  document.getElementById('boat-img').src = BOAT_SRC;
+  document.getElementById('goal-img').src = ISLAND_SRC;
+
+  const delay = ms => new Promise(r => setTimeout(r, ms));
+
+  function computeCell() {
+    cellW = stageWrapper.offsetWidth  / GRID;
+    cellH = stageWrapper.offsetHeight / GRID;
+    pathCanvas.width  = stageWrapper.offsetWidth;
+    pathCanvas.height = stageWrapper.offsetHeight;
+  }
+
+  function cellCenter(c, r) {
+    return { x: c * cellW + cellW / 2, y: r * cellH + cellH / 2 };
+  }
+
+  // Draw Moana-style navigation path for current level
+  function drawLevelPath(levelIdx) {
+    pathCtx.clearRect(0, 0, pathCanvas.width, pathCanvas.height);
+    const path = LEVEL_PATHS[levelIdx];
+    if (!path || path.length < 2) return;
+
+    const tileW = cellW;
+    const tileH = cellH;
+
+    // Draw path tiles — each cell gets a highlighted square tile
+    for (let i = 0; i < path.length; i++) {
+      const cell = path[i];
+      const x = cell.c * tileW;
+      const y = cell.r * tileH;
+      const cx = x + tileW / 2;
+      const cy = y + tileH / 2;
+      const tw = tileW * 0.88;
+      const th = tileH * 0.88;
+
+      pathCtx.save();
+      pathCtx.translate(cx, cy);
+
+      const isGoal = i === path.length - 1;
+
+      pathCtx.beginPath();
+      pathCtx.roundRect(-tw/2, -th/2, tw, th, 4);
+      if (isGoal) {
+        pathCtx.fillStyle = 'rgba(255, 255, 200, 0.28)';
+        pathCtx.strokeStyle = 'rgba(255, 240, 100, 0.55)';
+      } else {
+        pathCtx.fillStyle = 'rgba(200, 235, 255, 0.22)';
+        pathCtx.strokeStyle = 'rgba(200, 230, 255, 0.45)';
+      }
+      pathCtx.lineWidth = 1.5;
+      pathCtx.fill();
+      pathCtx.stroke();
+
+      pathCtx.restore();
+    }
+  }
+
+  (function () {
+    const bg = document.getElementById('ocean-bg');
+    for (let i = 0; i < 18; i++) {
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.style.left = (Math.random() * 100) + '%';
+      s.style.top  = (Math.random() * 100) + '%';
+      s.style.animationDelay    = (Math.random() * 3) + 's';
+      s.style.animationDuration = (2 + Math.random() * 2) + 's';
+      bg.appendChild(s);
+    }
+  })();
+
+  function posBoat(c, r, d, animated) {
+    const sz = Math.min(cellW, cellH) * 2.5;
+    boatEl.style.width  = sz + 'px';
+    boatEl.style.height = sz + 'px';
+    const cx = cellCenter(c, r);
+    const left = cx.x - sz / 2;
+    const top  = cx.y - sz / 2;
+    if (animated === false) {
+      boatEl.style.transition = 'none';
+      void boatEl.offsetWidth;
+      boatEl.style.left      = left + 'px';
+      boatEl.style.top       = top  + 'px';
+      boatEl.style.transform = 'rotate(' + DIR_DEG[d] + 'deg)';
+      void boatEl.offsetWidth;
+      boatEl.style.transition = '';
+    } else {
+      boatEl.style.transition = 'left 0.35s cubic-bezier(.4,0,.2,1), top 0.35s cubic-bezier(.4,0,.2,1), transform 0.25s ease';
+      boatEl.style.left      = left + 'px';
+      boatEl.style.top       = top  + 'px';
+      boatEl.style.transform = 'rotate(' + DIR_DEG[d] + 'deg)';
+    }
+    dirBadge.textContent = DIR_NAMES[d];
+  }
+
+  function posGoal(c, r) {
+    const cx = cellCenter(c, r);
+    const sz = Math.min(cellW, cellH) * 0.90;
+    goalEl.style.width    = sz + 'px';
+    goalEl.style.height   = sz + 'px';
+    goalEl.style.left     = cx.x + 'px';
+    goalEl.style.top      = cx.y + 'px';
+  }
+
+  let rockEls = [];
+  function clearRocks() { rockEls.forEach(e => e.remove()); rockEls = []; }
+  function placeRocks(rocks) {
+    clearRocks();
+    rocks.forEach(rock => {
+      const el = document.createElement('div');
+      el.className = 'rock-el';
+      el.dataset.c = rock.c;
+      el.dataset.r = rock.r;
+      const cx = cellCenter(rock.c, rock.r);
+      el.style.left     = cx.x + 'px';
+      el.style.top      = cx.y + 'px';
+      el.style.fontSize = Math.min(cellW, cellH) * 0.60 + 'px';
+      el.textContent    = '🪨';
+      gridContainer.appendChild(el);
+      rockEls.push(el);
+    });
+  }
+
+  function removeRockAt(c, r) {
+    const lv = LEVELS[currentLevel];
+    const idx = lv.rocks.findIndex(rk => rk.c === c && rk.r === r);
+    if (idx !== -1) {
+      lv.rocks.splice(idx, 1);
+    }
+    const el = rockEls.find(e => parseInt(e.dataset.c) === c && parseInt(e.dataset.r) === r);
+    if (el) {
+      el.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+      el.style.transform = 'translate(-50%, -50%) scale(0)';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 300);
+    }
+  }
+
+  function clearCollectibles() { collectibleEls.forEach(e => e.remove()); collectibleEls = []; }
+  function placeCollectibles(collectibles) {
+    clearCollectibles();
+    remainingCollectibles = collectibles.map(c => ({...c, collected: false}));
+    remainingCollectibles.forEach((col, idx) => {
+      const el = document.createElement('div');
+      el.className = 'collectible-el';
+      el.dataset.idx = idx;
+      const cx = cellCenter(col.c, col.r);
+      el.style.left     = cx.x + 'px';
+      el.style.top      = cx.y + 'px';
+      el.style.fontSize = Math.min(cellW, cellH) * 0.50 + 'px';
+      el.textContent    = '🐟';
+      gridContainer.appendChild(el);
+      collectibleEls.push(el);
+    });
+  }
+
+  function buildDots() {
+    const container = document.getElementById('level-dots');
+    container.innerHTML = '';
+    LEVELS.forEach((lvl, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'level-dot';
+      dot.textContent = i + 1;
+      if (completedSet[i])    dot.classList.add('completed');
+      if (i === currentLevel) {
+        dot.classList.add('current');
+        // Smooth scroll the current active dot into view
+        setTimeout(() => {
+          dot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }, 50);
+      }
+      const unlocked = true;
+      if (!unlocked) dot.classList.add('locked');
+      dot.addEventListener('click', () => { if (unlocked) goToLevel(i); });
+      container.appendChild(dot);
+    });
+  }
+
+  /* ── BLOCKLY ── */
+  function defineCustomBlocks() {
+    Blockly.Blocks['boat_start'] = {
+      init() {
+        this.appendDummyInput().appendField('▶  when run');
+        this.setNextStatement(true, null);
+        this.setColour(120);
+        this.setDeletable(false);
+        this.setMovable(true);
+        this.setEditable(false);
+      }
+    };
+    Blockly.Blocks['boat_forward'] = {
+      init() {
+        this.appendDummyInput().appendField('↑  Move Forward');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#3cb371');
+      }
+    };
+    Blockly.Blocks['boat_backward'] = {
+      init() {
+        this.appendDummyInput().appendField('↓  Move Backward');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#3cb371');
+      }
+    };
+    Blockly.Blocks['boat_turn_left'] = {
+      init() {
+        this.appendDummyInput().appendField('↺  Turn Left');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#3a7bd5');
+      }
+    };
+    Blockly.Blocks['boat_turn_right'] = {
+      init() {
+        this.appendDummyInput().appendField('↻  Turn Right');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#3a7bd5');
+      }
+    };
+    Blockly.Blocks['boat_collect'] = {
+      init() {
+        this.appendDummyInput().appendField('🐟  Collect');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#c47a20');
+      }
+    };
+    Blockly.Blocks['boat_dodge'] = {
+      init() {
+        this.appendDummyInput().appendField('⚡  Dodge');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#8b6db5');
+      }
+    };
+    Blockly.Blocks['boat_strike'] = {
+      init() {
+        this.appendDummyInput().appendField('⚔️  Strike');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#7b5ea7');
+      }
+    };
+    Blockly.Blocks['boat_repeat_until_goal'] = {
+      init() {
+        this.appendDummyInput().appendField('🔄  Repeat Until Goal');
+        this.appendStatementInput('DO').appendField('do');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#7b5ea7');
+      }
+    };
+    Blockly.Blocks['boat_if_obstacle'] = {
+      init() {
+        this.appendDummyInput().appendField('❓  If Obstacle Ahead');
+        this.appendStatementInput('DO').appendField('do');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#5ba35b');
+      }
+    };
+    Blockly.Blocks['boat_if_path_else'] = {
+      init() {
+        this.appendDummyInput().appendField('🔀  If Path Ahead');
+        this.appendStatementInput('DO').appendField('do');
+        this.appendStatementInput('ELSE').appendField('else');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#5ba35b');
+      }
+    };
+
+    const noGen = () => '';
+    if (Blockly.JavaScript) {
+      ['boat_start','boat_forward','boat_backward','boat_turn_left','boat_turn_right',
+       'boat_collect','boat_dodge','boat_strike',
+       'boat_repeat_until_goal','boat_if_obstacle','boat_if_path_else']
+        .forEach(t => { Blockly.JavaScript[t] = noGen; });
+    }
+  }
+
+  function buildToolboxContents(toolboxKeys) {
+    const contents = [];
+    if (toolboxKeys.includes('forward'))           contents.push({ kind: 'block', type: 'boat_forward' });
+    if (toolboxKeys.includes('backward'))          contents.push({ kind: 'block', type: 'boat_backward' });
+    if (toolboxKeys.includes('left'))              contents.push({ kind: 'block', type: 'boat_turn_left' });
+    if (toolboxKeys.includes('right'))             contents.push({ kind: 'block', type: 'boat_turn_right' });
+    if (toolboxKeys.includes('collect'))           contents.push({ kind: 'block', type: 'boat_collect' });
+    if (toolboxKeys.includes('dodge'))             contents.push({ kind: 'block', type: 'boat_dodge' });
+    if (toolboxKeys.includes('strike'))            contents.push({ kind: 'block', type: 'boat_strike' });
+    if (toolboxKeys.includes('repeat_until_goal')) contents.push({ kind: 'block', type: 'boat_repeat_until_goal' });
+    if (toolboxKeys.includes('if_obstacle'))       contents.push({ kind: 'block', type: 'boat_if_obstacle' });
+    if (toolboxKeys.includes('if_path_else'))      contents.push({ kind: 'block', type: 'boat_if_path_else' });
+    if (toolboxKeys.includes('repeat')) {
+      contents.push({
+        kind: 'block',
+        type: 'controls_repeat_ext',
+        inputs: {
+          TIMES: { shadow: { type: 'math_number', fields: { NUM: 4 } } }
+        }
+      });
+    }
+    return contents;
+  }
+
+  function initBlockly() {
+    defineCustomBlocks();
+
+    const lv = LEVELS[currentLevel];
+    const toolboxConfig = {
+      kind: 'flyoutToolbox',
+      contents: buildToolboxContents(lv.toolbox)
+    };
+
+    workspace = Blockly.inject('blocklyDiv', {
+      toolbox: toolboxConfig,
+      scrollbars: true,
+      trashcan: true,
+      move: { scrollbars: true, drag: true, wheel: true },
+      zoom: { controls: false, wheel: false, startScale: 1.0 },
+      grid: { spacing: 0, snap: false },
+      sounds: false
+    });
+
+    workspace.addChangeListener(() => {
+      wsCount.textContent = countWorkspaceBlocks();
+    });
+
+    placeStartBlock();
+  }
+
+  function updateToolbox() {
+    if (!workspace) return;
+    const lv = LEVELS[currentLevel];
+    const toolboxConfig = {
+      kind: 'flyoutToolbox',
+      contents: buildToolboxContents(lv.toolbox)
+    };
+    workspace.updateToolbox(toolboxConfig);
+  }
+
+  function placeStartBlock() {
+    workspace.getTopBlocks(false).forEach(b => {
+      if (b.type === 'boat_start') b.dispose(false);
+    });
+    const sb = workspace.newBlock('boat_start');
+    sb.initSvg();
+    sb.render();
+    sb.moveBy(30, 20);
+    return sb;
+  }
+
+  function buildPrebuilt(prebuilt) {
+    if (!prebuilt) return;
+
+    let startBlock = null;
+    workspace.getTopBlocks(false).forEach(b => {
+      if (b.type === 'boat_start') startBlock = b;
+    });
+    if (!startBlock) return;
+
+    if (prebuilt === 'repeat_until_goal') {
+      const loop = workspace.newBlock('boat_repeat_until_goal');
+      loop.initSvg(); loop.render();
+      startBlock.nextConnection.connect(loop.previousConnection);
+
+    } else if (prebuilt === 'repeat_until_goal_with_forward_and_if') {
+      const loop = workspace.newBlock('boat_repeat_until_goal');
+      loop.initSvg(); loop.render();
+      startBlock.nextConnection.connect(loop.previousConnection);
+
+      const fwd = workspace.newBlock('boat_forward');
+      fwd.initSvg(); fwd.render();
+      loop.getInput('DO').connection.connect(fwd.previousConnection);
+
+      const ifObs = workspace.newBlock('boat_if_obstacle');
+      ifObs.initSvg(); ifObs.render();
+      fwd.nextConnection.connect(ifObs.previousConnection);
+
+    } else if (prebuilt === 'repeat2_repeat_until_goal_strike') {
+      const rep2 = workspace.newBlock('controls_repeat_ext');
+      const numBlock = workspace.newBlock('math_number');
+      numBlock.setFieldValue('2', 'NUM');
+      numBlock.initSvg(); numBlock.render();
+      rep2.getInput('TIMES').connection.connect(numBlock.outputConnection);
+      rep2.initSvg(); rep2.render();
+      startBlock.nextConnection.connect(rep2.previousConnection);
+
+      const innerLoop = workspace.newBlock('boat_repeat_until_goal');
+      innerLoop.initSvg(); innerLoop.render();
+      rep2.getInput('DO').connection.connect(innerLoop.previousConnection);
+
+      const strike = workspace.newBlock('boat_strike');
+      strike.initSvg(); strike.render();
+      innerLoop.getInput('DO').connection.connect(strike.previousConnection);
+
+    } else if (prebuilt === 'repeat_until_goal_with_if_path_else') {
+      const loop = workspace.newBlock('boat_repeat_until_goal');
+      loop.initSvg(); loop.render();
+      startBlock.nextConnection.connect(loop.previousConnection);
+
+      const ifPath = workspace.newBlock('boat_if_path_else');
+      ifPath.initSvg(); ifPath.render();
+      loop.getInput('DO').connection.connect(ifPath.previousConnection);
+    }
+  }
+
+  function clearWorkspaceBlocks() {
+    workspace.getTopBlocks(false).forEach(b => {
+      if (b.type === 'boat_start') {
+        const next = b.getNextBlock();
+        if (next) next.unplug(false);
+      }
+    });
+    workspace.getTopBlocks(false).forEach(b => {
+      if (b.type !== 'boat_start') b.dispose(false);
+    });
+    workspace.getAllBlocks(false).forEach(b => {
+      if (b.type !== 'boat_start') b.dispose(false);
+    });
+    workspace.getAllBlocks(false).forEach(b => {
+      if (b.type !== 'boat_start') b.dispose(false);
+    });
+  }
+
+  function countWorkspaceBlocks() {
+    let count = 0;
+    workspace.getAllBlocks(false).forEach(b => {
+      if (b.type !== 'boat_start') count++;
+    });
+    return count;
+  }
+
+  /* ── COMMAND EXTRACTION ── flatten block tree ── */
+  function extractCommands(block, state, lv) {
+    const cmds = [];
+    while (block) {
+      const t = block.type;
+      if (t === 'boat_forward')    { cmds.push('forward'); }
+      else if (t === 'boat_backward') { cmds.push('backward'); }
+      else if (t === 'boat_turn_left')  { cmds.push('left'); }
+      else if (t === 'boat_turn_right') { cmds.push('right'); }
+      else if (t === 'boat_collect')    { cmds.push('collect'); }
+      else if (t === 'boat_dodge')      { cmds.push('dodge'); }
+      else if (t === 'boat_strike')     { cmds.push('strike'); }
+      else if (t === 'boat_repeat_until_goal') {
+        cmds.push({ type: 'repeat_until_goal', innerBlock: block.getInputTargetBlock('DO') });
+      }
+      else if (t === 'boat_if_obstacle') {
+        cmds.push({ type: 'if_obstacle', doBlock: block.getInputTargetBlock('DO') });
+      }
+      else if (t === 'boat_if_path_else') {
+        cmds.push({ type: 'if_path_else', doBlock: block.getInputTargetBlock('DO'), elseBlock: block.getInputTargetBlock('ELSE') });
+      }
+      else if (t === 'controls_repeat_ext' || t === 'controls_repeat') {
+        let times = 4;
+        try {
+          if (t === 'controls_repeat_ext') {
+            const timesBlock = block.getInputTargetBlock('TIMES');
+            if (timesBlock && timesBlock.getFieldValue) {
+              times = parseInt(timesBlock.getFieldValue('NUM')) || 4;
+            }
+          } else {
+            times = parseInt(block.getFieldValue('TIMES')) || 4;
+          }
+        } catch(e) {}
+        const innerBlock = block.getInputTargetBlock('DO');
+        const innerCmds = extractCommands(innerBlock, state, lv);
+        for (let i = 0; i < times; i++) {
+          cmds.push(...innerCmds);
+        }
+      }
+      block = block.getNextBlock ? block.getNextBlock() : null;
+    }
+    return cmds;
+  }
+
+  function getCommandList() {
+    let startBlock = null;
+    workspace.getTopBlocks(false).forEach(b => {
+      if (b.type === 'boat_start') startBlock = b;
+    });
+    if (!startBlock) return [];
+    return extractCommandsFlat(startBlock.getNextBlock());
+  }
+
+  function extractCommandsFlat(block) {
+    const cmds = [];
+    while (block) {
+      const t = block.type;
+      if (t === 'boat_forward')    { cmds.push('forward'); }
+      else if (t === 'boat_backward') { cmds.push('backward'); }
+      else if (t === 'boat_turn_left')  { cmds.push('left'); }
+      else if (t === 'boat_turn_right') { cmds.push('right'); }
+      else if (t === 'boat_collect')    { cmds.push('collect'); }
+      else if (t === 'boat_dodge')      { cmds.push('dodge'); }
+      else if (t === 'boat_strike')     { cmds.push('strike'); }
+      else if (t === 'boat_repeat_until_goal') {
+        cmds.push({ type: 'repeat_until_goal', doBlock: block.getInputTargetBlock('DO') });
+      }
+      else if (t === 'boat_if_obstacle') {
+        cmds.push({ type: 'if_obstacle', doBlock: block.getInputTargetBlock('DO') });
+      }
+      else if (t === 'boat_if_path_else') {
+        cmds.push({ type: 'if_path_else', doBlock: block.getInputTargetBlock('DO'), elseBlock: block.getInputTargetBlock('ELSE') });
+      }
+      else if (t === 'controls_repeat_ext' || t === 'controls_repeat') {
+        let times = 4;
+        try {
+          if (t === 'controls_repeat_ext') {
+            const timesBlock = block.getInputTargetBlock('TIMES');
+            if (timesBlock && timesBlock.getFieldValue) {
+              times = parseInt(timesBlock.getFieldValue('NUM')) || 4;
+            }
+          } else {
+            times = parseInt(block.getFieldValue('TIMES')) || 4;
+          }
+        } catch(e) {}
+        const innerBlock = block.getInputTargetBlock('DO');
+        const innerCmds  = extractCommandsFlat(innerBlock);
+        cmds.push({ type: 'repeat_n', times, inner: innerCmds });
+      }
+      block = block.getNextBlock ? block.getNextBlock() : null;
+    }
+    return cmds;
+  }
+
+  /* ── EXECUTION ── */
+  async function runCmds() {
+    if (isRunning) return;
+    const commands = getCommandList();
+    if (commands.length === 0) return;
+
+    isRunning = true;
+    runBtn.disabled = true;
+
+    currentRunId++;
+    const runId = currentRunId;
+
+    const lv = LEVELS[currentLevel];
+    const state = { c: boatState.c, r: boatState.r, d: boatState.d, blocked: false };
+    let collided = false;
+    let won = false;
+    const collected = new Array((lv.collectibles || []).length).fill(false);
+
+    function isAtGoal(s) { return s.c === lv.goal.c && s.r === lv.goal.r; }
+    function nextCell(s) {
+      return { c: s.c + DELTAS[s.d][0], r: s.r + DELTAS[s.d][1] };
+    }
+    function isObstacleAhead(s) {
+      const nc = nextCell(s);
+      if (nc.c < 0 || nc.c >= GRID || nc.r < 0 || nc.r >= GRID) return true;
+      return lv.rocks.some(rk => rk.c === nc.c && rk.r === nc.r);
+    }
+    function isPathAhead(s) { return !isObstacleAhead(s); }
+
+    async function execCmd(cmd) {
+      if (runId !== currentRunId) return;
+      if (collided || won) return;
+
+      if (state.blocked) {
+        const isAtomic = typeof cmd === 'string';
+        if (isAtomic && cmd !== 'dodge' && cmd !== 'strike') {
+          collided = true;
+          return;
+        }
+      }
+
+      if (typeof cmd === 'string') {
+        if (cmd === 'left') {
+          state.d = (state.d + 3) % 4;
+          state.blocked = false;
+        } else if (cmd === 'right') {
+          state.d = (state.d + 1) % 4;
+          state.blocked = false;
+        } else if (cmd === 'collect') {
+          (lv.collectibles || []).forEach((col, idx) => {
+            if (!collected[idx] && col.c === state.c && col.r === state.r) {
+              collected[idx] = true;
+              if (collectibleEls[idx]) collectibleEls[idx].style.display = 'none';
+            }
+          });
+        } else if (cmd === 'dodge') {
+          const dc = DELTAS[state.d][0];
+          const dr = DELTAS[state.d][1];
+          const nc = state.c + dc;
+          const nr = state.r + dr;
+          const hasObstacle = lv.rocks.some(rk => rk.c === nc && rk.r === nr);
+          if (hasObstacle) {
+            const nc2_c = state.c + dc * 2;
+            const nc2_r = state.r + dr * 2;
+            if (nc2_c >= 0 && nc2_c < GRID && nc2_r >= 0 && nc2_r < GRID) {
+              state.c = nc2_c;
+              state.r = nc2_r;
+              state.blocked = false;
+            } else {
+              collided = true;
+            }
+          } else {
+            if (nc >= 0 && nc < GRID && nr >= 0 && nr < GRID) {
+              state.c = nc;
+              state.r = nr;
+              state.blocked = false;
+            } else {
+              collided = true;
+            }
+          }
+          (lv.collectibles || []).forEach((col, idx) => {
+            if (!collected[idx] && col.c === state.c && col.r === state.r) {
+              collected[idx] = true;
+              if (collectibleEls[idx]) collectibleEls[idx].style.display = 'none';
+            }
+          });
+        } else if (cmd === 'strike') {
+          const dc = DELTAS[state.d][0];
+          const dr = DELTAS[state.d][1];
+          const nc = state.c + dc;
+          const nr = state.r + dr;
+          const hasObstacle = lv.rocks.some(rk => rk.c === nc && rk.r === nr);
+          if (hasObstacle) {
+            removeRockAt(nc, nr);
+            state.c = nc;
+            state.r = nr;
+            state.blocked = false;
+          } else {
+            if (nc >= 0 && nc < GRID && nr >= 0 && nr < GRID) {
+              state.c = nc;
+              state.r = nr;
+              state.blocked = false;
+            } else {
+              collided = true;
+            }
+          }
+          (lv.collectibles || []).forEach((col, idx) => {
+            if (!collected[idx] && col.c === state.c && col.r === state.r) {
+              collected[idx] = true;
+              if (collectibleEls[idx]) collectibleEls[idx].style.display = 'none';
+            }
+          });
+        } else {
+          const mult = cmd === 'forward' ? 1 : -1;
+          const nc = state.c + DELTAS[state.d][0] * mult;
+          const nr = state.r + DELTAS[state.d][1] * mult;
+          if (nc < 0 || nc >= GRID || nr < 0 || nr >= GRID) {
+            collided = true;
+          } else {
+            const hitRock = lv.rocks.some(rk => rk.c === nc && rk.r === nr);
+            if (hitRock) {
+              if (cmd === 'forward') {
+                state.blocked = true;
+              } else {
+                collided = true;
+              }
+            } else {
+              state.c = nc; state.r = nr;
+              state.blocked = false;
+              (lv.collectibles || []).forEach((col, idx) => {
+                if (!collected[idx] && col.c === state.c && col.r === state.r) {
+                  collected[idx] = true;
+                  if (collectibleEls[idx]) collectibleEls[idx].style.display = 'none';
+                }
+              });
+            }
+          }
+        }
+        posBoat(state.c, state.r, state.d, true);
+        await delay(400);
+        if (runId !== currentRunId) return;
+        if (isAtGoal(state)) won = true;
+
+      } else if (cmd.type === 'repeat_n') {
+        for (let i = 0; i < cmd.times && !collided && !won; i++) {
+          if (runId !== currentRunId) return;
+          for (const inner of cmd.inner) {
+            if (runId !== currentRunId) return;
+            await execCmd(inner);
+            if (collided || won) break;
+          }
+        }
+      } else if (cmd.type === 'repeat_until_goal') {
+        const innerCmds = extractCommandsFlat(cmd.doBlock);
+        let safetyLimit = 200;
+        while (!isAtGoal(state) && !collided && safetyLimit-- > 0) {
+          if (runId !== currentRunId) return;
+          for (const inner of innerCmds) {
+            if (runId !== currentRunId) return;
+            await execCmd(inner);
+            if (collided || won || isAtGoal(state)) break;
+          }
+        }
+        if (isAtGoal(state)) won = true;
+      } else if (cmd.type === 'if_obstacle') {
+        if (isObstacleAhead(state)) {
+          const doCmds = extractCommandsFlat(cmd.doBlock);
+          for (const inner of doCmds) {
+            if (runId !== currentRunId) return;
+            await execCmd(inner);
+            if (collided || won) break;
+          }
+        }
+      } else if (cmd.type === 'if_path_else') {
+        if (isPathAhead(state)) {
+          const doCmds = extractCommandsFlat(cmd.doBlock);
+          for (const inner of doCmds) {
+            if (runId !== currentRunId) return;
+            await execCmd(inner);
+            if (collided || won) break;
+          }
+        } else {
+          const elseCmds = extractCommandsFlat(cmd.elseBlock);
+          for (const inner of elseCmds) {
+            if (runId !== currentRunId) return;
+            await execCmd(inner);
+            if (collided || won) break;
+          }
+        }
+      }
+    }
+
+    for (const cmd of commands) {
+      if (runId !== currentRunId) return;
+      await execCmd(cmd);
+      if (collided || won) break;
+    }
+
+    if (runId !== currentRunId) return;
+
+    if (state.blocked) {
+      collided = true;
+    }
+
+    boatState = { c: state.c, r: state.r, d: state.d };
+    await delay(250);
+
+    if (runId !== currentRunId) return;
+
+    isRunning = false;
+    runBtn.disabled = false;
+
+    if (won)           showWin();
+    else if (collided) showCrash();
+    else               showMiss();
+  }
+
+  /* ── MODALS ── */
+  async function showWin() {
+    const isNewCompletion = !completedSet[currentLevel];
+    completedSet[currentLevel] = true;
+    saveCompleted();
+    buildDots();
+    syncMotorBoatProgress();
+
+    let reward = 0;
+    if (isNewCompletion) {
+      const displayLevel = currentLevel + 1;
+      if (displayLevel >= 1 && displayLevel <= 5) reward = 20;
+      else if (displayLevel >= 6 && displayLevel <= 10) reward = 30;
+      else if (displayLevel >= 11 && displayLevel <= 15) reward = 35;
+      else if (displayLevel >= 16 && displayLevel <= 19) reward = 50;
+
+      await creditMotorBoatCoins(reward);
+    }
+
+    const ratio = countWorkspaceBlocks() / LEVELS[currentLevel].max;
+    const stars = ratio <= 0.5 ? '⭐⭐⭐' : ratio <= 0.8 ? '⭐⭐' : '⭐';
+    modalIcon.textContent  = '🎉';
+    modalTitle.textContent = 'Level Complete!';
+    modalStars.textContent = stars;
+
+    let msg = currentLevel < LEVELS.length - 1
+      ? 'Excellent navigation! Ready for the next challenge?'
+      : 'You\'ve completed all 19 levels! Amazing wayfinder!';
+
+    if (reward > 0) {
+      msg += `<br><span style="color: #ffd700; font-weight: bold; font-size: 15px; display: inline-block; margin-top: 10px;">🪙 +${reward} Coins! Total: ${totalCoins}</span>`;
+    } else {
+      msg += `<br><span style="color: #ffd700; font-weight: bold; font-size: 15px; display: inline-block; margin-top: 10px;">🪙 Total: ${totalCoins} Coins</span>`;
+    }
+    modalMsg.innerHTML = msg;
+
+    modalNext.textContent  = currentLevel < LEVELS.length - 1 ? 'Next Level ▶' : '🏆 Finish!';
+    modalNext.style.display  = '';
+    modalRetry.style.display = 'none';
+    showModal();
+    launchConfetti();
+  }
+  function showCrash() {
+    modalIcon.textContent  = '💥';
+    modalTitle.textContent = 'Oh no!';
+    modalStars.textContent = '';
+    modalMsg.textContent   = 'Your boat hit something! Check your commands and try again.';
+    modalNext.style.display  = 'none';
+    modalRetry.style.display = '';
+    showModal();
+  }
+  function showMiss() {
+    modalIcon.textContent  = '🤔';
+    modalTitle.textContent = 'Not quite!';
+    modalStars.textContent = '';
+    modalMsg.textContent   = 'The boat didn\'t reach the star. Try adjusting your commands!';
+    modalNext.style.display  = 'none';
+    modalRetry.style.display = '';
+    showModal();
+  }
+  function showModal() { modalOverlay.classList.add('show'); }
+  function hideModal() { modalOverlay.classList.remove('show'); }
+
+  modalNext.addEventListener('click', () => {
+    hideModal();
+    if (currentLevel < LEVELS.length - 1) goToLevel(currentLevel + 1);
+    else alert('🏆 Congratulations! You finished all 19 levels!');
+  });
+  modalRetry.addEventListener('click', () => { hideModal(); goToLevel(currentLevel); });
+
+  function launchConfetti() {
+    const colors = ['#ff6b6b','#ffd700','#4ecdc4','#45b7d1','#96ceb4','#ff9ff3'];
+    for (let i = 0; i < 60; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.left             = (Math.random() * 100) + 'vw';
+      c.style.top              = '-20px';
+      c.style.background       = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDuration= (2 + Math.random() * 2) + 's';
+      c.style.animationDelay   = (Math.random() * 0.8) + 's';
+      c.style.width            = (8 + Math.random() * 8) + 'px';
+      c.style.height           = (8 + Math.random() * 8) + 'px';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 4000);
+    }
+  }
+
+  runBtn.addEventListener('click', () => { if (!isRunning) runCmds(); });
+
+  resetBtn.addEventListener('click', () => {
+    loadLevel(currentLevel);
+  });
+
+  startoverBtn.addEventListener('click', () => {
+    currentRunId++;
+    isRunning = false;
+    runBtn.disabled = false;
+    loadLevel(currentLevel);
+  });
+
+  document.getElementById('finish-btn').addEventListener('click', () => {
+    alert('🏆 Thanks for playing Motor Boat Wayfinding with Code!');
+  });
+
+  function goToLevel(idx) {
+    if (idx >= 0 && idx < LEVELS.length) loadLevel(idx);
+  }
+
+  /* ── LOAD LEVEL ── */
+  function loadLevel(idx) {
+    currentRunId++;
+    currentLevel = idx;
+    const lv = LEVELS[idx];
+
+    if (!lv.originalRocks) {
+      lv.originalRocks = JSON.parse(JSON.stringify(lv.rocks));
+    } else {
+      lv.rocks = JSON.parse(JSON.stringify(lv.originalRocks));
+    }
+    if (lv.collectibles) {
+      if (!lv.originalCollectibles) {
+        lv.originalCollectibles = JSON.parse(JSON.stringify(lv.collectibles));
+      } else {
+        lv.collectibles = JSON.parse(JSON.stringify(lv.originalCollectibles));
+      }
+    }
+
+    boatState = { c: lv.boat.c, r: lv.boat.r, d: lv.boat.d };
+    isRunning = false;
+    runBtn.disabled = false;
+
+    instrText.innerHTML    = lv.inst;
+    levelBadge.textContent = 'Level ' + (idx + 1);
+
+    computeCell();
+    drawLevelPath(idx);
+    posBoat(boatState.c, boatState.r, boatState.d, false);
+    posGoal(lv.goal.c, lv.goal.r);
+    placeRocks(lv.rocks);
+    placeCollectibles(lv.collectibles || []);
+    buildDots();
+    updateToolbox();
+
+    if (workspace) {
+      clearWorkspaceBlocks();
+      buildPrebuilt(lv.prebuilt || null);
+      wsCount.textContent = countWorkspaceBlocks();
+    }
+  }
+
+  window.addEventListener('resize', () => {
+    computeCell();
+    const lv = LEVELS[currentLevel];
+    drawLevelPath(currentLevel);
+    posBoat(boatState.c, boatState.r, boatState.d, false);
+    posGoal(lv.goal.c, lv.goal.r);
+    placeRocks(lv.rocks);
+    placeCollectibles(lv.collectibles || []);
+    if (workspace) Blockly.svgResize(workspace);
+  });
+
+  window.addEventListener("load", async () => {
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+  }
+
+  computeCell();
+  initBlockly();
+  loadLevel(0);
+  await syncMotorBoatWalletBalance();
+  syncMotorBoatProgress();
+});
+
+})();
+</script>
+</body>
+</html>
