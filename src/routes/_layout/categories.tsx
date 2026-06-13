@@ -283,13 +283,13 @@ const updatedGames = filteredGames.map((game) => ({
 }));
 
   return (
-    <div className="min-h-screen bg-[#dfeef7] text-gray-900 p-6">
+    <div className="min-h-screen bg-[#dfeef7] text-gray-900 px-3 py-4 sm:p-6 overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
 
         {/* Top Heading */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Game Categories</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Game Categories</h1>
             <p className="text-gray-500 mt-1">
               Explore games by category and improve your skills.
             </p>
@@ -300,7 +300,7 @@ const updatedGames = filteredGames.map((game) => ({
   
 
   {/* Search */}
-  <div className="relative w-full lg:w-80">
+  <div className="relative w-full sm:max-w-md lg:w-80">
     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
     <input
   value={searchTerm}
@@ -320,16 +320,16 @@ const updatedGames = filteredGames.map((game) => ({
     Pick a path that matches your goals
   </p>
 
-  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+  <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
     {topCategories.map((cat) => (
       <div
   key={cat.title}
   onClick={() => setActive(cat.title)}
-  className={`min-w-[180px] md:min-w-[220px] h-[110px] rounded-2xl p-5 text-white bg-gradient-to-br ${cat.color} shadow-md hover:scale-105 transition cursor-pointer flex flex-col justify-between`}
+  className={`min-w-[135px] sm:min-w-[180px] md:min-w-[220px] h-[92px] sm:h-[110px] rounded-2xl p-4 sm:p-5 text-white bg-gradient-to-br ${cat.color} shadow-md active:scale-95 sm:hover:scale-105 transition cursor-pointer flex flex-col justify-between`}
 >
-        <div className="text-3xl mb-2">{cat.icon}</div>
+        <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">{cat.icon}</div>
 
-<h3 className="font-semibold text-base md:text-lg">
+<h3 className="font-semibold text-sm sm:text-base md:text-lg leading-tight">
   {cat.title}
 </h3>
 
@@ -339,7 +339,7 @@ const updatedGames = filteredGames.map((game) => ({
 </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
   {updatedGames.length === 0 && (
     <div className="col-span-full text-center py-16 text-gray-500 text-lg font-medium">
       No games found 🔍
@@ -392,7 +392,7 @@ if (game.title === "Connect the Water Pipes") {
 }}
               >
                 {/* Top */}
-                <div className={`h-48 relative bg-gradient-to-br ${game.accent} overflow-hidden`}>
+                <div className={`h-40 sm:h-48 relative bg-gradient-to-br ${game.accent} overflow-hidden`}>
   {game.image ? (
     <img
       src={game.image}
@@ -415,8 +415,10 @@ if (game.title === "Connect the Water Pipes") {
                
                
                 {/* Bottom */}
-                <div className="p-5">
-                  <h3 className="font-semibold text-lg text-gray-800">{game.title}</h3>
+                <div className="p-4 sm:p-5">
+                  <h3 className="font-semibold text-base sm:text-lg text-gray-800 leading-tight line-clamp-2">
+  {game.title}
+</h3>
               
 
                   {/* Progress */}
@@ -437,7 +439,7 @@ if (game.title === "Connect the Water Pipes") {
                   {/* Button */}
                   <button
                     disabled={locked}
-                    className={`mt-4 w-full h-10 rounded-xl font-medium transition ${
+                    className={`mt-4 w-full h-10 sm:h-11 rounded-xl font-medium transition ${
                       locked
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-yellow-400 text-gray-900 hover:bg-yellow-500"
