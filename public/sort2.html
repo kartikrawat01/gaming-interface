@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sort the Objects: Think and Classify</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --sky:#FFF9F0;--sky2:#FFF3E0;--sky3:#FFE0B2;
+    --yellow:#FFD93D;--orange:#FF6B35;--pink:#FF6584;
+    --green:#6BCB77;--blue:#4D96FF;--purple:#C77DFF;
+    --red:#FF595E;--teal:#4ECDC4;--coral:#FF6B6B;
+    --card-bg:#fff;--card-radius:18px;--shadow:0 8px 32px rgba(0,0,0,0.22);
+    --correct:#6BCB77;--wrong:#FF595E;
+  }
+  body{
+    font-family:'Nunito',sans-serif;
+    background:linear-gradient(135deg,#FFF9F0 0%,#FFF0F5 40%,#F0F8FF 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+    user-select:none;
+  }
+
+  /* Animated star background */
+  #stars-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+  /* TOPBAR */
+  #topbar{
+    position:relative;z-index:100;
+    background:rgba(255,255,255,0.92);
+    backdrop-filter:blur(12px);
+    border-bottom:2px solid #FFD93D;
+    box-shadow:0 4px 20px rgba(255,150,50,0.15);
+    padding:10px 16px 8px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  #topbar-row1{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  #game-title{
+    font-size:1.35rem;font-weight:900;
+    background:linear-gradient(90deg,#FF6B35,#FF6584,#C77DFF);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    white-space:nowrap;
+  }
+  .stat-pill{
+    background:#fff;border-radius:30px;
+    padding:5px 14px;color:#444;font-weight:700;font-size:.9rem;
+    border:1.5px solid #FFD93D;display:flex;align-items:center;gap:6px;
+    box-shadow:0 2px 8px rgba(255,150,50,0.15);
+  }
+  .stat-pill span{font-size:1.05rem;font-weight:900;color:var(--yellow);}
+  #timer-pill{cursor:pointer;}
+  #timer-pill.urgent span{color:var(--red);animation:pulse .5s infinite alternate;}
+  @keyframes pulse{to{opacity:.5;}}
+  #btn-hint,#btn-restart{
+    background:#fff;border:2px solid #FFD93D;
+    color:#FF6B35;border-radius:30px;padding:6px 16px;font-family:'Nunito',sans-serif;
+    font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;
+  }
+  #btn-hint:hover{background:rgba(255,215,61,.25);}
+  #btn-restart:hover{background:rgba(255,107,53,.25);}
+
+  /* Level row */
+  #level-row{display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:2px;}
+  #level-row::-webkit-scrollbar{height:3px;}
+  #level-row::-webkit-scrollbar-thumb{background:rgba(255,150,50,.4);border-radius:3px;}
+  .lvl-btn{
+    min-width:34px;height:34px;border-radius:50%;border:2px solid #FFD93D;
+    background:#fff;color:#555;font-family:'Nunito',sans-serif;
+    font-weight:700;font-size:.82rem;cursor:pointer;transition:all .18s;
+    display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;
+  }
+  .lvl-btn:hover{transform:scale(1.12);background:rgba(255,255,255,.18);}
+  .lvl-btn.active{background:var(--yellow);color:#1a1a2e;border-color:var(--yellow);transform:scale(1.15);}
+  .lvl-btn.done{background:var(--green);border-color:var(--green);color:#fff;}
+  .lvl-btn.done::after{content:'★';position:absolute;top:-7px;right:-5px;font-size:.6rem;color:var(--yellow);}
+
+  /* MAIN GAME AREA */
+  #game-area{
+    position:relative;z-index:10;
+    max-width:1100px;margin:0 auto;
+    padding:20px 16px 100px;
+  }
+  #level-header{text-align:center;margin-bottom:18px;}
+  #level-title{font-size:1.6rem;font-weight:900;color:#FF6B35;margin-bottom:4px;}
+  #level-desc{font-size:1rem;color:#888;font-weight:600;}
+  #level-theme-icon{font-size:2.2rem;display:block;margin:0 auto 6px;}
+
+  /* Progress bar */
+  #progress-wrap{
+    background:rgba(0,0,0,.08);border-radius:10px;height:10px;
+    margin:0 auto 20px;max-width:500px;overflow:hidden;
+  }
+  #progress-bar{height:100%;background:linear-gradient(90deg,#FFD93D,#6BCB77);border-radius:10px;transition:width .4s;}
+
+  /* CATEGORIES */
+  #categories{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:24px;}
+  .category-box{
+    background:#fff;
+    border:2.5px dashed #FFD93D;
+    box-shadow:0 4px 16px rgba(255,150,50,0.1);
+    border-radius:22px;padding:14px 14px 16px;
+    min-width:160px;flex:1;max-width:260px;
+    transition:all .25s;position:relative;
+    min-height:120px;
+  }
+  .category-box.drag-over{
+    border-style:solid;border-color:var(--yellow);
+    background:rgba(255,215,61,.12);transform:scale(1.03);
+  }
+  .category-box.correct-flash{animation:correctFlash .5s ease;}
+  .category-box.wrong-shake{animation:shake .4s ease;}
+  @keyframes correctFlash{0%{box-shadow:0 0 0 rgba(107,203,119,0);}50%{box-shadow:0 0 30px rgba(107,203,119,.7);}100%{box-shadow:0 0 0 rgba(107,203,119,0);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(10px);}60%{transform:translateX(-8px);}80%{transform:translateX(8px);}}
+  .cat-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .cat-icon{font-size:1.5rem;}
+  .cat-name{font-size:1rem;font-weight:800;color:#333;}
+  .cat-count{font-size:.8rem;color:#aaa;font-weight:600;}
+  .cat-items{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;}
+  .cat-item-placed{
+    background:#FFF3E0;border-radius:12px;
+    padding:5px 10px;color:#FF6B35;border:1px solid #FFD93D;font-size:.85rem;font-weight:700;
+    display:flex;align-items:center;gap:5px;
+    animation:popIn .3s cubic-bezier(.36,1.5,.64,1);
+  }
+  @keyframes popIn{from{transform:scale(0) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+
+  /* DRAGGABLE OBJECTS */
+  #objects-area{
+    background:#FFF9F0;border-radius:22px;
+    border:2px solid #FFD93D;
+    box-shadow:0 4px 20px rgba(255,150,50,0.1);
+    padding:16px;
+  }
+  #objects-label{color:#888;font-size:.9rem;font-weight:700;margin-bottom:12px;text-align:center;}
+  #objects-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:60px;}
+  .obj-card{
+    background:var(--card-bg);
+    border-radius:var(--card-radius);
+    padding:12px 16px;
+    cursor:grab;
+    font-size:1.7rem;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    box-shadow:var(--shadow);
+    transition:transform .15s,opacity .15s;
+    position:relative;
+    min-width:80px;
+  }
+  .obj-card:hover{transform:scale(1.08) translateY(-4px);}
+  .obj-card.dragging{opacity:.45;transform:scale(.95);}
+  .obj-card.correct-drop{animation:correctPop .5s ease;pointer-events:none;}
+  @keyframes correctPop{0%{transform:scale(1);}50%{transform:scale(1.25) rotate(5deg);}100%{transform:scale(0) translateY(-40px);opacity:0;}}
+  .obj-label{font-size:.72rem;font-weight:800;color:#444;text-align:center;line-height:1.2;}
+  .obj-card .hint-highlight{outline:3px solid var(--yellow);outline-offset:2px;border-radius:var(--card-radius);}
+
+  /* Ghost drag image */
+  #drag-ghost{
+    position:fixed;pointer-events:none;z-index:9999;
+    background:var(--card-bg);border-radius:var(--card-radius);
+    padding:12px 16px;box-shadow:0 12px 40px rgba(0,0,0,.35);
+    font-size:1.7rem;display:flex;flex-direction:column;align-items:center;gap:4px;
+    transform:translate(-50%,-50%) scale(1.15);
+    transition:none;min-width:80px;
+    display:none;
+  }
+
+  /* FEEDBACK TOAST */
+  #toast{
+    position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(.8);
+    background:#fff;border-radius:16px;padding:10px 24px;
+    font-weight:800;font-size:1rem;box-shadow:0 8px 30px rgba(0,0,0,.25);
+    z-index:9999;opacity:0;transition:all .3s;pointer-events:none;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) scale(1);}
+  #toast.good{color:var(--correct);border-left:5px solid var(--correct);}
+  #toast.bad{color:var(--wrong);border-left:5px solid var(--wrong);}
+
+  /* LEVEL COMPLETE OVERLAY */
+  #complete-overlay{
+    position:fixed;inset:0;z-index:1000;
+    background:rgba(10,10,30,.85);
+    display:none;align-items:center;justify-content:center;
+    flex-direction:column;gap:16px;
+  }
+  #complete-overlay.show{display:flex;}
+  .complete-card{
+    background:#fff;border-radius:28px;padding:36px 44px;text-align:center;
+    max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.4);
+    animation:cardSlideIn .5s cubic-bezier(.36,1.5,.64,1);
+  }
+  @keyframes cardSlideIn{from{transform:scale(.6) translateY(60px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+  .complete-emoji{font-size:4rem;display:block;margin-bottom:8px;}
+  .complete-title{font-size:2rem;font-weight:900;color:#1a1a2e;margin-bottom:6px;}
+  .complete-sub{font-size:1rem;color:#666;font-weight:600;margin-bottom:18px;}
+  .complete-points{font-size:1.5rem;font-weight:900;color:var(--orange);margin-bottom:20px;}
+  .stars-row{display:flex;justify-content:center;gap:8px;font-size:2.5rem;margin-bottom:20px;}
+  .star-anim{animation:starPop .4s cubic-bezier(.36,1.5,.64,1) both;}
+  .star-anim:nth-child(2){animation-delay:.12s;}
+  .star-anim:nth-child(3){animation-delay:.24s;}
+  @keyframes starPop{from{transform:scale(0) rotate(-30deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+  .btn-next{
+    background:linear-gradient(135deg,#FFD93D,#FF6B35);
+    border:none;border-radius:50px;padding:14px 36px;
+    color:#fff;font-family:'Nunito',sans-serif;font-weight:900;
+    font-size:1.1rem;cursor:pointer;transition:transform .2s,box-shadow .2s;
+    box-shadow:0 6px 20px rgba(255,107,53,.4);
+  }
+  .btn-next:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(255,107,53,.5);}
+
+  /* CONFETTI */
+  .confetti-piece{
+    position:fixed;width:10px;height:14px;border-radius:3px;
+    z-index:9998;pointer-events:none;
+    animation:confettiFall linear forwards;
+  }
+  @keyframes confettiFall{
+    0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+    100%{transform:translateY(110vh) rotate(720deg);opacity:0;}
+  }
+
+  /* BADGE POPUP */
+  #badge-popup{
+    position:fixed;bottom:24px;right:24px;z-index:2000;
+    background:#fff;border-radius:20px;padding:14px 20px;
+    box-shadow:0 8px 30px rgba(0,0,0,.3);
+    display:none;align-items:center;gap:12px;
+    animation:badgeSlideUp .5s cubic-bezier(.36,1.5,.64,1);
+  }
+  @keyframes badgeSlideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  #badge-popup.show{display:flex;}
+  .badge-icon{font-size:2.2rem;}
+  .badge-text{font-size:.9rem;font-weight:700;color:#1a1a2e;}
+
+  /* Hint overlay card */
+  .hint-shown{outline:4px solid #FFD93D!important;outline-offset:3px;}
+
+  @media(max-width:600px){
+    #game-title{font-size:1rem;}
+    .stat-pill{padding:4px 10px;font-size:.8rem;}
+    .category-box{min-width:130px;}
+    .obj-card{min-width:68px;font-size:1.4rem;}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars-canvas"></canvas>
+<div id="drag-ghost"></div>
+<div id="toast"></div>
+<div id="badge-popup"><span class="badge-icon" id="badge-icon"></span><div class="badge-text" id="badge-text"></div></div>
+
+<div id="complete-overlay">
+  <div class="complete-card" id="complete-card">
+    <span class="complete-emoji" id="complete-emoji">🎉</span>
+    <div class="complete-title" id="complete-title">Level Complete!</div>
+    <div class="complete-sub" id="complete-sub">You sorted everything correctly!</div>
+    <div class="stars-row" id="stars-row"></div>
+    <div class="complete-points" id="complete-points">+30 points</div>
+    <button class="btn-next" id="btn-next">Next Level →</button>
+  </div>
+</div>
+
+<div id="topbar">
+  <div id="topbar-row1">
+    <div id="game-title">🧠 Sort &amp; Think</div>
+    <div class="stat-pill">🪙 Coins: <span id="score-display">0</span></div>
+    <div class="stat-pill">🎯 Level: <span id="level-display">1</span></div>
+    <div class="stat-pill" id="timer-pill">⏱ <span id="timer-display">60</span>s</div>
+    <button id="btn-hint">💡 Hint</button>
+    <button id="btn-restart">🔄 Restart</button>
+  </div>
+  <div id="level-row"></div>
+</div>
+
+<div id="game-area">
+  <div id="level-header">
+    <span id="level-theme-icon">🍎</span>
+    <div id="level-title">Level 1</div>
+    <div id="level-desc">Sort the objects into categories</div>
+  </div>
+  <div id="progress-wrap"><div id="progress-bar" style="width:0%"></div></div>
+  <div id="categories"></div>
+  <div id="objects-area">
+    <div id="objects-label">🎒 Drag each item into the correct box</div>
+    <div id="objects-grid"></div>
+  </div>
+</div>
+
+<script>
+const LEVELS = [
+  // ==================== LEVELS 1-10: EASY ====================
+  {
+    id:1, title:"Fruits vs Veggies", desc:"Sort the food into its group", icon:"🍎",
+    categories:[{name:"Fruits", icon:"🍓", color:"#FF6584"}, {name:"Vegetables", icon:"🥦", color:"#6BCB77"}],
+    objects:[
+      {e:"🍎", l:"Apple", cat:"Fruits"}, {e:"🍌", l:"Banana", cat:"Fruits"}, {e:"🍇", l:"Grapes", cat:"Fruits"},
+      {e:"🥕", l:"Carrot", cat:"Vegetables"}, {e:"🥦", l:"Broccoli", cat:"Vegetables"}, {e:"🧅", l:"Onion", cat:"Vegetables"}
+    ]
+  },
+  {
+    id:2, title:"Animals vs Birds", desc:"Sort the land animals and birds", icon:"🦁",
+    categories:[{name:"Animals", icon:"🐾", color:"#FF6B35"}, {name:"Birds", icon:"🦅", color:"#4D96FF"}],
+    objects:[
+      {e:"🦁", l:"Lion", cat:"Animals"}, {e:"🐶", l:"Dog", cat:"Animals"}, {e:"🐱", l:"Cat", cat:"Animals"},
+      {e:"🦅", l:"Eagle", cat:"Birds"}, {e:"🦉", l:"Owl", cat:"Birds"}, {e:"🦆", l:"Duck", cat:"Birds"}
+    ]
+  },
+  {
+    id:3, title:"Simple Shapes", desc:"Find round and straight shapes", icon:"📐",
+    categories:[{name:"Round", icon:"🔴", color:"#FFD93D"}, {name:"Straight", icon:"📦", color:"#C77DFF"}],
+    objects:[
+      {e:"🔴", l:"Red Circle", cat:"Round"}, {e:"🟡", l:"Yellow Dot", cat:"Round"}, {e:"🍩", l:"Donut", cat:"Round"},
+      {e:"📐", l:"Ruler", cat:"Straight"}, {e:"🧱", l:"Brick", cat:"Straight"}, {e:"📦", l:"Box", cat:"Straight"}
+    ]
+  },
+  {
+    id:4, title:"Colors: Warm vs Cool", desc:"Sort the warm and cool colored objects", icon:"🎨",
+    categories:[{name:"Warm", icon:"🔥", color:"#FF6B35"}, {name:"Cool", icon:"❄️", color:"#4D96FF"}],
+    objects:[
+      {e:"❤️", l:"Red Heart", cat:"Warm"}, {e:"🧡", l:"Orange", cat:"Warm"}, {e:"💛", l:"Yellow Sun", cat:"Warm"},
+      {e:"💙", l:"Blue Heart", cat:"Cool"}, {e:"💚", l:"Green Leaf", cat:"Cool"}, {e:"💜", l:"Purple Gem", cat:"Cool"}
+    ]
+  },
+  {
+    id:5, title:"Toys vs School Tools", desc:"Where do these items belong?", icon:"🧸",
+    categories:[{name:"Toys", icon:"🧸", color:"#FF6584"}, {name:"School Tools", icon:"🎒", color:"#6BCB77"}],
+    objects:[
+      {e:"🧸", l:"Teddy Bear", cat:"Toys"}, {e:"🪁", l:"Kite", cat:"Toys"}, {e:"🪀", l:"Yo-Yo", cat:"Toys"},
+      {e:"🎒", l:"Backpack", cat:"School Tools"}, {e:"✏️", l:"Pencil", cat:"School Tools"}, {e:"📐", l:"Ruler", cat:"School Tools"}
+    ]
+  },
+  {
+    id:6, title:"Sweet vs Sour Food", desc:"Categorize by flavor", icon:"🍋",
+    categories:[{name:"Sweet", icon:"🍩", color:"#FFD93D"}, {name:"Sour", icon:"🍋", color:"#C77DFF"}],
+    objects:[
+      {e:"🍩", l:"Donut", cat:"Sweet"}, {e:"🍦", l:"Ice Cream", cat:"Sweet"}, {e:"🍭", l:"Lollipop", cat:"Sweet"},
+      {e:"🍋", l:"Lemon", cat:"Sour"}, {e:"🍍", l:"Pineapple", cat:"Sour"}, {e:"🥝", l:"Kiwi", cat:"Sour"}
+    ]
+  },
+  {
+    id:7, title:"Land vs Water Animals", desc:"Where do they live?", icon:"🐙",
+    categories:[{name:"Land", icon:"🐘", color:"#FF6B35"}, {name:"Water", icon:"🐟", color:"#4D96FF"}],
+    objects:[
+      {e:"🐘", l:"Elephant", cat:"Land"}, {e:"🐕", l:"Dog", cat:"Land"}, {e:"🦌", l:"Deer", cat:"Land"},
+      {e:"🐟", l:"Fish", cat:"Water"}, {e:"🐙", l:"Octopus", cat:"Water"}, {e:"🐬", l:"Dolphin", cat:"Water"}
+    ]
+  },
+  {
+    id:8, title:"Sky vs Earth Things", desc:"Are they high in the sky or on the ground?", icon:"☁️",
+    categories:[{name:"Sky", icon:"☁️", color:"#4ECDC4"}, {name:"Earth", icon:"🪵", color:"#6BCB77"}],
+    objects:[
+      {e:"☁️", l:"Cloud", cat:"Sky"}, {e:"☀️", l:"Sun", cat:"Sky"}, {e:"🌙", l:"Moon", cat:"Sky"},
+      {e:"🌱", l:"Sprout", cat:"Earth"}, {e:"🪨", l:"Rock", cat:"Earth"}, {e:"🪵", l:"Wood Log", cat:"Earth"}
+    ]
+  },
+  {
+    id:9, title:"Big vs Small Animals", desc:"Compare the sizes of these creatures", icon:"🐋",
+    categories:[{name:"Big", icon:"🐋", color:"#FF6584"}, {name:"Small", icon:"🐜", color:"#FFD93D"}],
+    objects:[
+      {e:"🐘", l:"Elephant", cat:"Big"}, {e:"🐋", l:"Whale", cat:"Big"}, {e:"🦒", l:"Giraffe", cat:"Big"},
+      {e:"🐜", l:"Ant", cat:"Small"}, {e:"🐌", l:"Snail", cat:"Small"}, {e:"🐝", l:"Bee", cat:"Small"}
+    ]
+  },
+  {
+    id:10, title:"Pet vs Wild Animals", desc:"Can you keep them at home?", icon:"🐱",
+    categories:[{name:"Pet", icon:"🏡", color:"#6BCB77"}, {name:"Wild", icon:"🐅", color:"#FF6B35"}],
+    objects:[
+      {e:"🐶", l:"Dog", cat:"Pet"}, {e:"🐱", l:"Cat", cat:"Pet"}, {e:"🐹", l:"Hamster", cat:"Pet"},
+      {e:"🦁", l:"Lion", cat:"Wild"}, {e:"🐅", l:"Tiger", cat:"Wild"}, {e:"🐻", l:"Bear", cat:"Wild"}
+    ]
+  },
+
+  // ==================== LEVELS 11-20: MEDIUM ====================
+  {
+    id:11, title:"Living vs Non-Living", desc:"Does it grow and breathe?", icon:"🌱",
+    categories:[{name:"Living", icon:"🌱", color:"#6BCB77"}, {name:"Non-Living", icon:"🪨", color:"#888888"}],
+    objects:[
+      {e:"🌳", l:"Tree", cat:"Living"}, {e:"🐕", l:"Dog", cat:"Living"}, {e:"🐝", l:"Bee", cat:"Living"},
+      {e:"🪨", l:"Rock", cat:"Non-Living"}, {e:"🪑", l:"Chair", cat:"Non-Living"}, {e:"💻", l:"Laptop", cat:"Non-Living"}
+    ]
+  },
+  {
+    id:12, title:"Natural vs Man-Made", desc:"Did nature or humans create it?", icon:"🌿",
+    categories:[{name:"Natural", icon:"🌿", color:"#6BCB77"}, {name:"Man-Made", icon:"🏭", color:"#4D96FF"}],
+    objects:[
+      {e:"🌋", l:"Volcano", cat:"Natural"}, {e:"🌈", l:"Rainbow", cat:"Natural"}, {e:"⛰️", l:"Mountain", cat:"Natural"},
+      {e:"🏠", l:"House", cat:"Man-Made"}, {e:"🌉", l:"Bridge", cat:"Man-Made"}, {e:"📱", l:"Phone", cat:"Man-Made"}
+    ]
+  },
+  {
+    id:13, title:"Healthy vs Unhealthy Food", desc:"Sort the nutritious vs junk foods", icon:"🥗",
+    categories:[{name:"Healthy", icon:"🥗", color:"#6BCB77"}, {name:"Unhealthy", icon:"🍔", color:"#FF595E"}],
+    objects:[
+      {e:"🥦", l:"Broccoli", cat:"Healthy"}, {e:"🍎", l:"Apple", cat:"Healthy"}, {e:"🥗", l:"Salad", cat:"Healthy"},
+      {e:"🍔", l:"Burger", cat:"Unhealthy"}, {e:"🍕", l:"Pizza", cat:"Unhealthy"}, {e:"🍩", l:"Donut", cat:"Unhealthy"}
+    ]
+  },
+  {
+    id:14, title:"Recyclable vs Organic Waste", desc:"Help clean up the environment!", icon:"♻️",
+    categories:[{name:"Recyclable", icon:"♻️", color:"#4ECDC4"}, {name:"Organic", icon:"🍂", color:"#FFD93D"}],
+    objects:[
+      {e:"📰", l:"Newspaper", cat:"Recyclable"}, {e:"🍾", l:"Glass Bottle", cat:"Recyclable"}, {e:"🥫", l:"Metal Can", cat:"Recyclable"},
+      {e:"🍌", l:"Banana Peel", cat:"Organic"}, {e:"🍎", l:"Apple Core", cat:"Organic"}, {e:"🍂", l:"Dry Leaves", cat:"Organic"}
+    ]
+  },
+  {
+    id:15, title:"Indoor vs Outdoor Fun", desc:"Where do we usually do this?", icon:"🏕️",
+    categories:[{name:"Indoor", icon:"♟️", color:"#C77DFF"}, {name:"Outdoor", icon:"🏕️", color:"#6BCB77"}],
+    objects:[
+      {e:"🎮", l:"Video Games", cat:"Indoor"}, {e:"♟️", l:"Chess Board", cat:"Indoor"}, {e:"📚", l:"Reading Books", cat:"Indoor"},
+      {e:"⚽", l:"Soccer Ball", cat:"Outdoor"}, {e:"🏕️", l:"Camping", cat:"Outdoor"}, {e:"🪁", l:"Kite Flying", cat:"Outdoor"}
+    ]
+  },
+  {
+    id:16, title:"Mammals vs Reptiles", desc:"Scientific classification for animal types", icon:"🦎",
+    categories:[{name:"Mammals", icon:"🦁", color:"#FF6B35"}, {name:"Reptiles", icon:"🦎", color:"#6BCB77"}],
+    objects:[
+      {e:"🦁", l:"Lion", cat:"Mammals"}, {e:"🐄", l:"Cow", cat:"Mammals"}, {e:"🐬", l:"Dolphin", cat:"Mammals"},
+      {e:"🦎", l:"Lizard", cat:"Reptiles"}, {e:"🐍", l:"Snake", cat:"Reptiles"}, {e:"🐊", l:"Crocodile", cat:"Reptiles"}
+    ]
+  },
+  {
+    id:17, title:"Land, Air, and Sea", desc:"Group the transportation methods", icon:"🚌",
+    categories:[{name:"Land", icon:"🚌", color:"#FFD93D"}, {name:"Air", icon:"✈️", color:"#4D96FF"}, {name:"Sea", icon:"🚢", color:"#4ECDC4"}],
+    objects:[
+      {e:"🚗", l:"Car", cat:"Land"}, {e:"🚌", l:"Bus", cat:"Land"},
+      {e:"✈️", l:"Plane", cat:"Air"}, {e:"🚁", l:"Helicopter", cat:"Air"},
+      {e:"🚢", l:"Ship", cat:"Sea"}, {e:"⛵", l:"Sailboat", cat:"Sea"}
+    ]
+  },
+  {
+    id:18, title:"Summer vs Winter Clothes", desc:"What should you wear?", icon:"🧥",
+    categories:[{name:"Summer", icon:"🩳", color:"#FF6B35"}, {name:"Winter", icon:"🧥", color:"#4D96FF"}],
+    objects:[
+      {e:"🩳", l:"Shorts", cat:"Summer"}, {e:"🕶️", l:"Sunglasses", cat:"Summer"}, {e:"🎽", l:"Tank Top", cat:"Summer"},
+      {e:"🧥", l:"Coat", cat:"Winter"}, {e:"🧤", l:"Gloves", cat:"Winter"}, {e:"🧣", l:"Scarf", cat:"Winter"}
+    ]
+  },
+  {
+    id:19, title:"Nocturnal vs Diurnal Animals", desc:"Active during night or day?", icon:"🦇",
+    categories:[{name:"Nocturnal", icon:"🦇", color:"#C77DFF"}, {name:"Diurnal", icon:"🐔", color:"#FFD93D"}],
+    objects:[
+      {e:"🦉", l:"Owl", cat:"Nocturnal"}, {e:"🦇", l:"Bat", cat:"Nocturnal"}, {e:"🦡", l:"Badger", cat:"Nocturnal"},
+      {e:"🐔", l:"Rooster", cat:"Diurnal"}, {e:"🦋", l:"Butterfly", cat:"Diurnal"}, {e:"🐿️", l:"Squirrel", cat:"Diurnal"}
+    ]
+  },
+  {
+    id:20, title:"Tools: Kitchen vs Garden", desc:"Where do these tools go?", icon:"🪴",
+    categories:[{name:"Kitchen", icon:"🍳", color:"#FF6584"}, {name:"Garden", icon:"🪴", color:"#6BCB77"}],
+    objects:[
+      {e:"🍳", l:"Pan", cat:"Kitchen"}, {e:"🔪", l:"Knife", cat:"Kitchen"}, {e:"🍴", l:"Fork", cat:"Kitchen"},
+      {e:"🪵", l:"Log Roller", cat:"Garden"}, {e:"🪴", l:"Potted Plant", cat:"Garden"}, {e:"🪓", l:"Axe", cat:"Garden"}
+    ]
+  },
+
+  // ==================== LEVELS 21-30: MEDIUM TO HARD ====================
+  {
+    id:21, title:"Cause vs Effect", desc:"Link the actions to their natural outcomes", icon:"🔥",
+    categories:[{name:"Cause", icon:"🪵", color:"#FF6B35"}, {name:"Effect", icon:"🔥", color:"#C77DFF"}],
+    objects:[
+      {e:"🌧️", l:"Rainstorm", cat:"Cause"}, {e:"🪵", l:"Dry Wood", cat:"Cause"}, {e:"📚", l:"Hard Study", cat:"Cause"},
+      {e:"🌊", l:"Flooded Street", cat:"Effect"}, {e:"🔥", l:"Campfire", cat:"Effect"}, {e:"💯", l:"Good Grade", cat:"Effect"}
+    ]
+  },
+  {
+    id:22, title:"Fact vs Opinion", desc:"Identify objective facts vs feelings", icon:"🌍",
+    categories:[{name:"Fact", icon:"🌡️", color:"#4D96FF"}, {name:"Opinion", icon:"💬", color:"#FF6584"}],
+    objects:[
+      {e:"🌍", l:"Earth is round", cat:"Fact"}, {e:"🌡️", l:"Boiling Point", cat:"Fact"}, {e:"📅", l:"Calendar Date", cat:"Fact"},
+      {e:"🍕", l:"Pizza is best", cat:"Opinion"}, {e:"🌅", l:"Pretty Sunrise", cat:"Opinion"}, {e:"💛", l:"Yellow is nice", cat:"Opinion"}
+    ]
+  },
+  {
+    id:23, title:"Renewable Energy", desc:"Classify clean vs exhaustible energy", icon:"⚡",
+    categories:[{name:"Renewable", icon:"☀️", color:"#6BCB77"}, {name:"Non-Renewable", icon:"⛽", color:"#FF6B35"}],
+    objects:[
+      {e:"☀️", l:"Solar", cat:"Renewable"}, {e:"💨", l:"Wind", cat:"Renewable"}, {e:"💧", l:"Water", cat:"Renewable"},
+      {e:"⛽", l:"Oil/Gasoline", cat:"Non-Renewable"}, {e:"⛏️", l:"Coal Mine", cat:"Non-Renewable"}, {e:"🔥", l:"Natural Gas", cat:"Non-Renewable"}
+    ]
+  },
+  {
+    id:24, title:"Past vs Present Tech", desc:"Chronological logical sorting", icon:"⏳",
+    categories:[{name:"Past Tech", icon:"🕯️", color:"#888888"}, {name:"Present Tech", icon:"💡", color:"#FFD93D"}],
+    objects:[
+      {e:"✉️", l:"Paper Letter", cat:"Past Tech"}, {e:"🕯️", l:"Candle Light", cat:"Past Tech"}, {e:"⏳", l:"Hourglass", cat:"Past Tech"},
+      {e:"📧", l:"Electronic Email", cat:"Present Tech"}, {e:"💡", l:"Lightbulb", cat:"Present Tech"}, {e:"⌚", l:"Smartwatch", cat:"Present Tech"}
+    ]
+  },
+  {
+    id:25, title:"Needs vs Wants", desc:"Sort by survival necessity", icon:"💎",
+    categories:[{name:"Needs", icon:"🏠", color:"#6BCB77"}, {name:"Wants", icon:"💎", color:"#FF6584"}],
+    objects:[
+      {e:"💧", l:"Drinking Water", cat:"Needs"}, {e:"🥕", l:"Food Vegetables", cat:"Needs"}, {e:"🏠", l:"Home Shelter", cat:"Needs"},
+      {e:"🎮", l:"Video Games", cat:"Wants"}, {e:"💎", l:"Diamonds", cat:"Wants"}, {e:"🍭", l:"Candy Sweets", cat:"Wants"}
+    ]
+  },
+  {
+    id:26, title:"States of Matter", desc:"Classify into solid, liquid, or gas", icon:"🧊",
+    categories:[{name:"Solid", icon:"🧊", color:"#4ECDC4"}, {name:"Liquid", icon:"💧", color:"#4D96FF"}, {name:"Gas", icon:"💨", color:"#C77DFF"}],
+    objects:[
+      {e:"🧊", l:"Water Ice", cat:"Solid"}, {e:"🪨", l:"Hard Rock", cat:"Solid"}, {e:"🪵", l:"Wood Plank", cat:"Solid"},
+      {e:"💧", l:"Pure Water", cat:"Liquid"}, {e:"🧃", l:"Fruit Juice", cat:"Liquid"}, {e:"🍵", l:"Green Tea", cat:"Liquid"},
+      {e:"💨", l:"Wind Air", cat:"Gas"}, {e:"🎈", l:"Helium Gas", cat:"Gas"}, {e:"☁️", l:"Hot Steam", cat:"Gas"}
+    ]
+  },
+  {
+    id:27, title:"Dietary Habits", desc:"Classify what these animals eat", icon:"🥩",
+    categories:[{name:"Herbivore", icon:"🌿", color:"#6BCB77"}, {name:"Carnivore", icon:"🥩", color:"#FF6B35"}, {name:"Omnivore", icon:"🍎", color:"#FFD93D"}],
+    objects:[
+      {e:"🐑", l:"Grass Sheep", cat:"Herbivore"}, {e:"🐰", l:"Carrot Rabbit", cat:"Herbivore"}, {e:"🦒", l:"Leaf Giraffe", cat:"Herbivore"},
+      {e:"🦁", l:"Meat Lion", cat:"Carnivore"}, {e:"🦅", l:"Prey Eagle", cat:"Carnivore"}, {e:"🐆", l:"Hunter Leopard", cat:"Carnivore"},
+      {e:"🐻", l:"Fish Bear", cat:"Omnivore"}, {e:"🐷", l:"Mixed Pig", cat:"Omnivore"}, {e:"🦝", l:"Scavenger Raccoon", cat:"Omnivore"}
+    ]
+  },
+  {
+    id:28, title:"Magnetic or Not", desc:"Based on magnetic properties", icon:"🧲",
+    categories:[{name:"Magnetic", icon:"🧲", color:"#4D96FF"}, {name:"Non-Magnetic", icon:"✏️", color:"#888888"}],
+    objects:[
+      {e:"🧲", l:"Iron Magnet", cat:"Magnetic"}, {e:"🗝️", l:"Iron Key", cat:"Magnetic"}, {e:"🔩", l:"Steel Bolt", cat:"Magnetic"},
+      {e:"✏️", l:"Wood Pencil", cat:"Non-Magnetic"}, {e:"🪙", l:"Gold Coin", cat:"Non-Magnetic"}, {e:"🧶", l:"Wool Yarn", cat:"Non-Magnetic"}
+    ]
+  },
+  {
+    id:29, title:"Solubility", desc:"Will they dissolve in pure water?", icon:"🧂",
+    categories:[{name:"Soluble", icon:"🧂", color:"#4ECDC4"}, {name:"Insoluble", icon:"🪨", color:"#FF6584"}],
+    objects:[
+      {e:"🧂", l:"White Salt", cat:"Soluble"}, {e:"🍬", l:"Sugar Candy", cat:"Soluble"}, {e:"☕", l:"Coffee Powder", cat:"Soluble"},
+      {e:"🪨", l:"Sand Stone", cat:"Insoluble"}, {e:"🪙", l:"Gold Coin", cat:"Insoluble"}, {e:"🪵", l:"Wood Block", cat:"Insoluble"}
+    ]
+  },
+  {
+    id:30, title:"Forces: Push vs Pull", desc:"Which directional force is applied?", icon:"🚪",
+    categories:[{name:"Push Force", icon:"🚪", color:"#FF6B35"}, {name:"Pull Force", icon:"🎣", color:"#4D96FF"}],
+    objects:[
+      {e:"🚪", l:"Push Door Open", cat:"Push Force"}, {e:"🛒", l:"Push Shopping Cart", cat:"Push Force"}, {e:"🔔", l:"Press Doorbell Button", cat:"Push Force"},
+      {e:"🎒", l:"Lift Up Backpack", cat:"Pull Force"}, {e:"🪁", l:"Pull Kite String", cat:"Pull Force"}, {e:"🎣", l:"Reel In Fish", cat:"Pull Force"}
+    ]
+  },
+
+  // ==================== LEVELS 31-40: HARD ====================
+  {
+    id:31, title:"Backbones", desc:"Vertebrates vs Invertebrates", icon:"🦴",
+    categories:[{name:"Vertebrate", icon:"🦴", color:"#FF6584"}, {name:"Invertebrate", icon:"🦋", color:"#6BCB77"}],
+    objects:[
+      {e:"🐟", l:"Vertebrate Fish", cat:"Vertebrate"}, {e:"🐸", l:"Vertebrate Frog", cat:"Vertebrate"}, {e:"🦅", l:"Vertebrate Eagle", cat:"Vertebrate"},
+      {e:"🦋", l:"Invertebrate Butterfly", cat:"Invertebrate"}, {e:"🐙", l:"Invertebrate Octopus", cat:"Invertebrate"}, {e:"🐌", l:"Invertebrate Snail", cat:"Invertebrate"}
+    ]
+  },
+  {
+    id:32, title:"Prime vs Composite", desc:"Mathematical classification", icon:"🔢",
+    categories:[{name:"Prime Numbers", icon:"3️⃣", color:"#4ECDC4"}, {name:"Composite Numbers", icon:"4️⃣", color:"#FF6B35"}],
+    objects:[
+      {e:"3️⃣", l:"Number 3", cat:"Prime Numbers"}, {e:"5️⃣", l:"Number 5", cat:"Prime Numbers"}, {e:"7️⃣", l:"Number 7", cat:"Prime Numbers"},
+      {e:"4️⃣", l:"Number 4", cat:"Composite Numbers"}, {e:"6️⃣", l:"Number 6", cat:"Composite Numbers"}, {e:"8️⃣", l:"Number 8", cat:"Composite Numbers"}
+    ]
+  },
+  {
+    id:33, title:"Synonym vs Antonym", desc:"Word relationships logic", icon:"💬",
+    categories:[{name:"Synonyms", icon:"🤝", color:"#4D96FF"}, {name:"Antonyms", icon:"⚔️", color:"#FF595E"}],
+    objects:[
+      {e:"🤝", l:"Happy & Glad", cat:"Synonyms"}, {e:"🤝", l:"Big & Large", cat:"Synonyms"}, {e:"🤝", l:"Quick & Fast", cat:"Synonyms"},
+      {e:"⚔️", l:"Hot & Cold", cat:"Antonyms"}, {e:"⚔️", l:"Up & Down", cat:"Antonyms"}, {e:"⚔️", l:"Easy & Hard", cat:"Antonyms"}
+    ]
+  },
+  {
+    id:34, title:"Real vs Fictional", desc:"Sort the actual creatures from legends", icon:"🐉",
+    categories:[{name:"Real", icon:"🦁", color:"#6BCB77"}, {name:"Fictional", icon:"🐉", color:"#C77DFF"}],
+    objects:[
+      {e:"🦁", l:"African Lion", cat:"Real"}, {e:"🐨", l:"Koala Bear", cat:"Real"}, {e:"🦉", l:"Snowy Owl", cat:"Real"},
+      {e:"🦄", l:"Magic Unicorn", cat:"Fictional"}, {e:"🐉", l:"Fire Dragon", cat:"Fictional"}, {e:"🧜‍♀️", l:"Sea Mermaid", cat:"Fictional"}
+    ]
+  },
+  {
+    id:35, title:"Primary vs Secondary Colors", desc:"Color theory classification", icon:"🎨",
+    categories:[{name:"Primary", icon:"🔴", color:"#FFD93D"}, {name:"Secondary", icon:"🧡", color:"#C77DFF"}],
+    objects:[
+      {e:"❤️", l:"Red (Primary)", cat:"Primary"}, {e:"💙", l:"Blue (Primary)", cat:"Primary"}, {e:"💛", l:"Yellow (Primary)", cat:"Primary"},
+      {e:"🧡", l:"Orange (Secondary)", cat:"Secondary"}, {e:"💚", l:"Green (Secondary)", cat:"Secondary"}, {e:"💜", l:"Purple (Secondary)", cat:"Secondary"}
+    ]
+  },
+  {
+    id:36, title:"Simple Machines", desc:"Identify Levers and Inclined Planes", icon:"🔨",
+    categories:[{name:"Levers", icon:"🔨", color:"#FF6B35"}, {name:"Inclined Planes", icon:"🛝", color:"#4D96FF"}],
+    objects:[
+      {e:"🔨", l:"Claw Hammer", cat:"Levers"}, {e:"✂️", l:"Paper Scissors", cat:"Levers"}, {e:"⚖️", l:"Balance Scale", cat:"Levers"},
+      {e:"🛝", l:"Playground Slide", cat:"Inclined Planes"}, {e:"📐", l:"Triangle Wedge", cat:"Inclined Planes"}, {e:"🏔️", l:"Mountain Slope", cat:"Inclined Planes"}
+    ]
+  },
+  {
+    id:37, title:"Planets vs Stars", desc:"Cosmic objects classification", icon:"🪐",
+    categories:[{name:"Planets", icon:"🪐", color:"#4D96FF"}, {name:"Stars", icon:"✨", color:"#FFD93D"}],
+    objects:[
+      {e:"🌍", l:"Planet Earth", cat:"Planets"}, {e:"🪐", l:"Planet Saturn", cat:"Planets"}, {e:"🔴", l:"Planet Mars", cat:"Planets"},
+      {e:"☀️", l:"Sun (Star)", cat:"Stars"}, {e:"⭐", l:"North Star", cat:"Stars"}, {e:"✨", l:"Distant Star", cat:"Stars"}
+    ]
+  },
+  {
+    id:38, title:"Birds vs Fish", desc:"Wings vs Fins", icon:"🦅",
+    categories:[{name:"Birds", icon:"🦅", color:"#FFD93D"}, {name:"Fish", icon:"🐟", color:"#4ECDC4"}],
+    objects:[
+      {e:"🦅", l:"Eagle (Bird)", cat:"Birds"}, {e:"🦉", l:"Owl (Bird)", cat:"Birds"}, {e:"🐧", l:"Penguin (Bird)", cat:"Birds"},
+      {e:"🐟", l:"Goldfish (Fish)", cat:"Fish"}, {e:"🦈", l:"Shark (Fish)", cat:"Fish"}, {e:"🐠", l:"Clownfish (Fish)", cat:"Fish"}
+    ]
+  },
+  {
+    id:39, title:"Light Transmission", desc:"Transparent vs Opaque", icon:"👓",
+    categories:[{name:"Transparent", icon:"👓", color:"#4D96FF"}, {name:"Opaque", icon:"🧱", color:"#FF595E"}],
+    objects:[
+      {e:"👓", l:"Eye Glasses", cat:"Transparent"}, {e:"🥛", l:"Clear Cup", cat:"Transparent"}, {e:"🧪", l:"Test Tube", cat:"Transparent"},
+      {e:"🧱", l:"Clay Brick", cat:"Opaque"}, {e:"🪵", l:"Wood Plank", cat:"Opaque"}, {e:"📦", l:"Cardboard Box", cat:"Opaque"}
+    ]
+  },
+  {
+    id:40, title:"Symmetry Sorting", desc:"Symmetric vs Asymmetric shapes/objects", icon:"🦋",
+    categories:[{name:"Symmetric", icon:"🦋", color:"#6BCB77"}, {name:"Asymmetric", icon:"👣", color:"#FFD93D"}],
+    objects:[
+      {e:"🦋", l:"Butterfly Shape", cat:"Symmetric"}, {e:"⭐", l:"Star Shape", cat:"Symmetric"}, {e:"❤️", l:"Heart Shape", cat:"Symmetric"},
+      {e:"👣", l:"Footprints Path", cat:"Asymmetric"}, {e:"🦀", l:"Crab Shape", cat:"Asymmetric"}, {e:"🗺️", l:"Map Contour", cat:"Asymmetric"}
+    ]
+  },
+
+  // ==================== LEVELS 41-50: VERY HARD ====================
+  {
+    id:41, title:"Advanced Fact vs Opinion", desc:"Scientific facts vs social opinions", icon:"🧬",
+    categories:[{name:"Advanced Fact", icon:"🔬", color:"#4D96FF"}, {name:"Advanced Opinion", icon:"💬", color:"#FF6584"}],
+    objects:[
+      {e:"🧬", l:"DNA carries genes", cat:"Advanced Fact"}, {e:"🧪", l:"Water is H2O", cat:"Advanced Fact"}, {e:"🪐", l:"Jupiter is largest", cat:"Advanced Fact"},
+      {e:"💎", l:"Diamonds are pretty", cat:"Advanced Opinion"}, {e:"🎨", l:"Modern art is bad", cat:"Advanced Opinion"}, {e:"🎭", l:"Acting is easy", cat:"Advanced Opinion"}
+    ]
+  },
+  {
+    id:42, title:"Evidence vs Assumption", desc:"Is it proven facts or just guessing?", icon:"🔍",
+    categories:[{name:"Evidence", icon:"🔍", color:"#6BCB77"}, {name:"Assumption", icon:"💭", color:"#888888"}],
+    objects:[
+      {e:"🌡️", l:"Thermometer Reading", cat:"Evidence"}, {e:"🔬", l:"DNA Evidence", cat:"Evidence"}, {e:"📸", l:"Video Recording", cat:"Evidence"},
+      {e:"💭", l:"Guilty Look on Face", cat:"Assumption"}, {e:"🔮", l:"Fortune Prediction", cat:"Assumption"}, {e:"🗣️", l:"Gossip & Rumors", cat:"Assumption"}
+    ]
+  },
+  {
+    id:43, title:"Input vs Output Devices", desc:"Computational thinking: data flow", icon:"💻",
+    categories:[{name:"Input Devices", icon:"⌨️", color:"#4D96FF"}, {name:"Output Devices", icon:"🖥️", color:"#FF595E"}],
+    objects:[
+      {e:"⌨️", l:"Keyboard", cat:"Input Devices"}, {e:"🖱️", l:"Mouse", cat:"Input Devices"}, {e:"🎙️", l:"Microphone", cat:"Input Devices"},
+      {e:"🖥️", l:"Monitor", cat:"Output Devices"}, {e:"🔊", l:"Speaker", cat:"Output Devices"}, {e:"🖨️", l:"Printer", cat:"Output Devices"}
+    ]
+  },
+  {
+    id:44, title:"Problem vs Solution", desc:"Sort problems vs their logical resolutions", icon:"🧯",
+    categories:[{name:"Problem", icon:"🕸️", color:"#FF6B35"}, {name:"Solution", icon:"🧹", color:"#6BCB77"}],
+    objects:[
+      {e:"🔥", l:"Campfire Out of Control", cat:"Problem"}, {e:"🦷", l:"Tooth Decay Starting", cat:"Problem"}, {e:"🕸️", l:"Messy Spiderwebs", cat:"Problem"},
+      {e:"🧯", l:"Fire Extinguisher", cat:"Solution"}, {e:"🪥", l:"Toothbrush & Paste", cat:"Solution"}, {e:"🧹", l:"Broom Sweep", cat:"Solution"}
+    ]
+  },
+  {
+    id:45, title:"Renewable: Wind vs Solar vs Hydro", desc:"Classify specific green energies", icon:"♻️",
+    categories:[{name:"Wind", icon:"💨", color:"#4D96FF"}, {name:"Solar", icon:"☀️", color:"#FFD93D"}, {name:"Hydro", icon:"🌊", color:"#4ECDC4"}],
+    objects:[
+      {e:"💨", l:"Wind Turbine", cat:"Wind"}, {e:"🌀", l:"Windmill Wheel", cat:"Wind"},
+      {e:"☀️", l:"Solar Panel", cat:"Solar"}, {e:"🌻", l:"Solar Sunflower", cat:"Solar"},
+      {e:"🌊", l:"Hydroelectric Dam", cat:"Hydro"}, {e:"⛲", l:"Waterwheel", cat:"Hydro"}
+    ]
+  },
+  {
+    id:46, title:"Hardware vs Software", desc:"Compute structures", icon:"💾",
+    categories:[{name:"Hardware", icon:"🔌", color:"#FFD93D"}, {name:"Software", icon:"🌐", color:"#C77DFF"}],
+    objects:[
+      {e:"💾", l:"Hard Drive", cat:"Hardware"}, {e:"🔌", l:"Power Cable", cat:"Hardware"}, {e:"⌨️", l:"USB Keyboard", cat:"Hardware"},
+      {e:"🌐", l:"Web Browser", cat:"Software"}, {e:"🎮", l:"Video Game App", cat:"Software"}, {e:"🎨", l:"Paint Program", cat:"Software"}
+    ]
+  },
+  {
+    id:47, title:"Physical vs Chemical", desc:"Classify chemical and physical changes", icon:"🧪",
+    categories:[{name:"Physical Change", icon:"🧊", color:"#4ECDC4"}, {name:"Chemical Change", icon:"🔥", color:"#FF595E"}],
+    objects:[
+      {e:"🧊", l:"Ice Melting", cat:"Physical Change"}, {e:"🪵", l:"Wood Chopping", cat:"Physical Change"}, {e:"📄", l:"Paper Tearing", cat:"Physical Change"},
+      {e:"🔥", l:"Wood Burning", cat:"Chemical Change"}, {e:"🥖", l:"Bread Baking", cat:"Chemical Change"}, {e:"🔩", l:"Iron Rusting", cat:"Chemical Change"}
+    ]
+  },
+  {
+    id:48, title:"Living Land vs Water", desc:"Multi-condition classification", icon:"🦁",
+    categories:[{name:"Living Land", icon:"🦁", color:"#FF6B35"}, {name:"Living Water", icon:"🐬", color:"#4D96FF"}],
+    objects:[
+      {e:"🦁", l:"Tiger / Lion", cat:"Living Land"}, {e:"🐘", l:"Elephant", cat:"Living Land"}, {e:"🦌", l:"Wild Deer", cat:"Living Land"},
+      {e:"🐬", l:"Dolphin", cat:"Living Water"}, {e:"🐙", l:"Octopus", cat:"Living Water"}, {e:"🐋", l:"Blue Whale", cat:"Living Water"}
+    ]
+  },
+  {
+    id:49, title:"pH: Acidic vs Alkaline vs Neutral", desc:"Sort foods/substances by pH category", icon:"🧪",
+    categories:[{name:"Acidic", icon:"🍋", color:"#FF595E"}, {name:"Alkaline", icon:"🧼", color:"#6BCB77"}, {name:"Neutral", icon:"💧", color:"#4D96FF"}],
+    objects:[
+      {e:"🍋", l:"Lemon Juice", cat:"Acidic"}, {e:"🥤", l:"Cola Soda", cat:"Acidic"},
+      {e:"🧼", l:"Hand Soap", cat:"Alkaline"}, {e:"🥦", l:"Baking Soda", cat:"Alkaline"},
+      {e:"💧", l:"Pure Water", cat:"Neutral"}, {e:"🧂", l:"Saline Solution", cat:"Neutral"}
+    ]
+  },
+  {
+    id:50, title:"Grand Master", desc:"Ultimate mixed multi-conditional logic!", icon:"🏆",
+    categories:[
+      {name:"Nat. Living", icon:"🐯", color:"#6BCB77"},
+      {name:"Nat. Non-Living", icon:"⛰️", color:"#4D96FF"},
+      {name:"Man. Living", icon:"🌻", color:"#FF6584"},
+      {name:"Man. Non-Living", icon:"🤖", color:"#C77DFF"}
+    ],
+    objects:[
+      {e:"🐯", l:"Wild Tiger", cat:"Nat. Living"}, {e:"🌲", l:"Pine Tree", cat:"Nat. Living"},
+      {e:"⛰️", l:"Mountain", cat:"Nat. Non-Living"}, {e:"🌊", l:"Ocean", cat:"Nat. Non-Living"},
+      {e:"🌻", l:"Greenhouse Crop", cat:"Man. Living"}, {e:"🐄", l:"Farmed Cow", cat:"Man. Living"},
+      {e:"🤖", l:"Robot", cat:"Man. Non-Living"}, {e:"💻", l:"Laptop", cat:"Man. Non-Living"}
+    ]
+  }
+];
+
+const BADGES = [
+  {after:5, icon:"🥉", text:"Bronze Thinker — 5 levels done!"},
+  {after:15, icon:"🥈", text:"Silver Sorter — 15 levels done!"},
+  {after:30, icon:"🥇", text:"Gold Classifier — 30 levels done!"},
+  {after:45, icon:"🏆", text:"Champion — 45 levels done!"},
+  {after:50, icon:"👑", text:"Grand Master — All 50 levels!"}
+];
+async function syncSortWalletBalance() {
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(localStorage.getItem("sortGameCoins")) ||
+    0;
+
+  document.getElementById("score-display").textContent = saved;
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        localStorage.setItem("walletCoins", String(balance));
+        localStorage.setItem("sortGameCoins", String(balance));
+        document.getElementById("score-display").textContent = balance;
+        return Number(balance);
+      }
+    }
+  } catch (err) {
+    console.warn("Sort game wallet sync failed:", err);
+  }
+
+  return saved;
+}
+function syncSortProgressToParent() {
+  const completed = state.completed.size;
+  const progress = Math.min(
+    Math.round((completed / 50) * 100),
+    100
+  );
+
+  localStorage.setItem("sortCompleted", String(completed));
+  localStorage.setItem("sortProgress", String(progress));
+  localStorage.setItem(
+    "sortCompletedLevels",
+    JSON.stringify([...state.completed])
+  );
+
+  window.parent.postMessage(
+    {
+      type: "GAME_PROGRESS_UPDATE",
+      game: "sort_game",
+      progress,
+      completed,
+      coins:
+        Number(localStorage.getItem("walletCoins")) ||
+        Number(localStorage.getItem("sortGameCoins")) ||
+        0,
+      time: 0,
+    },
+    "*"
+  );
+}
+async function creditSortCoins(amount) {
+  let finalBalance =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(document.getElementById("score-display").textContent) ||
+    0;
+
+  try {
+    const rewardResult = await window.gameSDK.rewardCoins({
+      amount,
+      description: `Sort Game Level ${state.current + 1} Complete`,
+      game: "sort_game",
+      level: state.current + 1,
+      score: amount,
+    });
+
+    if (rewardResult && rewardResult.balance !== undefined) {
+      finalBalance = Number(rewardResult.balance);
+    } else if (window.gameSDK) {
+      const freshBalance = await window.gameSDK.getBalance();
+      if (freshBalance !== undefined && freshBalance !== null) {
+        finalBalance = Number(freshBalance);
+      }
+    }
+  } catch (err) {
+    console.error("Sort game reward error:", err);
+    finalBalance = finalBalance + amount;
+  }
+
+  localStorage.setItem("walletCoins", String(finalBalance));
+  localStorage.setItem("sortGameCoins", String(finalBalance));
+  document.getElementById("score-display").textContent = finalBalance;
+
+  window.parent.postMessage({
+  type: "GAME_PROGRESS_UPDATE",
+  game: "sort_game",
+  progress: Number(localStorage.getItem("sortProgress")) || 0,
+  completed: Number(localStorage.getItem("sortCompleted")) || 0,
+  coins: finalBalance,
+  level: state.current + 1,
+  score: finalBalance,
+  time: 0,
+}, "*");
+
+  return finalBalance;
+}
+
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+
+  if (balance !== undefined) {
+    localStorage.setItem("walletCoins", String(balance));
+    localStorage.setItem("sortGameCoins", String(balance));
+    document.getElementById("score-display").textContent = balance;
+  }
+});
+let state = {
+  current: 0,
+  score: 0,
+  completed: new Set(
+    JSON.parse(localStorage.getItem("sortCompletedLevels") || "[]")
+  ),
+  timers: {},
+  timerLeft: 60,
+  timerInterval: null,
+  objects: [],
+  placed: {},
+  dragItem: null,
+  hintUsed: false
+};
+
+function getLevelConfig(id) {
+  if (id <= 10) return { timer: 20, reward: 15 };
+  if (id <= 20) return { timer: 35, reward: 30 };
+  if (id <= 30) return { timer: 45, reward: 45 };
+  if (id <= 40) return { timer: 60, reward: 65 };
+  return { timer: 75, reward: 85 };
+}
+
+// ---- STARS BG ----
+(function(){
+  const c=document.getElementById('stars-canvas');
+  const ctx=c.getContext('2d');
+  let W,H,stars=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;initStars();}
+  function initStars(){stars=[];for(let i=0;i<120;i++)stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+.3,a:Math.random(),da:.003+Math.random()*.007});}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#FFF9F0');g.addColorStop(.5,'#FFF0F5');g.addColorStop(1,'#F0F8FF');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    stars.forEach(s=>{s.a+=s.da;if(s.a>1||s.a<0)s.da*=-1;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);const starColors=['rgba(255,107,107,','rgba(255,215,61,','rgba(107,203,119,','rgba(77,150,255,','rgba(199,125,255,'];
+    ctx.fillStyle=starColors[Math.floor(s.x*s.y)%starColors.length]+s.a.toFixed(2)+')';ctx.fill();});
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+// ---- BUILD UI ----
+function buildLevelButtons(){
+  const row=document.getElementById('level-row');row.innerHTML='';
+  LEVELS.forEach((l,i)=>{
+    const btn=document.createElement('button');
+    btn.className='lvl-btn'+(i===state.current?' active':'')+(state.completed.has(i)?' done':'');
+    btn.textContent=i+1;
+    btn.onclick=()=>loadLevel(i);
+    row.appendChild(btn);
+  });
+}
+
+function buildLevel(){
+  const lv=LEVELS[state.current];
+  document.getElementById('level-title').textContent=`Level ${lv.id}: ${lv.title}`;
+  document.getElementById('level-desc').textContent=lv.desc;
+  document.getElementById('level-theme-icon').textContent=lv.icon;
+  document.getElementById('level-display').textContent=lv.id;
+
+  // Categories
+  const catDiv=document.getElementById('categories');catDiv.innerHTML='';
+  state.placed={};
+  lv.categories.forEach(cat=>{
+    state.placed[cat.name]=[];
+    const box=document.createElement('div');
+    box.className='category-box';
+    box.dataset.cat=cat.name;
+    box.innerHTML=`<div class="cat-header"><span class="cat-icon">${cat.icon}</span><div><div class="cat-name">${cat.name}</div><div class="cat-count" id="count-${cat.name.replace(/\s/g,'_')}">0 / ${lv.objects.filter(o=>o.cat===cat.name).length}</div></div></div><div class="cat-items" id="items-${cat.name.replace(/\s/g,'_')}"></div>`;
+    box.style.borderColor=cat.color+'66';
+    box.addEventListener('dragover',e=>{e.preventDefault();box.classList.add('drag-over');});
+    box.addEventListener('dragleave',()=>box.classList.remove('drag-over'));
+    box.addEventListener('drop',e=>{e.preventDefault();box.classList.remove('drag-over');handleDrop(cat.name);});
+    catDiv.appendChild(box);
+  });
+
+  // Objects — shuffle
+  state.objects=[...lv.objects].sort(()=>Math.random()-.5);
+  renderObjects();
+  updateProgress();
+  startTimer();
+  state.hintUsed=false;
+}
+
+function renderObjects(){
+  const grid=document.getElementById('objects-grid');grid.innerHTML='';
+  state.objects.forEach((obj,i)=>{
+    const card=document.createElement('div');
+    card.className='obj-card';
+    card.draggable=true;
+    card.dataset.idx=i;
+    card.dataset.cat=obj.cat;
+    card.innerHTML=`${obj.e}<div class="obj-label">${obj.l}</div>`;
+    card.addEventListener('dragstart',e=>{
+      state.dragItem=obj;
+      card.classList.add('dragging');
+      showGhost(obj,e);
+      e.dataTransfer.effectAllowed='move';
+    });
+    card.addEventListener('dragend',()=>{card.classList.remove('dragging');hideGhost();});
+    // Touch support
+    card.addEventListener('touchstart',onTouchStart,{passive:true});
+    card.addEventListener('touchmove',onTouchMove,{passive:false});
+    card.addEventListener('touchend',onTouchEnd);
+    grid.appendChild(card);
+  });
+}
+
+// ---- DRAG GHOST ----
+const ghost=document.getElementById('drag-ghost');
+function showGhost(obj,e){
+  ghost.innerHTML=`${obj.e}<div class="obj-label" style="font-size:.7rem;font-weight:800;color:#444">${obj.l}</div>`;
+  ghost.style.display='flex';
+  moveGhost(e.clientX,e.clientY);
+}
+function moveGhost(x,y){ghost.style.left=x+'px';ghost.style.top=y+'px';}
+function hideGhost(){ghost.style.display='none';}
+document.addEventListener('dragover',e=>moveGhost(e.clientX,e.clientY));
+
+// ---- TOUCH DRAG ----
+let touchObj=null,touchCard=null;
+function onTouchStart(e){
+  touchCard=e.currentTarget;
+  const idx=+touchCard.dataset.idx;
+  touchObj=state.objects[idx];
+  state.dragItem=touchObj;
+  const t=e.touches[0];
+  showGhost(touchObj,{clientX:t.clientX,clientY:t.clientY});
+  touchCard.classList.add('dragging');
+}
+function onTouchMove(e){
+  e.preventDefault();
+  const t=e.touches[0];
+  moveGhost(t.clientX,t.clientY);
+  document.querySelectorAll('.category-box').forEach(b=>{
+    const r=b.getBoundingClientRect();
+    if(t.clientX>r.left&&t.clientX<r.right&&t.clientY>r.top&&t.clientY<r.bottom){b.classList.add('drag-over');}
+    else b.classList.remove('drag-over');
+  });
+}
+function onTouchEnd(e){
+  hideGhost();
+  if(touchCard)touchCard.classList.remove('dragging');
+  const t=e.changedTouches[0];
+  const els=document.elementsFromPoint(t.clientX,t.clientY);
+  const box=els.find(el=>el.classList.contains('category-box'));
+  document.querySelectorAll('.category-box').forEach(b=>b.classList.remove('drag-over'));
+  if(box&&state.dragItem){handleDrop(box.dataset.cat);}
+  touchObj=null;touchCard=null;
+}
+
+// ---- DROP LOGIC ----
+function handleDrop(catName){
+  if(!state.dragItem)return;
+  const obj=state.dragItem;
+  state.dragItem=null;
+  if(obj.cat===catName){
+    handleCorrect(obj,catName);
+  } else {
+    handleWrong(catName);
+  }
+}
+
+function handleCorrect(obj,catName){
+  playBeep(880,120);
+  state.placed[catName].push(obj);
+  const key=catName.replace(/\s/g,'_');
+  const itemsDiv=document.getElementById('items-'+key);
+  const chip=document.createElement('div');
+  chip.className='cat-item-placed';chip.textContent=obj.e+' '+obj.l;
+  itemsDiv.appendChild(chip);
+  const countDiv=document.getElementById('count-'+key);
+  const total=LEVELS[state.current].objects.filter(o=>o.cat===catName).length;
+  countDiv.textContent=`${state.placed[catName].length} / ${total}`;
+  const box=document.querySelector(`.category-box[data-cat="${catName}"]`);
+  box.classList.add('correct-flash');setTimeout(()=>box.classList.remove('correct-flash'),600);
+  showToast('✅ Correct!','good');
+  // Remove from objects array
+  const i=state.objects.findIndex(o=>o===obj);
+  if(i>-1){
+    const card=document.querySelector(`.obj-card[data-idx="${i}"]`);
+    if(card){card.classList.add('correct-drop');setTimeout(()=>card.remove(),450);}
+    state.objects.splice(i,1);
+    // Re-index
+    document.querySelectorAll('.obj-card').forEach((c,idx)=>{
+      c.dataset.idx=state.objects.indexOf(LEVELS[state.current].objects.find(o=>o.l===state.objects[idx]?.l));
+    });
+    renderObjectsPartial();
+  }
+  updateProgress();
+  checkComplete();
+}
+
+function renderObjectsPartial(){
+  const grid=document.getElementById('objects-grid');grid.innerHTML='';
+  state.objects.forEach((obj,i)=>{
+    const card=document.createElement('div');
+    card.className='obj-card';card.draggable=true;card.dataset.idx=i;card.dataset.cat=obj.cat;
+    card.innerHTML=`${obj.e}<div class="obj-label">${obj.l}</div>`;
+    card.addEventListener('dragstart',e=>{state.dragItem=obj;card.classList.add('dragging');showGhost(obj,e);e.dataTransfer.effectAllowed='move';});
+    card.addEventListener('dragend',()=>{card.classList.remove('dragging');hideGhost();});
+    card.addEventListener('touchstart',onTouchStart,{passive:true});
+    card.addEventListener('touchmove',onTouchMove,{passive:false});
+    card.addEventListener('touchend',onTouchEnd);
+    grid.appendChild(card);
+  });
+}
+
+function handleWrong(catName){
+  playBeep(220,200);
+  showToast('❌ Try Again!','bad');
+  const box=document.querySelector(`.category-box[data-cat="${catName}"]`);
+  box.classList.add('wrong-shake');setTimeout(()=>box.classList.remove('wrong-shake'),500);
+}
+
+function updateProgress(){
+  const lv=LEVELS[state.current];
+  const total=lv.objects.length;
+  const done=Object.values(state.placed).reduce((a,b)=>a+b.length,0);
+  const pct=Math.round(done/total*100);
+  document.getElementById('progress-bar').style.width=pct+'%';
+}
+
+function checkComplete(){
+  const lv=LEVELS[state.current];
+  const allDone=lv.objects.every(obj=>state.placed[obj.cat]?.find(p=>p.l===obj.l));
+  if(allDone) setTimeout(showComplete,300);
+}
+
+// ---- COMPLETE ----
+async function showComplete(){
+  clearInterval(state.timerInterval);
+  const lv=LEVELS[state.current];
+  
+  const config = getLevelConfig(lv.id);
+  const reward = config.reward;
+
+  let coinsEarned = 0;
+  if (!state.completed.has(state.current)) {
+  coinsEarned = reward;
+  state.score = await creditSortCoins(coinsEarned);
+}
+
+  state.completed.add(state.current);
+
+syncSortProgressToParent();
+
+buildLevelButtons();
+
+  const maxTimer = config.timer;
+  const pctLeft = state.timerLeft / maxTimer;
+  const stars = pctLeft > 0.5 ? 3 : pctLeft > 0.2 ? 2 : 1;
+
+  const starsRow=document.getElementById('stars-row');starsRow.innerHTML='';
+  for(let i=0;i<3;i++){const s=document.createElement('span');s.className='star-anim';s.textContent=i<stars?'⭐':'☆';starsRow.appendChild(s);}
+  document.getElementById('complete-emoji').textContent=stars===3?'🎉':stars===2?'😊':'👍';
+  document.getElementById('complete-title').textContent=stars===3?'Perfect!':'Level Complete!';
+  document.getElementById('complete-sub').textContent=stars===3?'Flawless! Amazing thinking!':'Great job sorting everything!';
+  document.getElementById('complete-points').textContent=coinsEarned > 0 ? `+${coinsEarned} coins earned!` : "Already completed!";
+  document.getElementById('btn-next').textContent=state.current<49?'Next Level →':'🏆 You Win!';
+  document.getElementById('complete-overlay').classList.add('show');
+  launchConfetti();
+  checkBadge();
+}
+
+document.getElementById('btn-next').onclick=()=>{
+  document.getElementById('complete-overlay').classList.remove('show');
+  if(state.current<49)loadLevel(state.current+1);
+};
+
+// ---- TIMER ----
+function startTimer(){
+  clearInterval(state.timerInterval);
+  const lv=LEVELS[state.current];
+  const config = getLevelConfig(lv.id);
+  state.timerLeft = config.timer;
+  updateTimerDisplay();
+  state.timerInterval=setInterval(()=>{
+    state.timerLeft--;
+    updateTimerDisplay();
+    if(state.timerLeft<=10)document.getElementById('timer-pill').classList.add('urgent');
+    else document.getElementById('timer-pill').classList.remove('urgent');
+    if(state.timerLeft<=0){
+      clearInterval(state.timerInterval);
+      showToast("⏰ Time's up! Level failed! (0 coins)",'bad');
+      setTimeout(()=>loadLevel(state.current),1500);
+    }
+  },1000);
+}
+function updateTimerDisplay(){document.getElementById('timer-display').textContent=state.timerLeft;}
+
+// ---- HINT ----
+document.getElementById('btn-hint').onclick=()=>{
+  if(state.objects.length===0)return;
+  const obj=state.objects[0];
+  const card=document.querySelector('.obj-card');
+  if(card){
+    card.classList.add('hint-highlight');
+    const catBox=document.querySelector(`.category-box[data-cat="${obj.cat}"]`);
+    if(catBox){catBox.classList.add('drag-over');setTimeout(()=>{catBox.classList.remove('drag-over');card.classList.remove('hint-highlight');},1800);}
+    showToast(`💡 Try dragging "${obj.l}" somewhere!`,'good');
+  }
+};
+
+// ---- RESTART ----
+document.getElementById('btn-restart').onclick=()=>loadLevel(state.current);
+
+// ---- CONFETTI ----
+function launchConfetti(){
+  const colors=['#FFD93D','#FF6B35','#FF6584','#6BCB77','#4D96FF','#C77DFF','#4ECDC4'];
+  for(let i=0;i<70;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left=Math.random()*100+'vw';
+    p.style.top='-20px';
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    p.style.width=(8+Math.random()*10)+'px';
+    p.style.height=(10+Math.random()*14)+'px';
+    p.style.animationDuration=(1.5+Math.random()*2)+'s';
+    p.style.animationDelay=(Math.random()*.8)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),(3.5+Math.random()*2)*1000);
+  }
+}
+
+// ---- BADGE ----
+function checkBadge(){
+  const done=state.completed.size;
+  const badge=BADGES.find(b=>b.after===done);
+  if(badge){
+    document.getElementById('badge-icon').textContent=badge.icon;
+    document.getElementById('badge-text').innerHTML=`<strong>${badge.icon} Badge!</strong><br>${badge.text}`;
+    const popup=document.getElementById('badge-popup');popup.classList.add('show');
+    setTimeout(()=>popup.classList.remove('show'),4000);
+  }
+}
+
+// ---- TOAST ----
+let toastTimeout;
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+type;
+  clearTimeout(toastTimeout);
+  toastTimeout=setTimeout(()=>t.className='toast',2000);
+}
+
+// ---- SOUND ----
+const AC=window.AudioContext||window.webkitAudioContext;
+let ac;
+function playBeep(freq,dur){
+  try{
+    if(!ac)ac=new AC();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.frequency.value=freq;g.gain.setValueAtTime(.25,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+dur/1000);
+    o.start();o.stop(ac.currentTime+dur/1000);
+  }catch(e){}
+}
+
+// ---- LOAD LEVEL ----
+function loadLevel(idx){
+  state.current=idx;
+  buildLevelButtons();
+  buildLevel();
+}
+
+// ---- INIT ----
+window.addEventListener("load", async () => {
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+  }
+
+  const walletBalance = await syncSortWalletBalance();
+  state.score = walletBalance;
+
+  loadLevel(0);
+  syncSortProgressToParent();
+});
+</script>
+</body>
+</html>

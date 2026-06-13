@@ -79,6 +79,36 @@ const games: Game[] = [
   time: "12 min",
   accent: "from-cyan-500/20 to-blue-500/5"
 },
+{
+  title: "Sort and Think",
+  icon: "🧠",
+  image: "/images/sort-and-think.png",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 150,
+  time: "10 min",
+  accent: "from-amber-500/20 to-yellow-500/5"
+},
+{
+  title: "Motor Boat",
+  icon: "🚤",
+  image: "/images/motor-boat.png",
+  difficulty: "Intermediate",
+  progress: 0,
+  xp: 180,
+  time: "12 min",
+  accent: "from-sky-500/20 to-cyan-500/5"
+},
+{
+  title: "Bubble Maths Challenge",
+  icon: "🫧",
+  image: "/images/bubble-maths.png",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 170,
+  time: "10 min",
+  accent: "from-purple-500/20 to-pink-500/5"
+},
 ];
 
 // const sidebarItems = [
@@ -391,6 +421,26 @@ const [memoryCardStats, setMemoryCardStats] = useState({
   time: "0 min",
 });
 const [pipesStats, setPipesStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+const [sortStats, setSortStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
+const [motorBoatStats, setMotorBoatStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
+const [bubbleMathStats, setBubbleMathStats] = useState({
   progress: 0,
   coins: 0,
   completed: 0,
@@ -1097,6 +1147,52 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  const loadSortProgress = () => {
+    const completed =
+      Number(localStorage.getItem("sortCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("sortProgress")) ||
+      Math.round((completed / 50) * 100) ||
+      0;
+
+    setSortStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadSortProgress();
+
+  const handleSortMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "sort_game"
+    ) {
+      setSortStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+        time: `${event.data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadSortProgress);
+  window.addEventListener("storage", loadSortProgress);
+  window.addEventListener("message", handleSortMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadSortProgress);
+    window.removeEventListener("storage", loadSortProgress);
+    window.removeEventListener("message", handleSortMessage);
+  };
+}, []);
+
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -1170,7 +1266,11 @@ useEffect(() => {
   sudokuStats={sudokuStats}
   memoryCardStats={memoryCardStats}
   pipesStats={pipesStats}
+  sortStats={sortStats}
+  motorBoatStats={motorBoatStats}
+  bubbleMathStats={bubbleMathStats}
   searchTerm={searchTerm}
+  
 />
               <SidePanel />
             </div>
@@ -1510,6 +1610,9 @@ const GamesSection = memo(function GamesSection({
   sudokuStats,
   memoryCardStats,
   pipesStats,
+  sortStats,
+  motorBoatStats,
+  bubbleMathStats,
   searchTerm,
 }: any) {
 const filteredGames = games.filter((g) =>
@@ -1586,6 +1689,29 @@ const filteredGames = games.filter((g) =>
     xp: memoryCardStats.coins,
     time: memoryCardStats.time,
   }
+  : g.title === "Sort and Think"
+? {
+    ...g,
+    progress: sortStats.progress,
+    xp: sortStats.coins,
+    time: sortStats.time,
+  }
+
+: g.title === "Motor Boat"
+? {
+    ...g,
+    progress: motorBoatStats.progress,
+    xp: motorBoatStats.coins,
+    time: motorBoatStats.time,
+  }
+
+: g.title === "Bubble Maths Challenge"
+? {
+    ...g,
+    progress: bubbleMathStats.progress,
+    xp: bubbleMathStats.coins,
+    time: bubbleMathStats.time,
+  }
 : g.title === "Connect the Water Pipes"
 ? {
     ...g,
@@ -1649,6 +1775,17 @@ if (game.title === "Match the Pairs") {
 }
 if (game.title === "Connect the Water Pipes") {
   window.open("/pipes.html", "_blank");
+}
+if (game.title === "Sort and Think") {
+  window.open("/sort2.html", "_blank");
+}
+
+if (game.title === "Motor Boat") {
+  window.open("/motor_boat.html", "_blank");
+}
+
+if (game.title === "Bubble Maths Challenge") {
+  window.open("/bubble_math_challenge.html", "_blank");
 }
   }}
 
