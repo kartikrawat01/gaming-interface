@@ -2186,7 +2186,20 @@ typewriterText("dialogue-line-2", "Let’s follow the map and see where it leads
         // Progress
         let progress = Math.round((completed / LEVELS.length) * 100);
         // Coins reward per level
-        let reward = 20;
+        // Coins reward per level
+const levelNumber = currentLevelIdx + 1;
+
+let reward = 5;
+
+if (levelNumber >= 1 && levelNumber <= 5) {
+  reward = 5;
+} else if (levelNumber >= 6 && levelNumber <= 10) {
+  reward = 10;
+} else if (levelNumber >= 11 && levelNumber <= 15) {
+  reward = 20;
+} else if (levelNumber >= 16 && levelNumber <= 20) {
+  reward = 30;
+}
 
 // Wallet fallback: current header/wallet balance lo, logicMazeCoins nahi
 let totalCoins =
@@ -2219,7 +2232,7 @@ try {
   console.error("FULL ERROR:", err);
 }        // Save
         localStorage.setItem("logicMazeProgress", progress);
-        localStorage.setItem("logicMazeCoins", String(completed * reward));
+        localStorage.setItem("logicMazeCoins", String(totalCoins));
         localStorage.setItem("logicMazeCompleted", completed);
         localStorage.setItem("walletCoins", String(totalCoins)); // ✅ Main wallet localStorage bhi sync karo
         updateHeaderCoins(totalCoins, true); // 🪙 Header update karo with animation
