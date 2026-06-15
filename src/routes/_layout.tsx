@@ -37,23 +37,31 @@ const [userAvatar, setUserAvatar] = useState<string>("🧑");
 const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 useEffect(() => {
-  const getUser = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+const getUser = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    setUserEmail(user?.email || "");
+  if (!user) {
+    setUserEmail("");
+    setUserName("Guest User");
+    setUserAvatar("🧑");
+    return;
+  }
 
-    setUserAvatar(
-      localStorage.getItem("userAvatar") || "🧑"
-    );
+  setUserEmail(user.email || "");
 
-    setUserName(
-      user?.user_metadata?.name ||
-      user?.email?.split("@")[0] ||
-      "Guest User"
-    );
-  };
+  setUserAvatar(
+    localStorage.getItem("userAvatar") || "🧑"
+  );
+
+  setUserName(
+    localStorage.getItem("userDisplayName") ||
+    user.user_metadata?.name ||
+    user.email?.split("@")[0] ||
+    "Guest User"
+  );
+};
 
   const handleProfileUpdate = () => {
   setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
@@ -62,12 +70,34 @@ useEffect(() => {
 
   getUser();
 
+  const {
+  data: { subscription },
+} = supabase.auth.onAuthStateChange((_event, session) => {
+  if (_event === "SIGNED_OUT" || !session?.user) {
+    setUserEmail("");
+    setUserName("Guest User");
+    setUserAvatar("🧑");
+    return;
+  }
+
+  setUserEmail(session.user.email || "");
+  setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
+  setUserName(
+    localStorage.getItem("userDisplayName") ||
+    session.user.user_metadata?.name ||
+    session.user.email?.split("@")[0] ||
+    "Guest User"
+  );
+});
+
   window.addEventListener("storage", handleProfileUpdate);
 window.addEventListener("focus", handleProfileUpdate);
 window.addEventListener("userAvatarUpdated", handleProfileUpdate);
 window.addEventListener("userProfileUpdated", handleProfileUpdate);
 
   return () => {
+    subscription.unsubscribe();
+    
     window.removeEventListener("storage", handleProfileUpdate);
 window.removeEventListener("focus", handleProfileUpdate);
 window.removeEventListener("userAvatarUpdated", handleProfileUpdate);
