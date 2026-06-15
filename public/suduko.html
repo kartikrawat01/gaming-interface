@@ -119,10 +119,21 @@
 
   /* ── MOBILE MAIN ── */
   .main {
-    width: 100%; max-width: 700px; flex: 1;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 0 16px 12px;
-  }
+  width: 100%;
+  max-width: 700px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 clamp(10px, 4vw, 16px) 12px;
+}
+
+.desktop-left {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
   /* ── LEVEL INFO BAR ── */
   .level-info {
@@ -283,11 +294,12 @@
 
     /* Left column */
     .desktop-left {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      flex: 0 0 auto;
-    }
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 0 0 auto;
+}
 
     .level-info { margin: 0 0 14px; }
 
@@ -420,7 +432,7 @@
 <div class="main">
 
   <!-- LEFT COLUMN -->
-  <div class="desktop-left" style="display:contents;">
+  <div class="desktop-left"></div>
     <div class="level-info">
       <span class="level-name" id="levelName">#1</span>
       <button class="reset-btn" id="resetBtn">Reset</button>
@@ -781,20 +793,22 @@ function renderGrid() {
   const grid = document.getElementById('grid');
   const isDesktop = window.innerWidth >= 1024;
 
-  let cellSize;
+    let cellSize;
   if (isDesktop) {
-
     const viewportHeight = window.innerHeight;
+    const usableHeight = viewportHeight - 240;
+    const usableWidth = Math.min(window.innerWidth - 360, 620);
 
-    // Header + level bar + margins reserve
-    const usableHeight = viewportHeight - 280;
-
-    cellSize = Math.floor(usableHeight / size);
-}else {
+    cellSize = Math.floor(Math.min(usableHeight, usableWidth) / size);
+  } else {
     const wrap = document.querySelector('.grid-container');
-    const maxW = Math.min(wrap.clientWidth || 340, 620);
-    cellSize = Math.floor(maxW / size);
+    const availableWidth = wrap.clientWidth || window.innerWidth - 20;
+    const maxBoardSize = Math.min(availableWidth, window.innerHeight * 0.48);
+
+    cellSize = Math.floor(maxBoardSize / size);
   }
+
+  cellSize = Math.max(26, Math.min(cellSize, isDesktop ? 64 : 54));
 
   grid.style.gridTemplateColumns = `repeat(${size}, ${cellSize}px)`;
   grid.style.gridTemplateRows    = `repeat(${size}, ${cellSize}px)`;
