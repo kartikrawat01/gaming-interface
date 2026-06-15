@@ -1587,7 +1587,7 @@ if (sessionId && token) {
 if (sessionTimer) {
   clearTimeout(sessionTimer);
 }
-await supabase.auth.signOut();
+await supabase.auth.signOut({ scope: "local" });
 
 setShowDropdown(false);
             }}
