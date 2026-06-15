@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutLeaderboardRouteImport } from './routes/_layout/leaderboard'
 import { Route as LayoutCategoriesRouteImport } from './routes/_layout/categories'
 
@@ -21,6 +22,11 @@ const LayoutRoute = LayoutRouteImport.update({
 const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutLeaderboardRoute = LayoutLeaderboardRouteImport.update({
@@ -38,10 +44,12 @@ export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/categories': typeof LayoutCategoriesRoute
   '/leaderboard': typeof LayoutLeaderboardRoute
+  '/settings': typeof LayoutSettingsRoute
 }
 export interface FileRoutesByTo {
   '/categories': typeof LayoutCategoriesRoute
   '/leaderboard': typeof LayoutLeaderboardRoute
+  '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -49,18 +57,20 @@ export interface FileRoutesById {
   '/_layout': typeof LayoutRouteWithChildren
   '/_layout/categories': typeof LayoutCategoriesRoute
   '/_layout/leaderboard': typeof LayoutLeaderboardRoute
+  '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/categories' | '/leaderboard'
+  fullPaths: '/' | '/categories' | '/leaderboard' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/categories' | '/leaderboard' | '/'
+  to: '/categories' | '/leaderboard' | '/settings' | '/'
   id:
     | '__root__'
     | '/_layout'
     | '/_layout/categories'
     | '/_layout/leaderboard'
+    | '/_layout/settings'
     | '/_layout/'
   fileRoutesById: FileRoutesById
 }
@@ -84,6 +94,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/settings': {
+      id: '/_layout/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof LayoutSettingsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/leaderboard': {
       id: '/_layout/leaderboard'
       path: '/leaderboard'
@@ -104,12 +121,14 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteChildren {
   LayoutCategoriesRoute: typeof LayoutCategoriesRoute
   LayoutLeaderboardRoute: typeof LayoutLeaderboardRoute
+  LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutCategoriesRoute: LayoutCategoriesRoute,
   LayoutLeaderboardRoute: LayoutLeaderboardRoute,
+  LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
