@@ -360,6 +360,11 @@ window.dispatchEvent(new Event("userProfileUpdated"));
       localStorage.removeItem("platformSessionId");
       localStorage.removeItem("sessionRewardGiven");
     }
+    localStorage.removeItem("walletCoins");
+localStorage.removeItem("userDisplayName");
+localStorage.removeItem("userAvatar");
+
+window.dispatchEvent(new Event("userProfileUpdated"));
     await supabase.auth.signOut({ scope: "local" });
     navigate({ to: "/" });
   };

@@ -1609,8 +1609,14 @@ if (sessionTimer) {
   clearTimeout(sessionTimer);
 }
 setWalletCoins(0);
+
 localStorage.removeItem("walletCoins");
+localStorage.removeItem("userDisplayName");
+localStorage.removeItem("userAvatar");
+
 await supabase.auth.signOut({ scope: "local" });
+
+window.dispatchEvent(new Event("userProfileUpdated"));
 
 setShowDropdown(false);
             }}

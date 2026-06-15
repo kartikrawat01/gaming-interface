@@ -63,9 +63,26 @@ const getUser = async () => {
   );
 };
 
-  const handleProfileUpdate = () => {
+const handleProfileUpdate = async () => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    setUserEmail("");
+    setUserName("Guest User");
+    setUserAvatar("🧑");
+    return;
+  }
+
+  setUserEmail(user.email || "");
   setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
-  setUserName(localStorage.getItem("userDisplayName") || "Guest User");
+  setUserName(
+    localStorage.getItem("userDisplayName") ||
+    user.user_metadata?.name ||
+    user.email?.split("@")[0] ||
+    "Guest User"
+  );
 };
 
   getUser();
@@ -97,7 +114,7 @@ window.addEventListener("userProfileUpdated", handleProfileUpdate);
 
   return () => {
     subscription.unsubscribe();
-    
+
     window.removeEventListener("storage", handleProfileUpdate);
 window.removeEventListener("focus", handleProfileUpdate);
 window.removeEventListener("userAvatarUpdated", handleProfileUpdate);
