@@ -179,13 +179,15 @@ const handleUnload = async () => {
     // SIGN OUT
     if (_event === "SIGNED_OUT") {
 
-      setUser(null);
+  setUser(null);
+  setWalletCoins(0);
 
-      localStorage.removeItem("platformSessionId");
-      localStorage.removeItem("sessionRewardGiven");
+  localStorage.removeItem("platformSessionId");
+  localStorage.removeItem("sessionRewardGiven");
+  localStorage.removeItem("walletCoins");
 
-      return;
-    }
+  return;
+}
 
     // ONLY LOGIN EVENTS
     if (_event !== "SIGNED_IN") {
@@ -1339,6 +1341,7 @@ useEffect(() => {
           <div className="mx-auto max-w-7xl space-y-8">
             <Header
   walletCoins={walletCoins}
+  setWalletCoins={setWalletCoins}
   searchTerm={searchTerm}
   setSearchTerm={setSearchTerm}
   user={user}
@@ -1484,6 +1487,7 @@ const Sidebar = memo(function Sidebar({
 
 const Header = memo(function Header({
   walletCoins,
+  setWalletCoins,
   searchTerm,
   setSearchTerm,
   user,
@@ -1604,6 +1608,8 @@ if (sessionId && token) {
 if (sessionTimer) {
   clearTimeout(sessionTimer);
 }
+setWalletCoins(0);
+localStorage.removeItem("walletCoins");
 await supabase.auth.signOut({ scope: "local" });
 
 setShowDropdown(false);
