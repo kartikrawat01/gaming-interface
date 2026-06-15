@@ -1608,6 +1608,24 @@
     <div class="cloud-blob"></div>
     <div class="cloud-blob"></div>
 
+    <!-- BE CRE8V LOGO -->
+<div style="
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 14px;
+  padding: 7px 14px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  z-index: 10;
+">
+  <span style="font-size: 20px;">🎮</span>
+  <span style="font-family: 'Fredoka One', cursive; font-size: 16px; color: #9b6dff; font-weight: 700; letter-spacing: 0.5px;">Be Cre8v</span>
+</div>
+
     <!-- ========== HOME SCREEN ========== -->
     <div id="home-screen" class="screen active">
       <div class="home-hero">
@@ -1629,6 +1647,14 @@
         <button class="hbtn hbtn-play" onclick="startGame()">
           <span class="hbtn-icon">▶</span><span class="hbtn-text">Play</span>
         </button>
+        <button class="hbtn" onclick="openHowToPlay()" style="background: linear-gradient(180deg, #a8d8ff, #5bc3ff);">
+  <span class="hbtn-icon">❓</span>
+  <span class="hbtn-text">How to Play?</span>
+</button>
+<button class="hbtn" onclick="openEarnCoins()" style="background: linear-gradient(180deg, #ffd93d, #e8a800);">
+  <span class="hbtn-icon">🪙</span>
+  <span class="hbtn-text" style="color:#7a5500;">How to Earn Coins?</span>
+</button>
         <button class="hbtn hbtn-levels" onclick="showScreen('level-screen')">
           <span class="hbtn-icon">🧩</span><span class="hbtn-text">Levels</span>
         </button>
@@ -1818,7 +1844,44 @@
         </div>
       </div>
     </div>
-
+<!-- HOW TO PLAY OVERLAY -->
+<div class="overlay" id="howtoplay-overlay">
+  <div class="popup-card" style="max-width: 360px;">
+    <span class="popup-emoji">🧠</span>
+    <div class="popup-title">How to Play?</div>
+    <div style="text-align:left; font-size:14px; font-weight:700; color:#4a5568; line-height:1.8; margin-bottom:18px;">
+      🎯 <b>Goal:</b> Answer brain teasers & puzzles<br>
+      ❤️ <b>Lives:</b> You get 3 chances per level<br>
+      💡 <b>Hints:</b> Use 10 coins to get a hint<br>
+      ⭐ <b>Stars:</b> Earn 1–3 stars per level<br>
+      ⏱️ <b>Speed:</b> Answer faster = more stars<br>
+      🎁 <b>Daily:</b> Claim free coins every day!<br>
+      🔢 <b>Levels:</b> 44 unique puzzles to solve
+    </div>
+    <div class="popup-btns">
+      <button class="pp-btn primary" onclick="closeOverlay('howtoplay-overlay')">Got it! 🚀</button>
+    </div>
+  </div>
+</div>
+<!-- HOW TO EARN COINS OVERLAY -->
+<div class="overlay" id="earncoins-overlay">
+  <div class="popup-card" style="max-width: 360px;">
+    <span class="popup-emoji">🪙</span>
+    <div class="popup-title">Earn Coins!</div>
+    <div style="text-align:left; font-size:14px; font-weight:700; color:#4a5568; line-height:1.9; margin-bottom:18px;">
+      🆕 <b>First Clear:</b> +10 coins (any star)<br>
+      🌟 <b>First 3-Star Clear:</b> +25 coins<br>
+      ⬆️ <b>Improve to 3 Stars:</b> +15 coins<br>
+      🏆 <b>Beat Your High Score:</b> +20 coins<br>
+      📦 <b>Every 10 Levels Done:</b> +100 coins<br>
+      🎁 <b>Daily Reward:</b> +50 coins<br>
+      🧩 <b>Hard Puzzle, No Hint:</b> +30 coins
+    </div>
+    <div class="popup-btns">
+      <button class="pp-btn primary" onclick="closeOverlay('earncoins-overlay')">Let's Earn! 💪</button>
+    </div>
+  </div>
+</div>
     <!-- DAILY POPUP -->
     <div class="overlay" id="daily-overlay">
       <div class="popup-card">
@@ -2000,7 +2063,14 @@ async function initializeSocket() {
         score: 0,
         sessionHighScore: 0,
       };
-
+function openHowToPlay() {
+  playClick();
+  document.getElementById('howtoplay-overlay').classList.add('active');
+}
+function openEarnCoins() {
+  playClick();
+  document.getElementById('earncoins-overlay').classList.add('active');
+}
       function loadState() {
         try {
           const s = JSON.parse(localStorage.getItem("brainblast_v3") || "{}");
