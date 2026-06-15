@@ -26,6 +26,7 @@ import {
   Zap,
   Code2,
   Menu,
+  Info,
   X,
   ChevronRight,
   Target,
@@ -132,6 +133,7 @@ function Dashboard() {
   const [active, setActive] = useState("dashboard");
   const [user, setUser] = useState<any>(null);
 const [showAuth, setShowAuth] = useState(false);
+  // ADD THIS
 const sessionTimerRef = useRef<any>(null);
 
 useEffect(() => {
@@ -1480,8 +1482,16 @@ const Sidebar = memo(function Sidebar({
 
 /* ───────────────────────── Header ───────────────────────── */
 
-const Header = memo(function Header({ walletCoins, searchTerm, setSearchTerm, user, setShowAuth, sessionTimer }: any) {
+const Header = memo(function Header({
+  walletCoins,
+  searchTerm,
+  setSearchTerm,
+  user,
+  setShowAuth,
+  sessionTimer,
+}: any) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showCoinInfo, setShowCoinInfo] = useState(false);
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
@@ -1520,6 +1530,13 @@ const Header = memo(function Header({ walletCoins, searchTerm, setSearchTerm, us
           <span>🪙</span>
           <span className="font-bold text-white-300">{walletCoins}</span>
         </div>
+        <button
+  onClick={() => setShowCoinInfo(true)}
+  className="h-10 w-10 grid place-items-center rounded-lg bg-card border border-border shadow-soft hover:border-primary/40 transition"
+  title="How to earn coins?"
+>
+  <Info className="h-4 w-4" />
+</button>
 
         <button className="relative h-10 w-10 grid place-items-center rounded-lg bg-card border border-border shadow-soft hover:border-primary/40 transition">
           <Bell className="h-4 w-4" />
@@ -1611,6 +1628,37 @@ setShowDropdown(false);
   )}
 </div>
       </div>
+      {showCoinInfo && (
+  <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+    <div className="bg-white rounded-2xl max-w-lg w-full p-6 relative">
+      
+      <button
+        onClick={() => setShowCoinInfo(false)}
+        className="absolute top-4 right-4"
+      >
+        <X className="h-5 w-5" />
+      </button>
+
+      <h2 className="text-xl font-bold mb-4">
+        🪙 How to Earn Coins
+      </h2>
+
+      <div className="space-y-3 text-sm text-gray-700">
+        <div>🎮 Play games and complete levels.</div>
+        <div>🏆 Finish game challenges.</div>
+        <div>🔥 Maintain daily login streaks.</div>
+        <div>🎯 Complete daily missions.</div>
+        <div>⭐ Achieve high scores in games.</div>
+        <div>📈 Earn bonus rewards for progression.</div>
+      </div>
+
+      <div className="mt-5 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-sm">
+        Coins earned from all games are automatically added to your wallet and can be used for rewards.
+      </div>
+
+    </div>
+  </div>
+)}
     </motion.header>
   );
 });
@@ -2070,5 +2118,3 @@ const SidePanel = memo(function SidePanel() {
     </aside>
   );
 });
-
-
