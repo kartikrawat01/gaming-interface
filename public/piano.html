@@ -901,6 +901,40 @@ function ensureAudio() {
 let masterVolume = 0.7;
 function updateVolume(v) { masterVolume = parseFloat(v); }
 
+// Per-key volume control
+const KEY_VOLUME_MAP = {
+  // Loud keys ko low rakho
+  'R': 0.65,
+  'I': 0.55,
+  'O': 0.55,
+  'P': 0.55,
+
+  // Black keys boost
+  '2': 5.5,
+  '3': 5.5,
+
+  // Baaki keys ko louder karo
+  'A': 5.0,
+'S': 5.0,
+'D': 5.0,
+'F': 5.0,
+'G': 5.0,
+'H': 5.0,
+'J': 5.0,
+
+'K': 4.5,
+'L': 4.5,
+';': 4.5,
+"'": 4.5,
+
+'Q': 4.0,
+'W': 4.0,
+'E': 4.0,
+'T': 3.5,
+'Y': 3.5,
+'U': 3.5
+};
+
 function playNote(freq, dur = 1.2, velScale = 1) {
   ensureAudio();
   const now = audioCtx.currentTime;
@@ -1045,8 +1079,8 @@ PIANO_KEYS.push({ midi: 6*12, isBlack: false }); // C6
 const WHITE_KEY_MAP = {
   'a':'C3','s':'D3','d':'E3','f':'F3','g':'G3','h':'A3','j':'B3',
   'k':'C4','l':'D4',';':'E4',"'":'F4',
-  'q':'G4','w':'A4','e':'B4',
-  'r':'C5','t':'D5','y':'E5','u':'F5','i':'G5','o':'A5','p':'B5',
+  'q':'G4','c':'A4','v':'B4',
+'r':'C5','b':'D5','n':'E5','m':'F5','i':'G5','o':'A5','p':'B5','x':'C6',
 };
 const BLACK_KEY_MAP = {
   'w':'C#3','e':'D#3','t':'F#3','y':'G#3','u':'A#3',
@@ -1220,7 +1254,9 @@ function pressKey(midi, el, fromPlayback = false) {
   if (!state.pressedKeys.has(midi)) {
     state.pressedKeys.add(midi);
     el.classList.add('pressed');
-    playNote(freq);
+    const keyLabel = MIDI_KEY_LABEL[midi];
+const keyVolume = KEY_VOLUME_MAP[keyLabel] || 1;
+playNote(freq, 1.2, keyVolume);
     document.getElementById('noteDisplay').textContent = noteName;
     addRipple(el);
 
