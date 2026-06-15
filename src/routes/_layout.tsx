@@ -39,32 +39,35 @@ const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 useEffect(() => {
   const getUser = async () => {
     const {
-  data: { user },
-} = await supabase.auth.getUser();
+      data: { user },
+    } = await supabase.auth.getUser();
 
-const handleAvatarUpdate = () => {
-  setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
-};
+    setUserEmail(user?.email || "");
 
-window.addEventListener("storage", handleAvatarUpdate);
-window.addEventListener("focus", handleAvatarUpdate);
+    setUserAvatar(
+      localStorage.getItem("userAvatar") || "🧑"
+    );
 
-return () => {
-  window.removeEventListener("storage", handleAvatarUpdate);
-  window.removeEventListener("focus", handleAvatarUpdate);
-};
+    setUserName(
+      user?.user_metadata?.name ||
+      user?.email?.split("@")[0] ||
+      "Guest User"
+    );
+  };
 
-setUserEmail(user?.email || "");
-setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
-
-setUserName(
-  user?.user_metadata?.name ||
-  user?.email?.split("@")[0] ||
-  "Guest User"
-);
+  const handleAvatarUpdate = () => {
+    setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
   };
 
   getUser();
+
+  window.addEventListener("storage", handleAvatarUpdate);
+  window.addEventListener("focus", handleAvatarUpdate);
+
+  return () => {
+    window.removeEventListener("storage", handleAvatarUpdate);
+    window.removeEventListener("focus", handleAvatarUpdate);
+  };
 }, []);
   return (
     <div className="min-h-screen lg:h-screen bg-[#dfeef7] text-gray-900 lg:overflow-hidden flex flex-col lg:flex-row">
