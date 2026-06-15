@@ -148,7 +148,7 @@ const sections: {
 
 function SettingsPage() {
   const navigate = useNavigate();
-  const { coins } = useWallet();
+  const { coins, setCoins, connectWalletSocket } = useWallet();
 
   const [activeSection, setActiveSection] = useState<Section>("profile");
   const [toast, setToast] = useState<{
@@ -206,6 +206,8 @@ function SettingsPage() {
     supabase.auth.getUser().then(({ data }) => {
       const user = data.user;
       if (!user) return;
+      connectWalletSocket(user.id);
+fetchWalletBalance();
       const savedAvatar = localStorage.getItem("userAvatar") || "🧑";
       setProfile({
         displayName:
@@ -219,9 +221,36 @@ function SettingsPage() {
   }, []);
 
   // ── Fetch transactions when wallet tab opens ───────────────────────────────
-  useEffect(() => {
-    if (activeSection === "wallet") fetchTransactions();
-  }, [activeSection]);
+useEffect(() => {
+  if (activeSection === "wallet") {
+    fetchWalletBalance();
+    fetchTransactions();
+  }
+}, [activeSection]);
+
+  const fetchWalletBalance = async () => {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) return;
+
+    const res = await fetch(`${WALLET_API}/wallet/balance`, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    setCoins(Number(data.balance) || 0);
+  } catch (err) {
+    console.error("Wallet balance fetch failed:", err);
+  }
+};
 
   const fetchTransactions = async () => {
     setTxLoading(true);
