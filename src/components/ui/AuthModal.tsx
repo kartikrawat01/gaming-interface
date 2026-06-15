@@ -173,12 +173,12 @@ if (error) {
           {isSignup ? "Create Account" : "Login"}
         </h2>
 
-        <button
+        {/* <button
           onClick={onClose}
           className="text-black text-xl"
         >
           ✕
-        </button>
+        </button> */}
       </div>
 
       {/* NAME */}
