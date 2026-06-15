@@ -1145,6 +1145,7 @@ solution:[
           difficulty: "Expert",
 
           trick: "Sparse Clues",
+          starTimes: [90, 170],
 
           blocked: [[4, 1]],
 
@@ -1173,7 +1174,6 @@ solution:[
             [5, 3],
             [5, 2],
             [4, 2],
-            [4, 1],
             [3, 1],
             [2, 1],
 
@@ -3290,10 +3290,12 @@ solution:[
       // WIN DETECTION
       // ============================================================
       function checkWin() {
-        const lv = LEVELS[currentLevel];
-        const totalCells = lv.size * lv.size;
+  const lv = LEVELS[currentLevel];
 
-        const isFullGrid = path.length === totalCells;
+  const blockedCount = lv.blocked ? lv.blocked.length : 0;
+  const totalCells = lv.size * lv.size - blockedCount;
+
+  const isFullGrid = path.length === totalCells;
 
         // Check order
         const visited = path.map(([r, c]) => cellKey(r, c));
@@ -3346,12 +3348,14 @@ solution:[
         }
       }
 
-      function submitPath() {
-        const lv = LEVELS[currentLevel];
-        const totalCells = lv.size * lv.size;
+      
+function submitPath() {
+  const lv = LEVELS[currentLevel];
 
-        const isFullGrid = path.length === totalCells;
+  const blockedCount = lv.blocked ? lv.blocked.length : 0;
+  const totalCells = lv.size * lv.size - blockedCount;
 
+  const isFullGrid = path.length === totalCells;
         // Check order
         const visited = path.map(([r, c]) => cellKey(r, c));
         const numsSorted = [...lv.numbers].sort((a, b) => a[2] - b[2]);
@@ -3424,9 +3428,10 @@ solution:[
       }
 
       function updateProgress() {
-        const lv = LEVELS[currentLevel];
-        const total = lv.size * lv.size;
-        const pct = (path.length / total) * 100;
+  const lv = LEVELS[currentLevel];
+  const blockedCount = lv.blocked ? lv.blocked.length : 0;
+  const total = lv.size * lv.size - blockedCount;
+  const pct = (path.length / total) * 100;
         document.getElementById("g-progress").style.width = pct + "%";
       }
 
