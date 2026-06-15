@@ -328,7 +328,7 @@ function SettingsPage() {
       localStorage.removeItem("platformSessionId");
       localStorage.removeItem("sessionRewardGiven");
     }
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     navigate({ to: "/" });
   };
 
