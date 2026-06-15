@@ -33,6 +33,7 @@ function LayoutPage() {
   const location = useLocation();
   const [userEmail, setUserEmail] = useState<string>("");
 const [userName, setUserName] = useState<string>("Guest User");
+const [userAvatar, setUserAvatar] = useState<string>("🧑");
 const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 useEffect(() => {
@@ -41,7 +42,20 @@ useEffect(() => {
   data: { user },
 } = await supabase.auth.getUser();
 
+const handleAvatarUpdate = () => {
+  setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
+};
+
+window.addEventListener("storage", handleAvatarUpdate);
+window.addEventListener("focus", handleAvatarUpdate);
+
+return () => {
+  window.removeEventListener("storage", handleAvatarUpdate);
+  window.removeEventListener("focus", handleAvatarUpdate);
+};
+
 setUserEmail(user?.email || "");
+setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
 
 setUserName(
   user?.user_metadata?.name ||
@@ -123,9 +137,9 @@ setUserName(
         </nav>
         {/* USER PROFILE */}
 <div className="mt-6 rounded-2xl bg-white/15 border border-white/20 p-4 flex items-center gap-3 text-white">
-  <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-    <UserCircle className="h-7 w-7 text-white" />
-  </div>
+  <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center shrink-0 text-2xl">
+  {userAvatar}
+</div>
 
   <div className="min-w-0">
     <p className="text-sm font-semibold truncate">
