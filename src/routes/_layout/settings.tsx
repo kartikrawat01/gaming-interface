@@ -292,6 +292,8 @@ useEffect(() => {
       });
       if (error) throw error;
       localStorage.setItem("userAvatar", profile.avatar);
+      localStorage.setItem("userDisplayName", profile.displayName.trim());
+window.dispatchEvent(new Event("userProfileUpdated"));
       window.dispatchEvent(new Event("userAvatarUpdated"));
       showToast("Profile updated successfully!", "success");
     } catch (err: any) {

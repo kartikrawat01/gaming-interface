@@ -55,20 +55,23 @@ useEffect(() => {
     );
   };
 
-  const handleAvatarUpdate = () => {
-    setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
-  };
+  const handleProfileUpdate = () => {
+  setUserAvatar(localStorage.getItem("userAvatar") || "🧑");
+  setUserName(localStorage.getItem("userDisplayName") || "Guest User");
+};
 
   getUser();
 
-  window.addEventListener("storage", handleAvatarUpdate);
-  window.addEventListener("focus", handleAvatarUpdate);
-  window.addEventListener("userAvatarUpdated", handleAvatarUpdate);
+  window.addEventListener("storage", handleProfileUpdate);
+window.addEventListener("focus", handleProfileUpdate);
+window.addEventListener("userAvatarUpdated", handleProfileUpdate);
+window.addEventListener("userProfileUpdated", handleProfileUpdate);
 
   return () => {
-    window.removeEventListener("storage", handleAvatarUpdate);
-    window.removeEventListener("focus", handleAvatarUpdate);
-    window.removeEventListener("userAvatarUpdated", handleAvatarUpdate);
+    window.removeEventListener("storage", handleProfileUpdate);
+window.removeEventListener("focus", handleProfileUpdate);
+window.removeEventListener("userAvatarUpdated", handleProfileUpdate);
+window.removeEventListener("userProfileUpdated", handleProfileUpdate);
   };
 }, []);
   return (
