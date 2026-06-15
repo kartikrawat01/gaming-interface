@@ -63,10 +63,12 @@ useEffect(() => {
 
   window.addEventListener("storage", handleAvatarUpdate);
   window.addEventListener("focus", handleAvatarUpdate);
+  window.addEventListener("userAvatarUpdated", handleAvatarUpdate);
 
   return () => {
     window.removeEventListener("storage", handleAvatarUpdate);
     window.removeEventListener("focus", handleAvatarUpdate);
+    window.removeEventListener("userAvatarUpdated", handleAvatarUpdate);
   };
 }, []);
   return (

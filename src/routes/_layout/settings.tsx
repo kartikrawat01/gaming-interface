@@ -292,6 +292,7 @@ useEffect(() => {
       });
       if (error) throw error;
       localStorage.setItem("userAvatar", profile.avatar);
+      window.dispatchEvent(new Event("userAvatarUpdated"));
       showToast("Profile updated successfully!", "success");
     } catch (err: any) {
       showToast(err.message || "Failed to update profile", "error");
