@@ -57,6 +57,101 @@
     border-bottom: 1px solid rgba(124,58,237,.4);
     flex-shrink: 0;
   }
+  .brand-left {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-shrink: 0;
+}
+
+#game-logo {
+  height: 34px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  flex-shrink: 0;
+}
+.header-help-btn {
+  font-family: 'Space Mono', monospace;
+  font-size: .75rem;
+  font-weight: 800;
+  padding: 7px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(6,214,160,.55);
+  background: rgba(6,214,160,.12);
+  color: var(--neon);
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(6,214,160,.18);
+  white-space: nowrap;
+}
+
+.header-help-btn:hover {
+  background: rgba(6,214,160,.22);
+}
+
+.how-play-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 20, .78);
+  backdrop-filter: blur(7px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.how-play-modal.show {
+  display: flex;
+}
+
+.how-play-card {
+  width: min(92vw, 520px);
+  background: linear-gradient(145deg, #12121e, #1a0a2e);
+  border: 2px solid rgba(124,58,237,.65);
+  border-radius: 22px;
+  padding: 26px;
+  color: var(--text);
+  box-shadow: 0 0 35px rgba(124,58,237,.35);
+}
+
+.how-play-card h2 {
+  color: var(--neon);
+  font-family: 'Orbitron', monospace;
+  margin-bottom: 16px;
+}
+
+.how-play-step {
+  display: flex;
+  gap: 12px;
+  margin: 13px 0;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.how-play-step span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.how-play-card button {
+  width: 100%;
+  margin-top: 18px;
+  border: none;
+  border-radius: 18px;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--accent2), var(--neon));
+  color: #080812;
+  font-weight: 900;
+  cursor: pointer;
+}
   .logo {
     font-family: 'Orbitron', monospace;
     font-weight: 900;
@@ -539,6 +634,13 @@
   /* ── RESPONSIVE ── */
   
 @media (max-width: 768px) {
+  .brand-left {
+  gap: 16px;
+}
+
+#game-logo {
+  height: 28px;
+}
     header {
       flex-wrap: wrap;
       gap: 8px;
@@ -738,8 +840,14 @@
 
 <!-- HEADER -->
 <header>
+  <div class="brand-left">
+  <img id="game-logo" src="/assets/logo.png" alt="BE CRE8V Logo">
   <div class="logo">🎹 PianoVerse</div>
+</div>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <button class="header-help-btn" onclick="openHowToPlay()">
+  How to Play
+</button>
     <div class="note-display" id="noteDisplay">—</div>
     <div class="header-score">
       <div class="score-box">
@@ -754,6 +862,18 @@
   </div>
 </header>
 
+<div id="how-play-modal" class="how-play-modal">
+  <div class="how-play-card">
+    <h2>🎹 How to Play?</h2>
+
+    <div class="how-play-step"><span>1</span> Tap/click piano keys or use keyboard shortcuts shown on the keys.</div>
+    <div class="how-play-step"><span>2</span> Use Scales, Notes, Keys, Transpose, BPM and Volume controls to practice.</div>
+    <div class="how-play-step"><span>4</span> Use Chords tab to play chords and Songs tab to autoplay songs.</div>
+    <div class="how-play-step"><span>5</span> Record your notes with REC and replay them using PLAY.</div>
+
+    <button onclick="closeHowToPlay()">Let’s Play 🎶</button>
+  </div>
+</div>
 <main>
   <!-- CONTROL PANEL -->
   <div class="control-panel">
@@ -819,7 +939,6 @@
   <!-- TABS -->
   <div class="tab-bar">
     <div class="tab active" onclick="switchTab('play')">🎹 Play</div>
-    <div class="tab" onclick="switchTab('game')">🎮 Game</div>
     <div class="tab" onclick="switchTab('chords')">🎼 Chords</div>
     <div class="tab" onclick="switchTab('songs')">🎵 Songs</div>
     <div class="tab" onclick="switchTab('settings')">⚙️ Settings</div>
@@ -828,18 +947,6 @@
   <!-- PLAY PANEL (just piano) -->
   <div id="play-panel" class="panel active" style="flex:1;"></div>
 
-  <!-- GAME PANEL -->
-  <div id="game-panel" class="panel" style="flex:1;position:relative;background:linear-gradient(180deg,#05050f,#0a0a18);">
-    <canvas id="falling-canvas"></canvas>
-    <div class="game-overlay" id="gameOverlay">
-      <div class="game-start-msg" id="gameMsg">Press <span style="color:var(--neon)">GAME</span> button or<br>click Start to play 🎮</div>
-    </div>
-    <div class="combo-display" id="comboDisplay"></div>
-    <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;">
-      <button class="ctrl-btn" style="border-color:var(--neon);padding:8px 20px;font-size:.85rem;" onclick="startGame()">▶ START GAME</button>
-      <button class="ctrl-btn" style="border-color:var(--red);" onclick="stopGame()">■ STOP</button>
-    </div>
-  </div>
 
   <!-- CHORDS PANEL -->
   <div id="chords-panel" class="panel" style="padding:12px;overflow-y:auto;">
@@ -888,6 +995,13 @@
 </main>
 
 <script>
+  function openHowToPlay() {
+  document.getElementById("how-play-modal").classList.add("show");
+}
+
+function closeHowToPlay() {
+  document.getElementById("how-play-modal").classList.remove("show");
+}
 // ═══════════════════════════════════════════════════════
 // AUDIO ENGINE
 // ═══════════════════════════════════════════════════════
@@ -1967,27 +2081,22 @@ function toggleSetting(key, btn) {
 // ═══════════════════════════════════════════════════════
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const tabs = ['play','game','chords','songs','settings'];
+    const tabs = ['play','chords','songs','settings'];
     t.classList.toggle('active', tabs[i] === name);
   });
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   const panels = {
     play: 'play-panel',
-    game: 'game-panel',
     chords: 'chords-panel',
     songs: 'songs-panel',
     settings: 'settings-panel',
   };
   document.getElementById(panels[name]).classList.add('active');
-
-  if (name === 'game') {
-    setTimeout(() => { resizeCanvas(); }, 100);
-  }
 }
 
 // Handle tab click events properly
 document.querySelectorAll('.tab').forEach((tab, i) => {
-  const tabs = ['play','game','chords','songs','settings'];
+  const tabs = ['play','chords','songs','settings'];
   tab.onclick = () => switchTab(tabs[i]);
 });
 

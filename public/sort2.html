@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sort the Objects: Think and Classify</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
@@ -30,10 +31,8 @@
     user-select:none;
   }
 
-  /* Animated star background */
   #stars-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
 
-  /* TOPBAR */
   #topbar{
     position:relative;z-index:100;
     background:rgba(255,255,255,0.92);
@@ -68,7 +67,45 @@
   #btn-hint:hover{background:rgba(255,215,61,.25);}
   #btn-restart:hover{background:rgba(255,107,53,.25);}
 
-  /* Level row */
+  #btn-how-to-play{
+    background:#fff;border:2px solid #6BCB77;
+    color:#6BCB77;border-radius:30px;padding:6px 16px;font-family:'Nunito',sans-serif;
+    font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;
+  }
+  #btn-how-to-play:hover{background:rgba(107,203,119,.25);}
+
+  #how-to-play-overlay {
+    position: fixed; inset: 0; z-index: 2100;
+    background: rgba(10,10,30,0.6);
+    display: none; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  #how-to-play-overlay.show { display: flex; }
+  .popup-card {
+    background: #fff; border-radius: 24px; padding: 24px;
+    width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    position: relative; border: 3px solid #FFD93D;
+    animation: cardSlideIn .4s cubic-bezier(.36,1.5,.64,1);
+  }
+  .popup-card::-webkit-scrollbar { width: 6px; }
+  .popup-card::-webkit-scrollbar-thumb { background: rgba(255,150,50,.3); border-radius: 3px; }
+  .popup-title { font-size: 1.5rem; font-weight: 900; color: #FF6B35; text-align: center; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .popup-section { margin-bottom: 16px; }
+  .popup-section-title { font-size: 1.05rem; font-weight: 800; color: #333; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .popup-list { list-style: none; padding-left: 0; }
+  .popup-list li { font-size: 0.9rem; color: #555; margin-bottom: 5px; position: relative; padding-left: 18px; line-height: 1.35; font-weight: 600; }
+  .popup-list li::before { content: "✨"; position: absolute; left: 0; top: 1px; font-size: 0.8rem; }
+  .popup-footer-note { font-size: 0.85rem; font-weight: 800; color: #FF6584; text-align: center; line-height: 1.4; border-top: 2px dashed #FFF3E0; padding-top: 12px; margin-top: 14px; }
+  .btn-close-popup {
+    background: linear-gradient(135deg, #6BCB77, #4ECDC4);
+    border: none; border-radius: 50px; padding: 10px 28px;
+    color: #fff; font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 1rem; cursor: pointer; display: block; margin: 16px auto 0;
+    box-shadow: 0 4px 12px rgba(107,203,119,0.3); transition: transform 0.2s;
+  }
+  .btn-close-popup:hover { transform: scale(1.05); }
+
   #level-row{display:flex;align-items:center;gap:6px;overflow-x:auto;padding-bottom:2px;}
   #level-row::-webkit-scrollbar{height:3px;}
   #level-row::-webkit-scrollbar-thumb{background:rgba(255,150,50,.4);border-radius:3px;}
@@ -83,7 +120,6 @@
   .lvl-btn.done{background:var(--green);border-color:var(--green);color:#fff;}
   .lvl-btn.done::after{content:'★';position:absolute;top:-7px;right:-5px;font-size:.6rem;color:var(--yellow);}
 
-  /* MAIN GAME AREA */
   #game-area{
     position:relative;z-index:10;
     max-width:1100px;margin:0 auto;
@@ -94,14 +130,12 @@
   #level-desc{font-size:1rem;color:#888;font-weight:600;}
   #level-theme-icon{font-size:2.2rem;display:block;margin:0 auto 6px;}
 
-  /* Progress bar */
   #progress-wrap{
     background:rgba(0,0,0,.08);border-radius:10px;height:10px;
     margin:0 auto 20px;max-width:500px;overflow:hidden;
   }
   #progress-bar{height:100%;background:linear-gradient(90deg,#FFD93D,#6BCB77);border-radius:10px;transition:width .4s;}
 
-  /* CATEGORIES */
   #categories{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-bottom:24px;}
   .category-box{
     background:#fff;
@@ -133,7 +167,6 @@
   }
   @keyframes popIn{from{transform:scale(0) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
 
-  /* DRAGGABLE OBJECTS */
   #objects-area{
     background:#FFF9F0;border-radius:22px;
     border:2px solid #FFD93D;
@@ -161,7 +194,6 @@
   .obj-label{font-size:.72rem;font-weight:800;color:#444;text-align:center;line-height:1.2;}
   .obj-card .hint-highlight{outline:3px solid var(--yellow);outline-offset:2px;border-radius:var(--card-radius);}
 
-  /* Ghost drag image */
   #drag-ghost{
     position:fixed;pointer-events:none;z-index:9999;
     background:var(--card-bg);border-radius:var(--card-radius);
@@ -172,7 +204,6 @@
     display:none;
   }
 
-  /* FEEDBACK TOAST */
   #toast{
     position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(.8);
     background:#fff;border-radius:16px;padding:10px 24px;
@@ -183,7 +214,6 @@
   #toast.good{color:var(--correct);border-left:5px solid var(--correct);}
   #toast.bad{color:var(--wrong);border-left:5px solid var(--wrong);}
 
-  /* LEVEL COMPLETE OVERLAY */
   #complete-overlay{
     position:fixed;inset:0;z-index:1000;
     background:rgba(10,10,30,.85);
@@ -215,7 +245,6 @@
   }
   .btn-next:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(255,107,53,.5);}
 
-  /* CONFETTI */
   .confetti-piece{
     position:fixed;width:10px;height:14px;border-radius:3px;
     z-index:9998;pointer-events:none;
@@ -226,7 +255,6 @@
     100%{transform:translateY(110vh) rotate(720deg);opacity:0;}
   }
 
-  /* BADGE POPUP */
   #badge-popup{
     position:fixed;bottom:24px;right:24px;z-index:2000;
     background:#fff;border-radius:20px;padding:14px 20px;
@@ -239,7 +267,6 @@
   .badge-icon{font-size:2.2rem;}
   .badge-text{font-size:.9rem;font-weight:700;color:#1a1a2e;}
 
-  /* Hint overlay card */
   .hint-shown{outline:4px solid #FFD93D!important;outline-offset:3px;}
 
   @media(max-width:600px){
@@ -257,6 +284,44 @@
 <div id="toast"></div>
 <div id="badge-popup"><span class="badge-icon" id="badge-icon"></span><div class="badge-text" id="badge-text"></div></div>
 
+<div id="how-to-play-overlay">
+  <div class="popup-card">
+    <div class="popup-title">🧠 How to Play Sort & Think</div>
+    
+    <div class="popup-section">
+      <div class="popup-section-title">🎮 Simple Steps:</div>
+      <ul class="popup-list">
+        <li>Drag each item from the bottom and drop it into its correct category box.</li>
+        <li>Sort all items correctly before the timer hits 0 to complete the level!</li>
+        <li>Avoid wrong placements (the boxes will shake and make a warning sound).</li>
+        <li>Complete levels quickly to earn up to 3 stars and unlock cool badges!</li>
+      </ul>
+    </div>
+
+    <div class="popup-section">
+      <div class="popup-section-title">🪙 Coins &amp; Rewards:</div>
+      <ul class="popup-list" style="padding-left: 0;">
+        <li style="list-style: none; padding-left: 0; margin-bottom: 8px; font-size: 0.85rem; color: #444;">Solve levels to earn coins based on difficulty:</li>
+        <li style="padding-left: 18px; font-size: 0.82rem;"><strong>Levels 1-10 (Easy):</strong> 15 Coins (15s Timer)</li>
+        <li style="padding-left: 18px; font-size: 0.82rem;"><strong>Levels 11-20 (Medium):</strong> 30 Coins (35s Timer)</li>
+        <li style="padding-left: 18px; font-size: 0.82rem;"><strong>Levels 21-30 (Medium to Hard):</strong> 45 Coins (45s Timer)</li>
+        <li style="padding-left: 18px; font-size: 0.82rem;"><strong>Levels 31-40 (Hard):</strong> 65 Coins (60s Timer)</li>
+        <li style="padding-left: 18px; font-size: 0.82rem;"><strong>Levels 41-50 (Very Hard):</strong> 85 Coins (75s Timer)</li>
+        <li style="list-style: none; padding-left: 0; margin-top: 8px; font-size: 0.85rem; color: #444;">Stars are awarded based on remaining time:</li>
+        <li style="padding-left: 18px; font-size: 0.82rem;">⭐⭐⭐ <strong>3 Stars:</strong> Solve with &gt;50% time left</li>
+        <li style="padding-left: 18px; font-size: 0.82rem;">⭐⭐ <strong>2 Stars:</strong> Solve with &gt;20% time left</li>
+        <li style="padding-left: 18px; font-size: 0.82rem;">⭐ <strong>1 Star:</strong> Solve with &le;20% time left</li>
+      </ul>
+    </div>
+
+    <div class="popup-footer-note">
+      Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.
+    </div>
+
+    <button class="btn-close-popup" id="btn-close-popup">Got it!</button>
+  </div>
+</div>
+
 <div id="complete-overlay">
   <div class="complete-card" id="complete-card">
     <span class="complete-emoji" id="complete-emoji">🎉</span>
@@ -270,10 +335,12 @@
 
 <div id="topbar">
   <div id="topbar-row1">
+    <img src="assets/logo.png" id="becre8v-logo" alt="BeCre8v Logo" style="height: 38px; width: auto; object-fit: contain; margin-right: 8px;" />
     <div id="game-title">🧠 Sort &amp; Think</div>
     <div class="stat-pill">🪙 Coins: <span id="score-display">0</span></div>
     <div class="stat-pill">🎯 Level: <span id="level-display">1</span></div>
-    <div class="stat-pill" id="timer-pill">⏱ <span id="timer-display">60</span>s</div>
+    <div class="stat-pill" id="timer-pill">⏱ <span id="timer-display">15</span>s</div>
+    <button id="btn-how-to-play">❓ How to Play</button>
     <button id="btn-hint">💡 Hint</button>
     <button id="btn-restart">🔄 Restart</button>
   </div>
@@ -842,7 +909,7 @@ let state = {
     JSON.parse(localStorage.getItem("sortCompletedLevels") || "[]")
   ),
   timers: {},
-  timerLeft: 60,
+  timerLeft: 15,
   timerInterval: null,
   objects: [],
   placed: {},
@@ -851,14 +918,13 @@ let state = {
 };
 
 function getLevelConfig(id) {
-  if (id <= 10) return { timer: 20, reward: 15 };
+  if (id <= 10) return { timer: 15, reward: 15 };
   if (id <= 20) return { timer: 35, reward: 30 };
   if (id <= 30) return { timer: 45, reward: 45 };
   if (id <= 40) return { timer: 60, reward: 65 };
   return { timer: 75, reward: 85 };
 }
 
-// ---- STARS BG ----
 (function(){
   const c=document.getElementById('stars-canvas');
   const ctx=c.getContext('2d');
@@ -877,7 +943,6 @@ function getLevelConfig(id) {
   window.addEventListener('resize',resize);resize();draw();
 })();
 
-// ---- BUILD UI ----
 function buildLevelButtons(){
   const row=document.getElementById('level-row');row.innerHTML='';
   LEVELS.forEach((l,i)=>{
@@ -896,7 +961,6 @@ function buildLevel(){
   document.getElementById('level-theme-icon').textContent=lv.icon;
   document.getElementById('level-display').textContent=lv.id;
 
-  // Categories
   const catDiv=document.getElementById('categories');catDiv.innerHTML='';
   state.placed={};
   lv.categories.forEach(cat=>{
@@ -912,7 +976,6 @@ function buildLevel(){
     catDiv.appendChild(box);
   });
 
-  // Objects — shuffle
   state.objects=[...lv.objects].sort(()=>Math.random()-.5);
   renderObjects();
   updateProgress();
@@ -936,7 +999,6 @@ function renderObjects(){
       e.dataTransfer.effectAllowed='move';
     });
     card.addEventListener('dragend',()=>{card.classList.remove('dragging');hideGhost();});
-    // Touch support
     card.addEventListener('touchstart',onTouchStart,{passive:true});
     card.addEventListener('touchmove',onTouchMove,{passive:false});
     card.addEventListener('touchend',onTouchEnd);
@@ -944,7 +1006,6 @@ function renderObjects(){
   });
 }
 
-// ---- DRAG GHOST ----
 const ghost=document.getElementById('drag-ghost');
 function showGhost(obj,e){
   ghost.innerHTML=`${obj.e}<div class="obj-label" style="font-size:.7rem;font-weight:800;color:#444">${obj.l}</div>`;
@@ -955,7 +1016,6 @@ function moveGhost(x,y){ghost.style.left=x+'px';ghost.style.top=y+'px';}
 function hideGhost(){ghost.style.display='none';}
 document.addEventListener('dragover',e=>moveGhost(e.clientX,e.clientY));
 
-// ---- TOUCH DRAG ----
 let touchObj=null,touchCard=null;
 function onTouchStart(e){
   touchCard=e.currentTarget;
@@ -987,7 +1047,6 @@ function onTouchEnd(e){
   touchObj=null;touchCard=null;
 }
 
-// ---- DROP LOGIC ----
 function handleDrop(catName){
   if(!state.dragItem)return;
   const obj=state.dragItem;
@@ -1013,13 +1072,11 @@ function handleCorrect(obj,catName){
   const box=document.querySelector(`.category-box[data-cat="${catName}"]`);
   box.classList.add('correct-flash');setTimeout(()=>box.classList.remove('correct-flash'),600);
   showToast('✅ Correct!','good');
-  // Remove from objects array
   const i=state.objects.findIndex(o=>o===obj);
   if(i>-1){
     const card=document.querySelector(`.obj-card[data-idx="${i}"]`);
     if(card){card.classList.add('correct-drop');setTimeout(()=>card.remove(),450);}
     state.objects.splice(i,1);
-    // Re-index
     document.querySelectorAll('.obj-card').forEach((c,idx)=>{
       c.dataset.idx=state.objects.indexOf(LEVELS[state.current].objects.find(o=>o.l===state.objects[idx]?.l));
     });
@@ -1059,13 +1116,40 @@ function updateProgress(){
   document.getElementById('progress-bar').style.width=pct+'%';
 }
 
+// ---- TIMER CONTROL ----
+function startTimer(){
+  const lv=LEVELS[state.current];
+  const config = getLevelConfig(lv.id);
+  state.timerLeft = config.timer;
+  if (!document.getElementById('how-to-play-overlay').classList.contains('show')) {
+    resumeTimer();
+  } else {
+    updateTimerDisplay();
+  }
+}
+
+function resumeTimer(){
+  clearInterval(state.timerInterval);
+  updateTimerDisplay();
+  state.timerInterval=setInterval(()=>{
+    state.timerLeft--;
+    updateTimerDisplay();
+    if(state.timerLeft<=10)document.getElementById('timer-pill').classList.add('urgent');
+    else document.getElementById('timer-pill').classList.remove('urgent');
+    if(state.timerLeft<=0){
+      clearInterval(state.timerInterval);
+      showToast("⏰ Time's up! Level failed! (0 coins)",'bad');
+      setTimeout(()=>loadLevel(state.current),1500);
+    }
+  },1000);
+}
+
 function checkComplete(){
   const lv=LEVELS[state.current];
   const allDone=lv.objects.every(obj=>state.placed[obj.cat]?.find(p=>p.l===obj.l));
   if(allDone) setTimeout(showComplete,300);
 }
 
-// ---- COMPLETE ----
 async function showComplete(){
   clearInterval(state.timerInterval);
   const lv=LEVELS[state.current];
@@ -1075,15 +1159,14 @@ async function showComplete(){
 
   let coinsEarned = 0;
   if (!state.completed.has(state.current)) {
-  coinsEarned = reward;
-  state.score = await creditSortCoins(coinsEarned);
-}
+    coinsEarned = reward;
+    state.score = await creditSortCoins(coinsEarned);
+  }
 
   state.completed.add(state.current);
 
-syncSortProgressToParent();
-
-buildLevelButtons();
+  syncSortProgressToParent();
+  buildLevelButtons();
 
   const maxTimer = config.timer;
   const pctLeft = state.timerLeft / maxTimer;
@@ -1106,28 +1189,8 @@ document.getElementById('btn-next').onclick=()=>{
   if(state.current<49)loadLevel(state.current+1);
 };
 
-// ---- TIMER ----
-function startTimer(){
-  clearInterval(state.timerInterval);
-  const lv=LEVELS[state.current];
-  const config = getLevelConfig(lv.id);
-  state.timerLeft = config.timer;
-  updateTimerDisplay();
-  state.timerInterval=setInterval(()=>{
-    state.timerLeft--;
-    updateTimerDisplay();
-    if(state.timerLeft<=10)document.getElementById('timer-pill').classList.add('urgent');
-    else document.getElementById('timer-pill').classList.remove('urgent');
-    if(state.timerLeft<=0){
-      clearInterval(state.timerInterval);
-      showToast("⏰ Time's up! Level failed! (0 coins)",'bad');
-      setTimeout(()=>loadLevel(state.current),1500);
-    }
-  },1000);
-}
 function updateTimerDisplay(){document.getElementById('timer-display').textContent=state.timerLeft;}
 
-// ---- HINT ----
 document.getElementById('btn-hint').onclick=()=>{
   if(state.objects.length===0)return;
   const obj=state.objects[0];
@@ -1140,10 +1203,8 @@ document.getElementById('btn-hint').onclick=()=>{
   }
 };
 
-// ---- RESTART ----
 document.getElementById('btn-restart').onclick=()=>loadLevel(state.current);
 
-// ---- CONFETTI ----
 function launchConfetti(){
   const colors=['#FFD93D','#FF6B35','#FF6584','#6BCB77','#4D96FF','#C77DFF','#4ECDC4'];
   for(let i=0;i<70;i++){
@@ -1161,7 +1222,6 @@ function launchConfetti(){
   }
 }
 
-// ---- BADGE ----
 function checkBadge(){
   const done=state.completed.size;
   const badge=BADGES.find(b=>b.after===done);
@@ -1173,7 +1233,6 @@ function checkBadge(){
   }
 }
 
-// ---- TOAST ----
 let toastTimeout;
 function showToast(msg,type){
   const t=document.getElementById('toast');
@@ -1182,7 +1241,6 @@ function showToast(msg,type){
   toastTimeout=setTimeout(()=>t.className='toast',2000);
 }
 
-// ---- SOUND ----
 const AC=window.AudioContext||window.webkitAudioContext;
 let ac;
 function playBeep(freq,dur){
@@ -1196,23 +1254,43 @@ function playBeep(freq,dur){
   }catch(e){}
 }
 
-// ---- LOAD LEVEL ----
 function loadLevel(idx){
   state.current=idx;
   buildLevelButtons();
   buildLevel();
 }
 
-// ---- INIT ----
+function showIntroPopup() {
+  document.getElementById('how-to-play-overlay').classList.add('show');
+  clearInterval(state.timerInterval);
+}
+function hideIntroPopup() {
+  document.getElementById('how-to-play-overlay').classList.remove('show');
+  resumeTimer();
+}
+
+document.getElementById('btn-how-to-play').onclick = showIntroPopup;
+document.getElementById('btn-close-popup').onclick = hideIntroPopup;
+
+function checkAndShowIntro() {
+  showIntroPopup();
+}
+
 window.addEventListener("load", async () => {
-  if (window.gameSDK) {
-    await window.gameSDK.init();
+  checkAndShowIntro();
+  loadLevel(0);
+
+  try {
+    if (window.gameSDK) {
+      await window.gameSDK.init();
+    }
+    const walletBalance = await syncSortWalletBalance();
+    state.score = walletBalance;
+    document.getElementById("score-display").textContent = walletBalance;
+  } catch (e) {
+    console.warn("Wallet sync failed:", e);
   }
 
-  const walletBalance = await syncSortWalletBalance();
-  state.score = walletBalance;
-
-  loadLevel(0);
   syncSortProgressToParent();
 });
 </script>

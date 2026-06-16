@@ -79,6 +79,32 @@ input{font-family:var(--font-body);}
 .stat-chip{background:#FFF3EA;border-radius:99px;padding:6px 14px;display:flex;align-items:center;gap:6px;font-size:15px;font-weight:800;color:var(--c-dark);}
 .stat-chip .icon{font-size:18px;}
 
+
+/* BE CRE8V PERSISTENT LOGO */
+.becre8v-logo {
+  position: fixed;
+  top: 6px;
+  left: 2px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  pointer-events: none;
+}
+.becre8v-logo span:first-child { font-size: 18px; }
+.becre8v-logo span:last-child {
+  font-family: 'Fredoka One', cursive;
+  font-size: 15px;
+  color: #FF6B35;
+  font-weight: 700;
+}
+/* Dark mode mein bhi theek rahe */
+body.dark .becre8v-logo {
+  background: rgba(38,38,64,0.95);
+}
+body.dark .becre8v-logo span:last-child { color: #FF8C5A; }
+
 /* Big Play Button */
 .btn-play{width:100%;padding:18px;background:linear-gradient(135deg,#FF6B35,#FF8C5A);color:#fff;border-radius:var(--radius);font-size:22px;font-weight:900;font-family:var(--font-title);letter-spacing:1px;box-shadow:0 6px 24px rgba(255,107,53,0.4);transition:all 0.2s;position:relative;overflow:hidden;}
 .btn-play::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:rgba(255,255,255,0.2);transform:skewX(-20deg);transition:left 0.4s;}
@@ -92,10 +118,10 @@ input{font-family:var(--font-body);}
 .menu-btn:active{transform:scale(0.96);}
 .menu-btn .micon{font-size:28px;}
 .menu-btn .mlabel{font-size:13px;font-weight:800;color:var(--c-dark);}
+.menu-btn.play{border-color:#4ECDC4;background:linear-gradient(135deg,#EAFFFE,#C4FFF9);}
+.menu-btn.earn{border-color:#FF6B6B;background:linear-gradient(135deg,#FFEEEE,#FFD4D4);}
 .menu-btn.daily{border-color:#FFE66D;background:linear-gradient(135deg,#FFFBEA,#FFF3C4);}
-.menu-btn.leaderboard{border-color:#4ECDC4;background:linear-gradient(135deg,#EAFFFE,#C4FFF9);}
 .menu-btn.settings{border-color:#9B5DE5;background:linear-gradient(135deg,#F5EEFF,#E8D4FF);}
-.menu-btn.shop{border-color:#FF6B6B;background:linear-gradient(135deg,#FFEEEE,#FFD4D4);}
 
 /* ===== GAME MODES SCREEN ===== */
 #screen-modes{background:linear-gradient(160deg,#FFF9F0 0%,#FFE8D6 100%);}
@@ -188,16 +214,6 @@ input{font-family:var(--font-body);}
 .result-stat .val{font-family:var(--font-title);font-size:28px;color:var(--c-primary);}
 .result-stat .lbl{font-size:12px;color:var(--c-subtext);font-weight:700;}
 
-/* ===== LEADERBOARD ===== */
-#screen-leaderboard{background:linear-gradient(160deg,#FFF9F0 0%,#FFE8D6 100%);}
-.lb-row{width:100%;background:#fff;border-radius:var(--radius-sm);padding:14px 16px;box-shadow:0 3px 12px rgba(0,0,0,0.06);display:flex;align-items:center;gap:14px;}
-.lb-rank{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;}
-.lb-rank.gold{background:linear-gradient(135deg,#FFD700,#FFA500);color:#fff;}
-.lb-rank.silver{background:linear-gradient(135deg,#C0C0C0,#A0A0A0);color:#fff;}
-.lb-rank.bronze{background:linear-gradient(135deg,#CD7F32,#A0522D);color:#fff;}
-.lb-rank.other{background:#F0EEF8;color:var(--c-subtext);}
-.lb-name{flex:1;font-size:15px;font-weight:800;color:var(--c-dark);}
-.lb-score{font-size:16px;font-weight:900;color:var(--c-primary);}
 
 /* ===== SETTINGS ===== */
 #screen-settings{background:linear-gradient(160deg,#FFF9F0 0%,#FFE8D6 100%);}
@@ -302,9 +318,55 @@ body.dark .xp-bar-wrap,body.dark .progress-wrap,body.dark .time-attack-bar{backg
 </head>
 <body>
 
+  <!-- BE CRE8V PERSISTENT LOGO -->
+<div class="becre8v-logo">
+<img src="/assets/logo.png" height="40" />
+  </div>
+</div>
 <!-- Bubbles Background -->
 <div class="bg-bubbles" id="bgBubbles"></div>
+<!-- HOW TO PLAY MODAL -->
+<div class="screen" id="screen-howtoplay" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); z-index: 500;">
+  <div class="screen-inner" style="justify-content:center;">
+    <div style="background:#fff; border-radius:24px; padding:28px 22px; max-width:380px; width:100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+      <div style="font-size:52px; text-align:center; margin-bottom:8px;">🧠</div>
+      <div style="font-family:'Fredoka One',cursive; font-size:26px; color:#2D2D44; text-align:center; margin-bottom:16px;">How to Play?</div>
+      <div style="font-size:14px; font-weight:700; color:#4a5568; line-height:2; margin-bottom:20px;">
+        🎡 <b>Classic:</b> Spin the wheel, pick a category<br>
+        🎯 <b>Challenge:</b> Choose category, answer till you fail<br>
+        🎉 <b>Party:</b> 2–4 players take turns on same device<br>
+        ⚡ <b>Time Attack:</b> Answer as many as you can in 60s<br>
+        ⏱️ <b>Timer:</b> 15 seconds per question<br>
+        🔥 <b>Streak:</b> Consecutive correct = bonus points<br>
+        ✂️ <b>50/50:</b> Remove 2 wrong answers<br>
+        ⏭️ <b>Skip:</b> Pass a tough question<br>
+        ✨ <b>2x:</b> Double points for next answer
+      </div>
+      <button class="btn-primary" onclick="closeHowToPlay()">Got it! 🚀</button>
+    </div>
+  </div>
+</div>
 
+<!-- HOW TO EARN COINS MODAL -->
+<div class="screen" id="screen-earncoins" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); z-index: 500;">
+  <div class="screen-inner" style="justify-content:center;">
+    <div style="background:#fff; border-radius:24px; padding:28px 22px; max-width:380px; width:100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+      <div style="font-size:52px; text-align:center; margin-bottom:8px;">🪙</div>
+      <div style="font-family:'Fredoka One',cursive; font-size:26px; color:#2D2D44; text-align:center; margin-bottom:16px;">Earn Coins!</div>
+      <div style="font-size:14px; font-weight:700; color:#4a5568; line-height:2; margin-bottom:20px;">
+        ✅ <b>Correct Answer:</b> +5 coins per question<br>
+        🔥 <b>5x Streak Bonus:</b> +10 extra coins<br>
+        ⭐ <b>Hard Question:</b> 3x point multiplier<br>
+        ✨ <b>2x Powerup:</b> Double coins on one answer<br>
+        🏆 <b>High Score:</b> Bonus reward on new record<br>
+        💯 <b>Perfect Round:</b> All correct = special bonus<br>
+        🎁 <b>Daily Reward:</b> +100 coins every day<br>
+
+      </div>
+      <button class="btn-primary" onclick="closeEarnCoins()">Let's Earn! 💪</button>
+    </div>
+  </div>
+</div>
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -338,10 +400,10 @@ body.dark .xp-bar-wrap,body.dark .progress-wrap,body.dark .time-attack-bar{backg
     </div>
     <button class="btn-play" onclick="showModes()">▶ PLAY NOW</button>
     <div class="menu-grid">
+<button class="menu-btn play" onclick="showHowToPlay()"><div class="micon">❓</div><div class="mlabel">How to Play?</div></button>
+<button class="menu-btn earn" onclick="showEarnCoins()"><div class="micon">🪙</div><div class="mlabel"> How to Earn Coins?</div></button>
       <button class="menu-btn daily" onclick="showDaily()"><div class="micon">🎁</div><div class="mlabel">Daily Reward</div></button>
-      <button class="menu-btn leaderboard" onclick="showLeaderboard()"><div class="micon">🏆</div><div class="mlabel">Leaderboard</div></button>
       <button class="menu-btn settings" onclick="showSettings()"><div class="micon">⚙️</div><div class="mlabel">Settings</div></button>
-      <button class="menu-btn shop" onclick="showToast('Shop coming soon! 🛒')"><div class="micon">🛍️</div><div class="mlabel">Shop</div></button>
     </div>
   </div>
 </div>
@@ -422,6 +484,9 @@ body.dark .xp-bar-wrap,body.dark .progress-wrap,body.dark .time-attack-bar{backg
 <div class="screen" id="screen-game">
   <div class="game-topbar">
     <div class="topbar-group">
+      <img src="/assets/logo.png" height="40"
+         style="border-radius:6px; filter: brightness(0) invert(1); opacity:0.85;" />
+    
       <button class="btn-back" onclick="pauseGame()" style="font-size:16px">⏸</button>
       <div class="topbar-stat"><span class="icon">⭐</span><span id="gameScore">0</span></div>
     </div>
@@ -543,14 +608,6 @@ body.dark .xp-bar-wrap,body.dark .progress-wrap,body.dark .time-attack-bar{backg
   </div>
 </div>
 
-<!-- ===== LEADERBOARD ===== -->
-<div class="screen" id="screen-leaderboard">
-  <div class="screen-inner">
-    <button class="btn-back" onclick="showScreen('menu')" style="align-self:flex-start">←</button>
-    <div class="screen-title">🏆 Leaderboard</div>
-    <div id="leaderboardList" style="width:100%;display:flex;flex-direction:column;gap:8px"></div>
-  </div>
-</div>
 
 <!-- ===== SETTINGS ===== -->
 <div class="screen" id="screen-settings">
@@ -648,7 +705,7 @@ const Store = {
       settings: {sound:true,music:false,dark:false},
       daily: {lastClaim:'', day:0},
       powerups: {half:3, time:3, skip:3, double:3},
-      leaderboard: []
+      
     };
   },
   load() {
@@ -1403,10 +1460,7 @@ endGameSession();
     if (GS.bestStreak > d.bestStreak) d.bestStreak = GS.bestStreak;
     if (complete) d.totalWins++;
     d.powerups = {...GS.lifelines};
-    // Add to leaderboard
-    d.leaderboard.push({name:d.name, score:GS.score, streak:GS.bestStreak, mode:GS.mode});
-    d.leaderboard.sort((a,b) => b.score-a.score);
-    d.leaderboard = d.leaderboard.slice(0,10);
+  
   });
   updateMenuUI();
   // Show result
@@ -1672,22 +1726,6 @@ function endPartyGame() {
   showScreen('party-result');
 }
 
-// ===== LEADERBOARD =====
-function showLeaderboard() {
-  const d = Store.get();
-  const list = document.getElementById('leaderboardList');
-  list.innerHTML = '';
-  const entries = d.leaderboard.length > 0 ? d.leaderboard : [{name:'You',score:0,streak:0}];
-  entries.slice(0,10).forEach((e,i) => {
-    const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'other';
-    const row = document.createElement('div');
-    row.className = 'lb-row';
-    row.innerHTML = `<div class="lb-rank ${rankClass}">${i+1}</div><div class="lb-name">${e.name||'Player'}<br><small style="color:var(--c-subtext);font-size:11px">${e.mode||'classic'} • Streak: ${e.streak||0}</small></div><div class="lb-score">${e.score}</div>`;
-    list.appendChild(row);
-  });
-  if (d.leaderboard.length === 0) list.innerHTML = '<div style="text-align:center;color:var(--c-subtext);padding:20px;font-weight:700">No scores yet! Play a game first 🎮</div>';
-  showScreen('leaderboard');
-}
 
 // ===== DAILY REWARD =====
 function showDaily() {
@@ -1741,7 +1779,22 @@ function resetProgress() {
     showScreen('menu');
   }
 }
-
+function showHowToPlay() {
+  Audio.play('click');
+  document.getElementById('screen-howtoplay').classList.add('active');
+}
+function closeHowToPlay() {
+  Audio.play('click');
+  document.getElementById('screen-howtoplay').classList.remove('active');
+}
+function showEarnCoins() {
+  Audio.play('click');
+  document.getElementById('screen-earncoins').classList.add('active');
+}
+function closeEarnCoins() {
+  Audio.play('click');
+  document.getElementById('screen-earncoins').classList.remove('active');
+}
 // ===== UTILS =====
 function shuffle(arr) {
   const a = [...arr];

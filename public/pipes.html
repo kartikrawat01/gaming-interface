@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Connect the Water Pipes - Garden Puzzle</title>
+  <link rel="icon" href="/assets/logo.png" type="image/png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
@@ -85,13 +86,7 @@
     <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
       <!-- Logo & Theme Title -->
       <div class="flex items-center gap-3">
-        <div class="bg-gradient-to-r from-emerald-400 to-teal-500 p-2.5 rounded-xl shadow-md text-white">
-          <!-- Cute Robot/Gardener Icon -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
-            <circle cx="12" cy="12" r="4"/>
-          </svg>
-        </div>
+        <img src="assets/logo.png" alt="BeCre8v Logo" class="h-10 sm:h-12 w-auto object-contain shrink-0" />
         <div>
           <h1 class="text-xl sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-700 bg-clip-text text-transparent">Connect the Water Pipes!</h1>
           <p class="text-xs sm:text-sm text-emerald-600/80 font-semibold flex items-center gap-1">
@@ -267,8 +262,15 @@
   </footer>
 
   <!-- Modal: How to Play Popup -->
-  <div id="how-to-play-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border-4 border-emerald-500 relative transform transition">
+  <div id="how-to-play-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border-4 border-emerald-500 relative transform transition my-8 max-h-[90vh] overflow-y-auto">
+      <!-- Close 'X' Button at top-right -->
+      <button onclick="closeHowToPlay()" class="absolute top-3 right-3 text-emerald-800 hover:text-emerald-900 bg-emerald-100 hover:bg-emerald-200 rounded-full p-1 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
       <!-- Top Character Header -->
       <div class="flex items-center gap-3 mb-4">
         <div class="text-4xl">🤖</div>
@@ -279,23 +281,65 @@
       </div>
       
       <!-- Bullet Instructions -->
-      <div class="space-y-3.5 text-sm text-emerald-800 leading-relaxed font-semibold">
-        <div class="flex items-start gap-2.5">
-          <div class="bg-emerald-100 text-emerald-800 rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5">1</div>
-          <p>Click or tap a pipe piece to <strong class="text-teal-700">turn it around</strong>. Each click turns the pipe 90 degrees!</p>
+      <div class="space-y-4 text-sm text-emerald-800 leading-relaxed font-semibold">
+        <!-- 1. How to Play -->
+        <div class="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100/80 space-y-2">
+          <h4 class="text-emerald-900 font-bold flex items-center gap-1">🎮 Basic Controls</h4>
+          <div class="flex items-start gap-2">
+            <div class="bg-emerald-100 text-emerald-800 rounded-full w-5 h-5 flex items-center justify-center text-xs shrink-0 mt-0.5">1</div>
+            <p>Click or tap a pipe to <strong class="text-teal-700">rotate it 90°</strong>.</p>
+          </div>
+          <div class="flex items-start gap-2">
+            <div class="bg-emerald-100 text-emerald-800 rounded-full w-5 h-5 flex items-center justify-center text-xs shrink-0 mt-0.5">2</div>
+            <p>Connect the blue water pump 🚰 to all dry flower pots 🪵.</p>
+          </div>
+          <div class="flex items-start gap-2">
+            <div class="bg-emerald-100 text-emerald-800 rounded-full w-5 h-5 flex items-center justify-center text-xs shrink-0 mt-0.5">3</div>
+            <p>Click <strong class="text-blue-600">Start Water Flow</strong> to test your system!</p>
+          </div>
         </div>
-        <div class="flex items-start gap-2.5">
-          <div class="bg-emerald-100 text-emerald-800 rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5">2</div>
-          <p>Create a complete path connecting the blue water pump 🚰 to all dry flower pots 🪵.</p>
+
+        <!-- 2. Coins & Rewards -->
+        <div class="bg-amber-50/50 p-3 rounded-xl border border-amber-100/80">
+          <h4 class="text-amber-900 font-bold flex items-center gap-1">🪙 Coins & Rewards</h4>
+          <p class="text-xs text-amber-800 mt-1">
+            Solve with as few moves as possible to win up to <strong class="text-amber-600">3 Gold Stars!</strong> ⭐ Completing levels successfully awards coins directly to your wallet:
+          </p>
+          <div class="mt-2 space-y-1 text-xs text-amber-900/90 font-bold">
+            <div class="flex justify-between border-b border-amber-100/50 pb-0.5">
+              <span>🌱 Levels 1–3:</span>
+              <span>20 Coins 🪙</span>
+            </div>
+            <div class="flex justify-between border-b border-amber-100/50 pb-0.5">
+              <span>🌿 Levels 4–8:</span>
+              <span>35 Coins 🪙</span>
+            </div>
+            <div class="flex justify-between">
+              <span>🌳 Levels 9–10:</span>
+              <span>50 Coins 🪙</span>
+            </div>
+          </div>
         </div>
-        <div class="flex items-start gap-2.5">
-          <div class="bg-emerald-100 text-emerald-800 rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5">3</div>
-          <p>Press the huge <strong class="text-blue-600">Start Water Flow</strong> button to test your system!</p>
+
+        <!-- 3. Timer Rules -->
+        <div class="bg-rose-50/50 p-3 rounded-xl border border-rose-100/80">
+          <h4 class="text-rose-900 font-bold flex items-center gap-1">⏳ Timer Rules</h4>
+          <div class="grid grid-cols-3 gap-2 text-center text-xs mt-1.5">
+            <div class="bg-white/80 p-1.5 rounded border border-rose-100">
+              <span class="block font-bold text-rose-700">Lvl 1–3</span>
+              <span class="text-[11px] text-rose-600 font-bold">15 sec</span>
+            </div>
+            <div class="bg-white/80 p-1.5 rounded border border-rose-100">
+              <span class="block font-bold text-rose-700">Lvl 4–8</span>
+              <span class="text-[11px] text-rose-600 font-bold">25 sec</span>
+            </div>
+            <div class="bg-white/80 p-1.5 rounded border border-rose-100">
+              <span class="block font-bold text-rose-700">Lvl 9–10</span>
+              <span class="text-[11px] text-rose-600 font-bold">35 sec</span>
+            </div>
+          </div>
         </div>
-        <div class="flex items-start gap-2.5">
-          <div class="bg-emerald-100 text-emerald-800 rounded-full w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5">4</div>
-          <p>Solve with as few moves as possible to win <strong class="text-amber-500">3 Gold Stars!</strong> ⭐</p>
-        </div>
+        <h4><b>Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.</b></h4>
       </div>
 
       <!-- Got it Button -->
@@ -513,7 +557,7 @@
       },
       {
         id: 8,
-        name: "Hurry, 12 Turns Limit!",
+        name: "Hurry, Turns Limit!",
         rows: 4,
         cols: 4,
         star3: 6,
@@ -540,12 +584,11 @@
       },
       {
         id: 9,
-        name: "Beat the Timer Clock!",
+        name: "Beat the Timer!",
         rows: 4,
         cols: 4,
         star3: 10,
         star2: 14,
-        timer: 45,
         cells: [
           { r: 0, c: 0, type: 'S', rot: 1, isLocked: true }, 
           { r: 1, c: 0, type: 'L', rot: 1, targetRot: 0 },
@@ -1102,14 +1145,20 @@ window.addEventListener("walletUpdated", (e) => {
       // Active Challenge Timer settings
       clearInterval(timerInterval);
       const timerBox = document.getElementById('timer-box');
-      if (level.timer) {
-        secondsLeft = level.timer;
-        timerBox.classList.remove('hidden');
-        document.getElementById('timer-text').innerText = formatTime(secondsLeft);
-        timerInterval = setInterval(updateChallengeTimer, 1000);
+      
+      if (level.id >= 1 && level.id <= 3) {
+        secondsLeft = 15;
+      } else if (level.id >= 4 && level.id <= 8) {
+        secondsLeft = 25;
+      } else if (level.id >= 9 && level.id <= 10) {
+        secondsLeft = 35;
       } else {
-        timerBox.classList.add('hidden');
+        secondsLeft = 30;
       }
+
+      timerBox.classList.remove('hidden');
+      document.getElementById('timer-text').innerText = formatTime(secondsLeft);
+      timerInterval = setInterval(updateChallengeTimer, 1000);
 
       // Active Challenge Rotations Limit setup
       const rotLimitBox = document.getElementById('rotations-limit-box');
@@ -1198,7 +1247,11 @@ document.getElementById("total-coins").innerText = totalCoins;
 
     // Synthesized Timer decrement calculations
     function updateChallengeTimer() {
-      if (!isGameActive || isFlowActive) return;
+      // Check if modal popups are visible
+      const modal = document.getElementById('how-to-play-modal');
+      const isModalOpen = modal && !modal.classList.contains('hidden');
+      
+      if (!isGameActive || isFlowActive || isModalOpen) return;
 
       secondsLeft--;
       document.getElementById('timer-text').innerText = formatTime(secondsLeft);
@@ -1429,23 +1482,15 @@ document.getElementById("total-coins").innerText = totalCoins;
         localStorage.setItem(`pipe-game-lvl-${activeLvl.id}-stars`, starsEarned);
       }
 
-      // Coin calculation
-      let baseCoins = 0;
-      let deduction = 0;
-      if (activeLevelIndex < 4) {
-        baseCoins = 25;
-        deduction = 5;
-      } else if (activeLevelIndex < 8) {
-        baseCoins = 40;
-        deduction = 10;
+      // Fixed Coin calculation based strictly on level ranges
+      let coinsEarned = 0;
+      const currentLvlId = activeLevelIndex + 1;
+      if (currentLvlId <= 3) {
+        coinsEarned = 20;
+      } else if (currentLvlId <= 8) {
+        coinsEarned = 35;
       } else {
-        baseCoins = 60;
-        deduction = 10;
-      }
-
-      let coinsEarned = baseCoins;
-      if (movesCount > activeLvl.star3) {
-        coinsEarned -= deduction;
+        coinsEarned = 50;
       }
 
       await creditPipeCoins(coinsEarned);
@@ -1639,11 +1684,7 @@ document.getElementById("total-coins").innerText = totalCoins;
   loadLevel(0);
   await syncPipeWalletBalance();
 
-  // Auto trigger instructions popup on first time load to onboard kids
-  if (!localStorage.getItem('pipe-game-returning-user')) {
-    setTimeout(openHowToPlay, 600);
-    localStorage.setItem('pipe-game-returning-user', 'true');
-  }
+  setTimeout(openHowToPlay, 600);
 };
   </script>
 </body>

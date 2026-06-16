@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Motor Boat – Wayfinding with Code</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='80' font-size='80'%3E🚤%3C/text%3E%3C/svg%3E">
 <script src="https://unpkg.com/blockly@10.4.3/blockly.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -42,6 +43,12 @@
     flex-shrink: 0;
     gap: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  #cre8v-logo {
+    height: 42px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
   }
   #logo-box {
     background: white;
@@ -98,6 +105,27 @@
   .level-dot.completed { background: #4caf50; border-color: #388e3c; }
   .level-dot.current { background: #2196f3; border-color: #1565c0; box-shadow: 0 0 0 3px rgba(255,255,255,0.5); }
   .level-dot.locked { opacity: 0.4; cursor: default; pointer-events: none; }
+  #how-to-play-btn {
+    background: #4ab0d4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: background 0.2s, transform 0.1s;
+  }
+  #how-to-play-btn:hover {
+    background: #3a9ac4;
+    transform: scale(1.02);
+  }
+  #how-to-play-btn:active {
+    transform: scale(0.98);
+  }
   #finish-btn {
     background: #ffd700;
     color: #333;
@@ -167,7 +195,6 @@
     position: relative;
     overflow: hidden;
   }
-  /* Video background */
   #ocean-video {
     position: absolute;
     inset: 0;
@@ -209,7 +236,6 @@
     0%,100% { opacity: 0; transform: scale(0.5); }
     50% { opacity: 1; transform: scale(1.5); }
   }
-  /* Navigation path canvas */
   #path-canvas {
     position: absolute;
     inset: 0;
@@ -417,7 +443,58 @@
     0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
     100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
   }
-    /* ================= MOBILE / TABLET RESPONSIVE LAYOUT ================= */
+
+  #how-to-play-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  #how-to-play-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+  #how-to-play-modal {
+    background: #fdfefe;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: left;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    transform: scale(0.8);
+    transition: transform 0.3s;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  #how-to-play-overlay.show #how-to-play-modal {
+    transform: scale(1);
+  }
+  #how-to-play-close-btn {
+    background: var(--coral);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    box-shadow: 0 4px 0 var(--coral-dark);
+    transition: background 0.2s;
+  }
+  #how-to-play-close-btn:hover {
+    background: var(--coral-light);
+  }
 
   @media (max-width: 900px) {
     html,
@@ -443,6 +520,10 @@
       align-items: center;
     }
 
+    #cre8v-logo {
+      height: 32px;
+    }
+
     #logo-box {
       padding: 4px 8px;
       font-size: 12px;
@@ -464,6 +545,11 @@
 
     #finish-btn {
       display: none;
+    }
+
+    #how-to-play-btn {
+      padding: 6px 12px;
+      font-size: 11px;
     }
 
     #level-dots {
@@ -627,6 +713,13 @@
   }
 
   @media (max-width: 480px) {
+    #cre8v-logo {
+      height: 28px;
+    }
+    #how-to-play-btn {
+      font-size: 10.5px;
+      padding: 5px 10px;
+    }
     #stage-wrapper {
       height: 72vw;
       min-height: 240px;
@@ -665,10 +758,12 @@
 <body>
 
 <div id="header">
+  <img src="/assets/logo.png" id="cre8v-logo" alt="BeCre8v Logo" />
   <div id="logo-box"><span style="font-size:22px">🚤</span><span>MOTOR BOAT</span></div>
   <div id="coin-box" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 4px 10px; color: #ffd700; font-weight: 800; display: flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap;"><span>🪙</span><span id="coin-count">0</span></div>
   <span id="game-title">Wayfinding with Code</span>
   <div id="level-dots"></div>
+  <button id="how-to-play-btn">❓ How to Play</button>
   <button id="finish-btn">🏆 Finish your Hour of Code</button>
 </div>
 
@@ -723,6 +818,41 @@
   </div>
 </div>
 
+<div id="how-to-play-overlay">
+  <div id="how-to-play-modal">
+    <div style="display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--coral); padding-bottom: 8px; margin-bottom: 4px;">
+      <span style="font-size: 28px;">⛵</span>
+      <h2 style="color: var(--coral); font-size: 22px; margin: 0; font-family: sans-serif;">How to Play</h2>
+    </div>
+    <div style="font-size: 13.5px; line-height: 1.4; max-height: 52vh; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 12px; font-family: sans-serif;">
+      <div>
+        <h3 style="color: #1278a8; font-size: 15px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">🎮 Instructions</h3>
+        <ul style="margin-left: 18px; padding-left: 0; display: flex; flex-direction: column; gap: 3px;">
+          <li><strong>Goal:</strong> Drag and drop code blocks to navigate your motor boat to the star island!</li>
+          <li><strong>Controls:</strong> Arrange the blocks under the "when run" block, then click the <strong>▶ Run</strong> button.</li>
+          <li><strong>Avoid:</strong> Stay clear of the rock obstacles (🪨) and don't sail off-screen!</li>
+          <li><strong>How to Win:</strong> Guide the boat safely to the goal to master all 19 wayfinding levels!</li>
+        </ul>
+      </div>
+      <div style="background: #fcf8e3; border: 1px solid #faebcc; border-radius: 8px; padding: 10px;">
+        <h3 style="color: #b89000; font-size: 15px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">🪙 Wayfinder Rewards</h3>
+        <ul style="margin-left: 18px; padding-left: 0; list-style-type: none; display: flex; flex-direction: column; gap: 3px;">
+          <li>⭐ <strong>Levels 1 to 5:</strong> 🪙 +20 Coins per level</li>
+          <li>⭐ <strong>Levels 6 to 10:</strong> 🪙 +30 Coins per level</li>
+          <li>⭐ <strong>Levels 11 to 15:</strong> 🪙 +35 Coins per level</li>
+          <li>⭐ <strong>Levels 16 to 19:</strong> 🪙 +50 Coins per level</li>
+          <li>⭐ <strong>Stars Reward:</strong> Use fewer blocks than the level limit to earn more Stars! (⭐⭐⭐)</li>
+          <li>⭐ <strong>No Penalties:</strong> Infinite tries! Keep experimenting until you get it right.</li>
+        </ul>
+      </div>
+      <div style="background: #eef7fa; border-left: 4px solid #4ab0d4; padding: 8px 10px; font-size: 12px; font-weight: bold; color: #1278a8; border-radius: 0 8px 8px 0;">
+        Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.
+      </div>
+    </div>
+    <button id="how-to-play-close-btn">Let's Sail! ⛵</button>
+  </div>
+</div>
+
 <script>
 (function () {
   'use strict';
@@ -736,7 +866,6 @@
   const DIR_DEG   = [0, 90, 180, 270];
   const DELTAS    = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
-  // Hide fallback ocean-bg when video plays successfully
   const videoEl = document.getElementById('ocean-video');
   videoEl.addEventListener('canplay', function() {
     document.getElementById('ocean-bg').style.opacity = '0';
@@ -745,135 +874,101 @@
     document.getElementById('ocean-bg').style.opacity = '1';
   });
 
-  // Level path definitions: array of {c,r} grid cells the path passes through
-  // These are derived from the Moana screenshots showing the navigation route
   const LEVEL_PATHS = [
-    // L1: straight north 1 step
     [{c:3,r:6},{c:3,r:5}],
-    // L2: straight north 3 steps
     [{c:3,r:6},{c:3,r:5},{c:3,r:4},{c:3,r:3}],
-    // L3: north then turn east — L-shape
     [{c:1,r:5},{c:1,r:4},{c:1,r:3},{c:2,r:3},{c:3,r:3},{c:4,r:3},{c:5,r:3}],
-    // L4: north then east — longer L-shape
     [{c:1,r:6},{c:1,r:5},{c:1,r:4},{c:1,r:3},{c:1,r:2},{c:2,r:2},{c:3,r:2},{c:4,r:2},{c:5,r:2},{c:6,r:2}],
-    // L5: north then east, avoiding rock at (2,4) — zigzag
     [{c:0,r:6},{c:0,r:5},{c:0,r:4},{c:0,r:3},{c:1,r:3},{c:2,r:3},{c:3,r:3},{c:3,r:2},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:6,r:1}],
-    // L6: straight north 4 steps
     [{c:3,r:7},{c:3,r:6},{c:3,r:5},{c:3,r:4},{c:3,r:3}],
-    // L7: turn right (east), move 4 steps
     [{c:1,r:4},{c:2,r:4},{c:3,r:4},{c:4,r:4},{c:5,r:4}],
-    // L8: zigzag around rocks at (2,5) and (4,3)
     [{c:3,r:7},{c:3,r:6},{c:3,r:5},{c:4,r:5},{c:4,r:4},{c:4,r:3},{c:3,r:3},{c:3,r:2},{c:3,r:1}],
-    // L9: zigzag diagonal path bottom-left to top-right
     [{c:1,r:7},{c:1,r:6},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:4,r:3},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:6,r:1}],
-    // L10: two-segment zigzag bottom to top-right
     [{c:0,r:7},{c:0,r:6},{c:0,r:5},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:4,r:3},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:7,r:2},{c:7,r:1}],
-    // L11: north then diagonal to top-right, passing collectibles
     [{c:1,r:5},{c:1,r:4},{c:1,r:3},{c:2,r:3},{c:3,r:3},{c:3,r:2},{c:4,r:2},{c:5,r:2},{c:5,r:1}],
-    // L12: complex zigzag with collectibles
     [{c:0,r:7},{c:0,r:6},{c:0,r:5},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:4,r:3},{c:4,r:4},{c:4,r:5},{c:5,r:5},{c:6,r:5},{c:6,r:4},{c:6,r:3},{c:6,r:2},{c:6,r:1}],
-    // L13: east then north-east diagonal
     [{c:2,r:5},{c:3,r:5},{c:3,r:4},{c:3,r:3},{c:4,r:3},{c:5,r:3},{c:5,r:2},{c:6,r:2}],
-    // L14: straight north, dodging rocks
     [{c:2,r:6},{c:2,r:5},{c:2,r:4},{c:2,r:3},{c:2,r:2},{c:2,r:1}],
-    // L15: straight north twice (repeat 2 outer), dodging rocks
     [{c:3,r:7},{c:3,r:6},{c:3,r:5},{c:3,r:4},{c:3,r:3},{c:3,r:2},{c:3,r:1}],
-    // L16: diagonal zigzag with turns
     [{c:1,r:7},{c:1,r:6},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:3,r:4},{c:3,r:3},{c:4,r:3},{c:4,r:2},{c:5,r:2},{c:5,r:1}],
-    // L17: branching path north-east
     [{c:1,r:6},{c:1,r:5},{c:1,r:4},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:3,r:2},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:6,r:1}],
-    // L18: complex path around rocks
     [{c:1,r:7},{c:1,r:6},{c:1,r:5},{c:2,r:5},{c:2,r:4},{c:3,r:4},{c:3,r:3},{c:4,r:3},{c:4,r:2},{c:5,r:2},{c:6,r:2},{c:6,r:1}],
-    // L19: full diagonal challenge
     [{c:0,r:7},{c:1,r:7},{c:1,r:6},{c:1,r:5},{c:1,r:4},{c:2,r:4},{c:2,r:3},{c:3,r:3},{c:3,r:2},{c:4,r:2},{c:4,r:1},{c:5,r:1},{c:6,r:1},{c:6,r:0},{c:7,r:0}]
   ];
 
   const LEVELS = [
-    // 1
     {
       inst: 'Drag a <span class="cmd-tag fwd">Move Forward</span> block to the workspace and hit Run.',
       boat: {c:3, r:6, d:DIR_N}, goal: {c:3, r:5},
       rocks: [], collectibles: [], max: 3,
       toolbox: ['forward','left','right']
     },
-    // 2
     {
       inst: 'Use the <span class="cmd-tag fwd">Move Forward</span> block to reach the star.',
       boat: {c:3, r:6, d:DIR_N}, goal: {c:3, r:3},
       rocks: [], collectibles: [], max: 5,
       toolbox: ['forward','left','right']
     },
-    // 3
     {
       inst: 'Use <span class="cmd-tag fwd">Move Forward</span> and <span class="cmd-tag turn">Turn Right</span> blocks to reach the star.',
       boat: {c:1, r:5, d:DIR_N}, goal: {c:5, r:3},
       rocks: [], collectibles: [], max: 6,
       toolbox: ['forward','left','right']
     },
-    // 4
     {
       inst: 'Use <span class="cmd-tag fwd">Move Forward</span> and <span class="cmd-tag turn">Turn Right</span> blocks to navigate to the star.',
       boat: {c:1, r:6, d:DIR_N}, goal: {c:6, r:2},
       rocks: [], collectibles: [], max: 9,
       toolbox: ['forward','left','right']
     },
-    // 5
     {
       inst: 'Keep navigating using <span class="cmd-tag fwd">Move Forward</span> and <span class="cmd-tag turn">Turn Right</span> blocks to reach the star.',
       boat: {c:0, r:6, d:DIR_N}, goal: {c:6, r:1},
       rocks: [{c:2,r:4}], collectibles: [], max: 12,
       toolbox: ['forward','left','right']
     },
-    // 6
     {
       inst: 'Add the <span class="cmd-tag fwd">Move Forward</span> block inside the <span class="cmd-tag loop">Repeat 4 Times</span> loop to speed toward the star!',
       boat: {c:3, r:7, d:DIR_N}, goal: {c:3, r:3},
       rocks: [], collectibles: [], max: 4,
       toolbox: ['forward','left','right','repeat']
     },
-    // 7
     {
       inst: 'Use the <span class="cmd-tag loop">Repeat 4 Times</span> loop to move forward faster. Remember to rotate the boat first!',
       boat: {c:1, r:4, d:DIR_N}, goal: {c:5, r:4},
       rocks: [], collectibles: [], max: 5,
       toolbox: ['forward','left','right','repeat']
     },
-    // 8
     {
       inst: 'Zigzag using the <span class="cmd-tag turn">Turn Right</span> and <span class="cmd-tag turn">Turn Left</span> blocks to dodge rocks! Then use a <span class="cmd-tag loop">Repeat</span> loop.',
       boat: {c:3, r:7, d:DIR_N}, goal: {c:3, r:1},
       rocks: [], collectibles: [], max: 10,
       toolbox: ['forward','left','right','repeat']
     },
-    // 9
     {
       inst: 'Continue zigzagging! Use a <span class="cmd-tag loop">Repeat 6 Times</span> loop with 4 blocks inside to navigate to the star.',
       boat: {c:1, r:7, d:DIR_N}, goal: {c:6, r:1},
       rocks: [], collectibles: [], max: 10,
       toolbox: ['forward','left','right','repeat']
     },
-    // 10
     {
       inst: 'Use 2 different <span class="cmd-tag loop">Repeat X Times</span> blocks to zigzag and reach the star while dodging all rocks.',
       boat: {c:0, r:7, d:DIR_N}, goal: {c:7, r:1},
       rocks: [], collectibles: [], max: 12,
       toolbox: ['forward','left','right','repeat']
     },
-    // 11
     {
       inst: 'Use <span class="cmd-tag loop">Repeat 2 Times</span>, <span class="cmd-tag turn">Turn Right</span> and <span class="cmd-tag collect">Collect</span> blocks to gather the treasure!',
       boat: {c:1, r:5, d:DIR_N}, goal: {c:5, r:1},
       rocks: [], collectibles: [{c:3,r:3},{c:5,r:1}], max: 10,
       toolbox: ['forward','left','right','repeat','collect']
     },
-    // 12
     {
       inst: 'Keep collecting treasure! Use <span class="cmd-tag loop">Repeat 3 Times</span>, <span class="cmd-tag turn">Turn Left</span>, and <span class="cmd-tag collect">Collect</span> blocks.',
       boat: {c:0, r:7, d:DIR_N}, goal: {c:6, r:1},
       rocks: [], collectibles: [{c:2,r:3},{c:4,r:5},{c:6,r:1}], max: 14,
       toolbox: ['forward','left','right','repeat','collect']
     },
-    // 13
     {
       inst: 'Use the new <span class="cmd-tag loop">Repeat Until Goal</span> block. It will keep repeating until you reach the star. Add <span class="cmd-tag fwd">Move Forward</span> inside it!',
       boat: {c:2, r:5, d:DIR_E}, goal: {c:6, r:2},
@@ -881,7 +976,6 @@
       toolbox: ['forward','left','right','repeat_until_goal','dodge','strike'],
       prebuilt: 'repeat_until_goal'
     },
-    // 14
     {
       inst: 'Use the <span class="cmd-tag cond">If Obstacle</span> block to dodge only when a rock is ahead.',
       boat: {c:2, r:6, d:DIR_N}, goal: {c:2, r:1},
@@ -889,7 +983,6 @@
       toolbox: ['forward','left','right','repeat_until_goal','dodge','strike','if_obstacle'],
       prebuilt: 'repeat_until_goal_with_forward_and_if'
     },
-    // 15
     {
       inst: 'Cut the two nearby ropes using the <span class="cmd-tag cond">If Obstacle</span> block to dodge obstacles coming from ahead.',
       boat: {c:3, r:7, d:DIR_N}, goal: {c:3, r:1},
@@ -897,7 +990,6 @@
       toolbox: ['forward','repeat_until_goal','repeat','dodge','strike','if_obstacle'],
       prebuilt: 'repeat2_repeat_until_goal_strike'
     },
-    // 16
     {
       inst: 'Keep cutting ropes while dodging! Use the <span class="cmd-tag loop">Repeat Until Goal</span> and the <span class="cmd-tag cond">If Obstacle</span> block together.',
       boat: {c:1, r:7, d:DIR_N}, goal: {c:5, r:1},
@@ -905,7 +997,6 @@
       toolbox: ['forward','left','right','repeat_until_goal','repeat','dodge','strike','if_obstacle'],
       prebuilt: null
     },
-    // 17
     {
       inst: 'Go for the main route as fast as possible. Use the <span class="cmd-tag cond">If Path Ahead / Else</span> block to find the right path.',
       boat: {c:1, r:6, d:DIR_N}, goal: {c:6, r:1},
@@ -913,7 +1004,6 @@
       toolbox: ['forward','left','right','repeat_until_goal','strike','if_path_else'],
       prebuilt: 'repeat_until_goal_with_if_path_else'
     },
-    // 18
     {
       inst: 'Combine the <span class="cmd-tag loop">Repeat Until Goal</span> and the <span class="cmd-tag cond">If Path Ahead / Else</span> blocks to reach the final star!',
       boat: {c:1, r:7, d:DIR_N}, goal: {c:6, r:1},
@@ -921,7 +1011,6 @@
       toolbox: ['forward','left','right','repeat_until_goal','strike','if_path_else'],
       prebuilt: null
     },
-    // 19
     {
       inst: 'The final challenge! Use everything you know to reach the star!',
       boat: {c:0, r:7, d:DIR_N}, goal: {c:7, r:0},
@@ -951,13 +1040,11 @@
     try { localStorage.setItem('mb_v4', JSON.stringify(Object.keys(completedSet).map(Number))); } catch (e) {}
   }
 
-  // Initialize and load persistent coin rewards
   try {
     const storedCoins = localStorage.getItem('mb_coins_total');
     if (storedCoins !== null) {
       totalCoins = parseInt(storedCoins) || 0;
     } else {
-      // Retroactively calculate coins based on completed levels if coins are missing but progress exists
       let tempCoins = 0;
       Object.keys(completedSet).forEach(lvlIdx => {
         const lNum = parseInt(lvlIdx) + 1;
@@ -978,110 +1065,93 @@
     if (el) el.textContent = totalCoins;
   }
 
-
   function syncMotorBoatProgress() {
-  const completed = Object.keys(completedSet).length;
+    const completed = Object.keys(completedSet).length;
+    const progress = Math.round((completed / 19) * 100);
 
-  const progress =
-    Math.round((completed / 19) * 100);
+    localStorage.setItem("motorBoatCompleted", String(completed));
+    localStorage.setItem("motorBoatProgress", String(Math.min(progress, 100)));
 
-  localStorage.setItem(
-    "motorBoatCompleted",
-    String(completed)
-  );
-
-  localStorage.setItem(
-    "motorBoatProgress",
-    String(Math.min(progress, 100))
-  );
-
-  window.parent.postMessage({
-    type: "GAME_PROGRESS_UPDATE",
-    game: "motor_boat",
-    progress: Math.min(progress, 100),
-    completed,
-    coins: totalCoins,
-    level: currentLevel + 1,
-  }, "*");
-}
+    window.parent.postMessage({
+      type: "GAME_PROGRESS_UPDATE",
+      game: "motor_boat",
+      progress: Math.min(progress, 100),
+      completed,
+      coins: totalCoins,
+      level: currentLevel + 1,
+    }, "*");
+  }
 
   async function syncMotorBoatWalletBalance() {
-  const saved =
-    Number(localStorage.getItem("walletCoins")) ||
-    Number(localStorage.getItem("mb_coins_total")) ||
-    0;
+    const saved =
+      Number(localStorage.getItem("walletCoins")) ||
+      Number(localStorage.getItem("mb_coins_total")) ||
+      0;
 
-  totalCoins = saved;
-  updateCoinDisplay();
+    totalCoins = saved;
+    updateCoinDisplay();
 
-  try {
-    if (window.gameSDK) {
-      const balance = await window.gameSDK.getBalance();
-
-      if (balance !== undefined && balance !== null) {
-        totalCoins = Number(balance);
-        localStorage.setItem("walletCoins", String(totalCoins));
-        localStorage.setItem("mb_coins_total", String(totalCoins));
-        updateCoinDisplay();
+    try {
+      if (window.gameSDK) {
+        const balance = await window.gameSDK.getBalance();
+        if (balance !== undefined && balance !== null) {
+          totalCoins = Number(balance);
+          localStorage.setItem("walletCoins", String(totalCoins));
+          localStorage.setItem("mb_coins_total", String(totalCoins));
+          updateCoinDisplay();
+        }
       }
+    } catch (err) {
+      console.warn("Motor Boat wallet sync failed:", err);
     }
-  } catch (err) {
-    console.warn("Motor Boat wallet sync failed:", err);
+    return totalCoins;
   }
 
-  return totalCoins;
-}
+  async function creditMotorBoatCoins(amount) {
+    let finalBalance =
+      Number(localStorage.getItem("walletCoins")) ||
+      Number(totalCoins) ||
+      0;
 
-async function creditMotorBoatCoins(amount) {
-  let finalBalance =
-    Number(localStorage.getItem("walletCoins")) ||
-    Number(totalCoins) ||
-    0;
+    try {
+      const rewardResult = await window.gameSDK.rewardCoins({
+        amount,
+        description: `Motor Boat Level ${currentLevel + 1} Complete`,
+        game: "motor_boat",
+        level: currentLevel + 1,
+        score: amount,
+      });
 
-  try {
-    const rewardResult = await window.gameSDK.rewardCoins({
-      amount,
-      description: `Motor Boat Level ${currentLevel + 1} Complete`,
-      game: "motor_boat",
-      level: currentLevel + 1,
-      score: amount,
-    });
-
-    if (rewardResult && rewardResult.balance !== undefined) {
-      finalBalance = Number(rewardResult.balance);
-    } else if (window.gameSDK) {
-      const freshBalance = await window.gameSDK.getBalance();
-      if (freshBalance !== undefined && freshBalance !== null) {
-        finalBalance = Number(freshBalance);
+      if (rewardResult && rewardResult.balance !== undefined) {
+        finalBalance = Number(rewardResult.balance);
+      } else if (window.gameSDK) {
+        const freshBalance = await window.gameSDK.getBalance();
+        if (freshBalance !== undefined && freshBalance !== null) {
+          finalBalance = Number(freshBalance);
+        }
       }
+    } catch (err) {
+      console.error("Motor Boat reward error:", err);
+      finalBalance = finalBalance + amount;
     }
-  } catch (err) {
-    console.error("Motor Boat reward error:", err);
-    finalBalance = finalBalance + amount;
-  }
 
-  totalCoins = finalBalance;
-
-  localStorage.setItem("walletCoins", String(totalCoins));
-  localStorage.setItem("mb_coins_total", String(totalCoins));
-
-  updateCoinDisplay();
-
-  syncMotorBoatProgress();
-
-  return totalCoins;
-}
-
-window.addEventListener("walletUpdated", (e) => {
-  const balance = e.detail?.balance;
-
-  if (balance !== undefined) {
-    totalCoins = Number(balance);
+    totalCoins = finalBalance;
     localStorage.setItem("walletCoins", String(totalCoins));
     localStorage.setItem("mb_coins_total", String(totalCoins));
     updateCoinDisplay();
+    syncMotorBoatProgress();
+    return totalCoins;
   }
-});
+
+  window.addEventListener("walletUpdated", (e) => {
+    const balance = e.detail?.balance;
+    if (balance !== undefined) {
+      totalCoins = Number(balance);
+      localStorage.setItem("walletCoins", String(totalCoins));
+      localStorage.setItem("mb_coins_total", String(totalCoins));
+      updateCoinDisplay();
+    }
+  });
 
   const stageWrapper  = document.getElementById('stage-wrapper');
   const gridContainer = document.getElementById('grid-container');
@@ -1120,7 +1190,6 @@ window.addEventListener("walletUpdated", (e) => {
     return { x: c * cellW + cellW / 2, y: r * cellH + cellH / 2 };
   }
 
-  // Draw Moana-style navigation path for current level
   function drawLevelPath(levelIdx) {
     pathCtx.clearRect(0, 0, pathCanvas.width, pathCanvas.height);
     const path = LEVEL_PATHS[levelIdx];
@@ -1129,7 +1198,6 @@ window.addEventListener("walletUpdated", (e) => {
     const tileW = cellW;
     const tileH = cellH;
 
-    // Draw path tiles — each cell gets a highlighted square tile
     for (let i = 0; i < path.length; i++) {
       const cell = path[i];
       const x = cell.c * tileW;
@@ -1269,7 +1337,6 @@ window.addEventListener("walletUpdated", (e) => {
       if (completedSet[i])    dot.classList.add('completed');
       if (i === currentLevel) {
         dot.classList.add('current');
-        // Smooth scroll the current active dot into view
         setTimeout(() => {
           dot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }, 50);
@@ -1281,7 +1348,6 @@ window.addEventListener("walletUpdated", (e) => {
     });
   }
 
-  /* ── BLOCKLY ── */
   function defineCustomBlocks() {
     Blockly.Blocks['boat_start'] = {
       init() {
@@ -1539,7 +1605,6 @@ window.addEventListener("walletUpdated", (e) => {
     return count;
   }
 
-  /* ── COMMAND EXTRACTION ── flatten block tree ── */
   function extractCommands(block, state, lv) {
     const cmds = [];
     while (block) {
@@ -1633,7 +1698,6 @@ window.addEventListener("walletUpdated", (e) => {
     return cmds;
   }
 
-  /* ── EXECUTION ── */
   async function runCmds() {
     if (isRunning) return;
     const commands = getCommandList();
@@ -1850,7 +1914,6 @@ window.addEventListener("walletUpdated", (e) => {
     else               showMiss();
   }
 
-  /* ── MODALS ── */
   async function showWin() {
     const isNewCompletion = !completedSet[currentLevel];
     completedSet[currentLevel] = true;
@@ -1958,7 +2021,6 @@ window.addEventListener("walletUpdated", (e) => {
     if (idx >= 0 && idx < LEVELS.length) loadLevel(idx);
   }
 
-  /* ── LOAD LEVEL ── */
   function loadLevel(idx) {
     currentRunId++;
     currentLevel = idx;
@@ -2000,7 +2062,7 @@ window.addEventListener("walletUpdated", (e) => {
     }
   }
 
-    function refreshResponsiveLayout() {
+  function refreshResponsiveLayout() {
     computeCell();
 
     const lv = LEVELS[currentLevel];
@@ -2025,19 +2087,42 @@ window.addEventListener("walletUpdated", (e) => {
   });
 
   window.addEventListener("load", async () => {
-  if (window.gameSDK) {
-    await window.gameSDK.init();
-  }
+    if (window.gameSDK) {
+      await window.gameSDK.init();
+    }
 
     computeCell();
-  initBlockly();
-  loadLevel(0);
+    initBlockly();
+    loadLevel(0);
 
-  setTimeout(refreshResponsiveLayout, 150);
+    setTimeout(refreshResponsiveLayout, 150);
 
-  await syncMotorBoatWalletBalance();
-  syncMotorBoatProgress();
-});
+    await syncMotorBoatWalletBalance();
+    syncMotorBoatProgress();
+
+    const playOverlay = document.getElementById('how-to-play-overlay');
+    const playBtn = document.getElementById('how-to-play-btn');
+    const playCloseBtn = document.getElementById('how-to-play-close-btn');
+
+    playBtn.addEventListener('click', () => {
+      playOverlay.classList.add('show');
+    });
+
+    playCloseBtn.addEventListener('click', () => {
+      playOverlay.classList.remove('show');
+    });
+
+    playOverlay.addEventListener('click', (e) => {
+      if (e.target === playOverlay) {
+        playOverlay.classList.remove('show');
+      }
+    });
+
+    if (!sessionStorage.getItem('mb_play_visited_session_v4')) {
+      sessionStorage.setItem('mb_play_visited_session_v4', 'true');
+      playOverlay.classList.add('show');
+    }
+  });
 
 })();
 </script>

@@ -368,6 +368,7 @@
       .topbar-back:active {
         transform: scale(0.9);
       }
+      
       .topbar-center {
         flex: 1;
         text-align: center;
@@ -738,6 +739,8 @@
   <body>
     <!-- SPLASH -->
     <div class="screen active" id="splash">
+      <img src="/assets/logo.png" alt="Be Cre8v" 
+     style="height:36px; border-radius:8px; margin-bottom:4px; filter: brightness(0) invert(1);" />
       <div class="splash-logo">ZIP MASTER</div>
       <div class="splash-sub">Connect the Path</div>
       <div class="splash-dots">
@@ -748,8 +751,10 @@
     </div>
 
     <!-- HOME -->
-    <div class="screen" id="home">
-      <div class="home-logo">ZIP MASTER</div>
+    <div class="screen" id="home" style="gap: 24px; padding: 30px; position: relative;">
+      <img src="/assets/logo.png" alt="Be Cre8v" 
+     style="height:36px; border-radius:8px; margin-bottom:4px; filter: brightness(0) invert(1);" />
+     <div class="home-logo">ZIP MASTER</div>
       <div class="home-tagline">The Ultimate Path Puzzle</div>
       <div class="home-stats">
         <div class="stat-chip">
@@ -777,6 +782,12 @@
         <button class="btn btn-primary" onclick="showScreen('levelSelect')">
           ▶ Play
         </button>
+        <button class="btn btn-outline" onclick="openHowToPlay()" style="border-color: #a78bfa; color: #a78bfa;">
+  ❓ How to Play?
+</button>
+<button class="btn btn-outline" onclick="openEarnCoins()" style="border-color: #fbbf24; color: #fbbf24;">
+  🪙 How to Earn Coins?
+</button>
         <button class="btn btn-secondary" onclick="showScreen('settings')">
           ⚙ Settings
         </button>
@@ -799,6 +810,19 @@
     <div class="screen" id="game">
       <div class="game-topbar">
         <div class="topbar-back" onclick="confirmBack()">←</div>
+        <!-- BE CRE8V LOGO in game -->
+<div style="
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+">
+ <img src="/assets/logo.png" height="22" style="border-radius:4px; filter: brightness(0) invert(1);" />
+</div>
         <div class="topbar-center">
           <div class="topbar-lvl" id="g-lvl-title">Level 1</div>
           <div class="topbar-hint-count" id="g-diff-name">Tutorial Easy</div>
@@ -1009,6 +1033,51 @@
     </div>
 
     <div id="streak-popup"></div>
+    <!-- HOW TO PLAY POPUP -->
+<div class="popup-bg" id="howtoplay-popup">
+  <div class="popup-card" style="max-width: 340px;">
+    <div class="popup-icon">🗺️</div>
+    <div class="popup-title" style="font-size:22px;">How to Play?</div>
+    <div style="text-align:left; font-size:13px; color:rgba(255,255,255,0.75); line-height:1.9; margin-bottom:20px; font-weight:700;">
+      🔢 <b style="color:#fff;">Number Order:</b> Connect 1→2→3... in sequence<br>
+      📐 <b style="color:#fff;">Fill Grid:</b> Your path must cover ALL cells<br>
+      🚫 <b style="color:#fff;">Walls:</b> White lines block your path — avoid them<br>
+      👆 <b style="color:#fff;">Draw:</b> Drag on the grid to draw path<br>
+      ↩️ <b style="color:#fff;">Undo:</b> Go back over your path to erase<br>
+      💡 <b style="color:#fff;">Hints:</b> Shows your next correct cell<br>
+      ✔️ <b style="color:#fff;">Submit:</b> Press Submit to check your answer<br>
+      ⭐ <b style="color:#fff;">Stars:</b> Solve faster without hints = more stars
+    </div>
+    <div class="popup-btns">
+      <button class="btn btn-primary" onclick="document.getElementById('howtoplay-popup').classList.remove('show')">
+        Got it! 🚀
+      </button>
+    </div>
+  </div>
+ </div> 
+  <!-- HOW TO EARN COINS POPUP -->
+<div class="popup-bg" id="earncoins-popup">
+  <div class="popup-card" style="max-width: 340px;">
+    <div class="popup-icon">🪙</div>
+    <div class="popup-title" style="font-size:22px;">Earn Coins!</div>
+    <div style="text-align:left; font-size:13px; color:rgba(255,255,255,0.75); line-height:1.9; margin-bottom:20px; font-weight:700;">
+      ✅ <b style="color:#fff;">Level Complete:</b> +20 coins per level<br>
+      ⭐ <b style="color:#fff;">3-Star Solve:</b> Finish fast, no hints used<br>
+      ⏭️ <b style="color:#fff;">Skip Level:</b> Costs 10 coins<br>
+      💡 <b style="color:#fff;">Hints:</b> Using hints reduces star rating<br>
+      🔓 <b style="color:#fff;">Unlock Levels:</b> Complete levels to unlock more<br>
+      🏆 <b style="color:#fff;">25 Levels:</b> More completions = more coins!<br><br>
+      <h3><b style="color:#fff;">Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.</b></h4>
+    </div>
+    <div class="popup-btns">
+      <button class="btn btn-primary" onclick="document.getElementById('earncoins-popup').classList.remove('show')">
+        Let's Earn! 💪
+      </button>
+    </div>
+  </div>
+</div>
+
+</div>
 
     <script>
       // ============================================================
@@ -2621,7 +2690,13 @@ solution:[
 
   syncZipMasterProgress();
 }
+  function openHowToPlay() {
+  document.getElementById('howtoplay-popup').classList.add('show');
+}
 
+  function openEarnCoins() {
+  document.getElementById('earncoins-popup').classList.add('show');
+}
       // ============================================================
       // SCREENS
       // ============================================================

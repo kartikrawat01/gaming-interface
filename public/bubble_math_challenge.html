@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23ff8fab' stroke='%23ffffff' stroke-width='4'/><circle cx='35' cy='35' r='10' fill='%23ffffff' opacity='0.5'/><text x='50' y='68' font-size='50' font-weight='bold' font-family='sans-serif' fill='white' text-anchor='middle'>1</text></svg>">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
@@ -26,7 +27,41 @@
     width:100%; max-width:900px; padding:0; display:flex; flex-direction:column; gap:6px;
     flex-shrink:0;
   }
+  #header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+  }
+  #logo {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  #how-to-play-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.1s, background-color 0.2s;
+  }
+  #how-to-play-btn:hover {
+    transform: scale(1.05);
+    background: #ff7597;
+  }
+  #how-to-play-btn:active {
+    transform: scale(0.95);
+  }
   #stats{
+    flex: 1;
     display:flex; justify-content:space-between; align-items:center;
     background:rgba(255,255,255,0.7); border-radius:16px; padding:8px 16px;
     box-shadow:0 4px 10px rgba(0,0,0,0.08); font-weight:bold; font-size:clamp(13px,2.5vw,18px);
@@ -124,15 +159,165 @@
     height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); width:100%;
     transition: width 1s linear;
   }
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+  }
+  .modal-overlay.active {
+    display: flex;
+  }
+  .modal-content {
+    background: #fff;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes modalPop {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-header {
+    background: var(--bg2);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px dashed var(--accent);
+  }
+  .modal-header h2 {
+    font-size: clamp(16px, 4vw, 22px);
+    color: var(--text);
+    margin: 0;
+  }
+  .close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text);
+    line-height: 1;
+    transition: transform 0.1s;
+  }
+  .close-modal-btn:hover {
+    transform: scale(1.1);
+    color: var(--warn);
+  }
+  .modal-body {
+    padding: 16px;
+    max-height: 50vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .info-section {
+    background: #fdfbf7;
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #eee;
+  }
+  .info-section h3 {
+    font-size: 16px;
+    color: #d6336c;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .info-section ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  .info-section li {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+    color: #555;
+  }
+  .info-section li strong {
+    color: var(--text);
+  }
+  .modal-footer {
+    padding: 16px;
+    background: #fefefe;
+    border-top: 1px solid #eee;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .modal-footer p {
+    font-size: 11px;
+    font-weight: bold;
+    color: #d6336c;
+    line-height: 1.4;
+    margin: 0;
+  }
+  .modal-action-btn {
+    background: var(--accent2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.1s;
+    align-self: center;
+  }
+  .modal-action-btn:hover {
+    transform: scale(1.05);
+  }
+  .modal-action-btn:active {
+    transform: scale(0.95);
+  }
+  @media (max-width: 600px) {
+    #header-row {
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    #logo {
+      height: 35px;
+    }
+    #stats {
+      order: 3;
+      width: 100%;
+      justify-content: space-around;
+      padding: 6px 12px;
+    }
+    #how-to-play-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  }
 </style>
 </head>
 <body>
 
 <div id="topbar">
-  <div id="stats">
-    <span>⭐ Score: <span id="score">0</span></span>
-    <span>🪙 Coins: <span id="coins">0</span></span>
-    <span>⏱️ Time: <span id="timer">15</span>s</span>
+  <div id="header-row">
+    <img src="/assets/logo.png" id="logo" alt="BeCre8v Logo">
+    <div id="stats">
+      <span>⭐ Score: <span id="score">0</span></span>
+      <span>🪙 Coins: <span id="coins">0</span></span>
+      <span>⏱️ Time: <span id="timer">15</span>s</span>
+    </div>
+    <button id="how-to-play-btn">❓ How to Play</button>
   </div>
   <div id="timerbar"><div id="timerfill"></div></div>
   <div id="levelbar"></div>
@@ -147,6 +332,41 @@
   </div>
 </div>
 
+<div id="how-to-play-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>🎮 How to Play Bubble Math!</h2>
+      <button class="close-modal-btn" id="close-modal-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-section">
+        <h3>💡 Gameplay Rules</h3>
+        <ul>
+          <li><strong>What to do:</strong> Solve the math equations inside the bubbles.</li>
+          <li><strong>Complete Level:</strong> Pop the bubbles in order (either smallest-to-largest or largest-to-smallest, check the instruction bar!).</li>
+          <li><strong>What to avoid:</strong> Avoid clicking a bubble out of order or running out of time.</li>
+          <li><strong>To Win:</strong> Complete all 25 levels successfully!</li>
+        </ul>
+      </div>
+      <div class="info-section">
+        <h3>🪙 Coins & Rewards</h3>
+        <ul>
+          <li><strong>Levels 1 to 5:</strong> Earn <strong>20 coins</strong> on completion</li>
+          <li><strong>Levels 6 to 10:</strong> Earn <strong>20 coins</strong> on completion</li>
+          <li><strong>Levels 11 to 20:</strong> Earn <strong>35 coins</strong> on completion</li>
+          <li><strong>Levels 21 to 25:</strong> Earn <strong>45 coins</strong> on completion</li>
+          <li><strong>Scores:</strong> Receive +10 points for each correct pop and +50 bonus points on level complete!</li>
+          <li><strong>Penalties:</strong> No coin penalties, but wrong moves or timeouts force you to restart the level.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <p>"Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc."</p>
+      <button class="modal-action-btn" id="modal-start-btn">Let's Play!</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const TOTAL_LEVELS = 25;
 let score = 0, coins = 0;
@@ -158,6 +378,8 @@ let timeLeft, timerInterval, timerTotal;
 let bubbles = [], sequence = [], nextIndex = 0;
 let usedExpressions = new Set();
 let lockInput = false;
+let timerPaused = false;
+let firstTimeModalOpen = false;
 
 const playarea = document.getElementById('playarea');
 const overlay = document.getElementById('overlay');
@@ -170,6 +392,25 @@ const timerEl = document.getElementById('timer');
 const timerFill = document.getElementById('timerfill');
 
 const bubbleColors = ['#ff8fab','#7ed957','#5dade2','#ffd166','#bb8fce','#48c9b0','#f1948a','#85c1e9'];
+
+function openHowToPlayModal() {
+  timerPaused = true;
+  document.getElementById('how-to-play-modal').classList.add('active');
+}
+
+function closeHowToPlayModal() {
+  document.getElementById('how-to-play-modal').classList.remove('active');
+  timerPaused = false;
+  if (firstTimeModalOpen) {
+    firstTimeModalOpen = false;
+    startLevel();
+  }
+}
+
+document.getElementById('how-to-play-btn').addEventListener('click', openHowToPlayModal);
+document.getElementById('close-modal-btn').addEventListener('click', closeHowToPlayModal);
+document.getElementById('modal-start-btn').addEventListener('click', closeHowToPlayModal);
+
 async function syncBubbleWalletBalance() {
   const saved =
     Number(localStorage.getItem("walletCoins")) ||
@@ -408,7 +649,6 @@ function placeBubbles(items){
       }
     }
     if(!ok){
-      // fallback grid placement
       const cols = Math.ceil(Math.sqrt(items.length));
       const cellW = w/cols, cellH = h/Math.ceil(items.length/cols);
       const col = idx % cols, row = Math.floor(idx/cols);
@@ -483,11 +723,11 @@ async function levelComplete(){
   clearInterval(timerInterval);
   const config = getLevelConfig(currentLevel);
 
-bubbleCompletedLevels.add(currentLevel);
-syncBubbleMathProgressToParent();
+  bubbleCompletedLevels.add(currentLevel);
+  syncBubbleMathProgressToParent();
 
-await creditBubbleCoins(config.coinReward);
-spawnConfetti();
+  await creditBubbleCoins(config.coinReward);
+  spawnConfetti();
   if(currentLevel === TOTAL_LEVELS){
     showOverlay('🏆 All Levels Complete!', `Amazing job! Final Score: ${score} | Coins: ${coins}`, 'Play Again', () => {
       currentLevel = 1; score = 0;
@@ -519,6 +759,7 @@ function startTimer(seconds){
   timerEl.textContent = timeLeft;
   timerFill.style.width = '100%';
   timerInterval = setInterval(() => {
+    if (timerPaused) return;
     timeLeft--;
     if(timeLeft < 0){
       clearInterval(timerInterval);
@@ -560,13 +801,21 @@ window.addEventListener("load", async () => {
 
   await syncBubbleWalletBalance();
 
-syncBubbleMathProgressToParent();
+  syncBubbleMathProgressToParent();
 
-buildLevelBar();
-setTimeout(startLevel, 300);
+  buildLevelBar();
+
+  const firstTime = sessionStorage.getItem("bubbleMathFirstTimeOpened_session_v4");
+  if (!firstTime) {
+    firstTimeModalOpen = true;
+    openHowToPlayModal();
+    sessionStorage.setItem("bubbleMathFirstTimeOpened_session_v4", "true");
+  } else {
+    setTimeout(startLevel, 300);
+  }
 });
+
 window.addEventListener('resize', () => {
-  // reposition bubbles for current sequence isn't tracked individually; simplest: restart layout on resize without penalty
   if(playarea.querySelectorAll('.bubble').length > 0 && !lockInput){
     const items = bubbles.map(b => ({expr:b.textContent, value:Number(b.dataset.value)}));
     placeBubbles(items.filter((_,i)=> !bubbles[i].classList.contains('used')));

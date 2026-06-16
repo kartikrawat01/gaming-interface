@@ -522,6 +522,19 @@ body {
   background: linear-gradient(135deg, #FFF9F0 0%, #FFFDE7 40%, #F0F8FF 100%);
 }
 
+#startLogoImg {
+  width: 170px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 18px;
+}
+
+.setupLogoImg {
+  width: 160px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 14px;
+}
 /* START SCREEN */
 #startScreen .logo {
   font-family: 'Baloo 2', cursive; font-size: 52px; font-weight: 800;
@@ -560,6 +573,58 @@ body {
   border-radius: 50px; color: #8D5A00; font-size: 14px; font-weight: 800;
   cursor: pointer; margin-top: 10px; font-family: 'Nunito', sans-serif;
   transition: all 0.15s;
+}
+
+.info-btn {
+  padding: 10px 26px;
+  background: linear-gradient(135deg, #FFF3CD, #FFE0A3);
+  border: 2px solid #FF9500;
+  border-radius: 50px;
+  color: #E65100;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  margin-top: 14px;
+  font-family: 'Nunito', sans-serif;
+  box-shadow: 0 4px 0 #E6A23C;
+}
+
+.info-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.info-modal-box {
+  width: 430px;
+  max-width: 92vw;
+  background: #FFFDE7;
+  border: 3px solid #FF9500;
+  border-radius: 22px;
+  padding: 24px;
+  box-shadow: 0 12px 40px rgba(255,150,0,0.25);
+}
+
+.info-title {
+  font-family: 'Baloo 2', cursive;
+  font-size: 28px;
+  color: #E65100;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.info-section-title {
+  color: #8D4000;
+  font-size: 17px;
+  font-weight: 900;
+  margin: 14px 0 8px;
+}
+
+.info-list {
+  color: #5D3A00;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
+  padding-left: 18px;
 }
 .sm-btn:hover { background: rgba(255,220,100,0.6); }
 
@@ -1495,6 +1560,35 @@ body {
     </div>
   </div>
 
+  <!-- HOW TO PLAY & EARN COINS MODAL -->
+<div class="settings-backdrop" id="infoBackdrop" onclick="G.closeInfoBackdrop(event)">
+  <div class="info-modal-box">
+    <div class="info-title">📘 How to Play & Earn Coins</div>
+
+    <div class="info-section-title">🎮 How to Play?</div>
+    <ul class="info-list">
+      <li>Click Play Game and setup your shop.</li>
+      <li>Serve customers by calculating their total bill.</li>
+      <li>Enter the correct answer using the number pad.</li>
+      <li>Answer before the timer runs out.</li>
+      <li>Use Freeze, Hint and 2× Coins power-ups when needed.</li>
+      <li>Complete customers to finish levels and unlock next levels.</li>
+    </ul>
+
+    <div class="info-section-title">🪙 How to Earn Coins?</div>
+    <ul class="info-list">
+      <li>Level 1–3 correct answer → 5 coins.</li>
+      <li>Level 4–6 correct answer → 10 coins.</li>
+      <li>Level 7–10 correct answer → 15 coins.</li>
+      <li>Use 2× Coins power-up to double coins for correct answers.</li>
+      <li>Login required to add coins into wallet.</li><br>
+      <h4><b>Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.</b></h4><br>
+    </ul>
+
+    <button class="settings-close-btn" onclick="G.closeInfoModal()">✓ Got it!</button>
+  </div>
+</div>
+
   <!-- SETTINGS MODAL -->
   <div class="settings-backdrop" id="settingsBackdrop" onclick="G.closeSettingsBackdrop(event)">
     <div class="settings-modal">
@@ -1527,6 +1621,7 @@ body {
 
   <!-- START SCREEN -->
   <div id="startScreen" class="screen">
+    <img id="startLogoImg" src="/assets/logo.png" alt="Logo">
     <div class="logo">🏪 Math Shop Master</div>
     <div class="sub">Serve customers • Solve math • Earn coins!</div>
     <div id="statsBar">
@@ -1541,11 +1636,17 @@ body {
       <span id="bestLevelStat" style="display:none">1</span>
     </div>
     <button class="big-btn" onclick="G.goToSetup()">🛒 PLAY GAME</button>
-    <button class="sm-btn" onclick="G.openSettings()">⚙️ Settings</button>
+
+<button class="info-btn" onclick="G.openInfoModal()">
+  📘 How to Play & Earn Coins
+</button>
+
+<button class="sm-btn" onclick="G.openSettings()">⚙️ Settings</button>
   </div>
 
   <!-- SETUP SCREEN -->
   <div id="setupScreen" class="screen" style="display:none">
+    <img class="setupLogoImg" src="/assets/logo.png" alt="Logo">
     <div class="setup-panel">
       <div class="setup-title">👤 Setup Your Shop</div>
       <div class="setup-step-label" id="setupStepLabel">Step 1 of 3</div>
@@ -1825,6 +1926,20 @@ function showScreen(id) {
   const el = document.getElementById(id);
   if (el) el.style.display = 'flex';
   state.screen = id;
+}
+
+function openInfoModal() {
+  document.getElementById('infoBackdrop').classList.add('open');
+}
+
+function closeInfoModal() {
+  document.getElementById('infoBackdrop').classList.remove('open');
+}
+
+function closeInfoBackdrop(e) {
+  if (e.target === document.getElementById('infoBackdrop')) {
+    closeInfoModal();
+  }
 }
 
 // ── SETTINGS ──
@@ -2538,6 +2653,7 @@ return {
   startGame,pause,resume,goToStart,
   goToUpgrades,closeUpgrades,nextLevel,
   pressKey,submitAnswer,
+  openInfoModal,closeInfoModal,closeInfoBackdrop,
   openSettings,closeSettings,closeSettingsBackdrop,
   toggleSound,setSettingsMode,resetProgress,
   openLevelSelect,closeLevelSelect,closeLevelSelectBtn,

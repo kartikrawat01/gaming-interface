@@ -88,6 +88,107 @@
         letter-spacing: 2px;
       }
 
+      #game-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-right: 20px;
+  filter: brightness(0) invert(1);
+}
+
+.header-help-btn {
+  background: rgba(0, 212, 255, 0.14);
+  border: 2px solid rgba(0, 212, 255, 0.45);
+  color: #ffffff;
+  border-radius: 22px;
+  padding: 7px 14px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.header-help-btn:hover {
+  background: rgba(0, 212, 255, 0.28);
+}
+
+#help-card {
+  width: min(92vw, 480px);
+  background: #ffffff;
+  border: 4px solid #00b4d8;
+  border-radius: 24px;
+  padding: 22px 26px 26px;
+  color: #005c6b;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+}
+
+#help-card h2 {
+  color: #005c6b;
+  margin: 0 0 14px;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+#help-card h2:nth-of-type(2) {
+  margin-top: 22px;
+}
+
+.help-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 14px 0;
+  color: #005c6b;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.help-num {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 50%;
+  background: #c8f3ff;
+  color: #0077b6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+#help-close-btn {
+  width: 100%;
+  margin-top: 18px;
+  background: #00b4d8;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 14px;
+  font-weight: 900;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #0077b6;
+}
+
+
+#help-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(5, 15, 30, 0.75);
+  backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+#help-modal.show {
+  display: flex;
+}
+
       #level-indicator {
         position: absolute;
         left: 50%;
@@ -1112,7 +1213,11 @@
   <body>
     <!-- Header -->
     <div id="header">
-      <h1>🌊 WaveCode</h1>
+      <img id="game-logo" src="/assets/logo.png" alt="Game Logo" />
+
+<button class="header-help-btn" onclick="openHelpModal()">
+  How to Play & Earn Coins
+</button>
       <div id="level-indicator">
         <div id="levels-bar"></div>
       </div>
@@ -1121,6 +1226,65 @@
         <span id="header-coin-count">0</span>
       </div>
     </div>
+
+<div id="help-modal">
+  <div id="help-card">
+    <h2>🎮 How to Play?</h2>
+
+    <div class="help-step">
+      <div class="help-num">💡</div>
+      <div>Login is required to earn coins. Coins will only be added to your wallet after you log in.</div>
+    </div>
+
+    <div class="help-step">
+      <div class="help-num">1</div>
+      <div>Drag code blocks into the workspace.</div>
+    </div>
+
+    <div class="help-step">
+      <div class="help-num">2</div>
+      <div>Use Move Forward, Turn Left, Turn Right and other blocks to guide the navigator.</div>
+    </div>
+
+    <div class="help-step">
+      <div class="help-num">3</div>
+      <div>Reach the ⭐ goal and avoid crashing into 🪨 rocks.</div>
+    </div>
+
+    <h2>🪙 How to Earn Coins?</h2>
+
+    <div class="help-step">
+      <div class="help-num">1</div>
+      <div>Level 1-5 = 5 coins</div>
+    </div>
+
+    <div class="help-step">
+      <div class="help-num">2</div>
+      <div>Level 6-10 = 10 coins</div>
+    </div>
+
+    <div class="help-step">
+      <div class="help-num">3</div>
+      <div>Level 11-15 = 20 coins</div>
+    </div>
+
+    <div class="help-step">
+      <div class="help-num">4</div>
+      <div>Level 16-20 = 30 coins</div>
+    </div>
+
+    <div class="help-step">
+      <div>Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.</div>
+    </div>
+
+
+
+
+    <button id="help-close-btn" onclick="closeHelpModal()">
+      Yay, let’s play! 🚀
+    </button>
+  </div>
+</div>
 
     <!-- Main layout -->
     <div id="main">
@@ -1362,6 +1526,14 @@
     </div>
 
     <script>
+
+      function openHelpModal() {
+  document.getElementById("help-modal").classList.add("show");
+}
+
+function closeHelpModal() {
+  document.getElementById("help-modal").classList.remove("show");
+}
     const LEVELS = [
         // ── LEVEL 1 ── Straight shot, 4x4. First taste.
         {

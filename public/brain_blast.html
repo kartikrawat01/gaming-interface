@@ -1138,11 +1138,43 @@
       }
 
       /* ========== LEADERBOARD / SETTINGS ========== */
+      #leaderboard-screen,
       #settings-screen {
         background: transparent;
         padding: 20px;
         padding-top: 80px;
         justify-content: flex-start;
+      }
+      .lb-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 2.5px solid rgba(255, 255, 255, 0.98);
+        border-radius: 20px;
+        padding: 14px 18px;
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 10px;
+        box-shadow:
+          0 4px 0 rgba(180, 180, 220, 0.3),
+          0 8px 20px rgba(100, 80, 200, 0.1);
+      }
+      .lb-rank {
+        font-family: "Fredoka One", cursive;
+        font-size: 22px;
+        min-width: 36px;
+      }
+      .lb-name {
+        flex: 1;
+        font-weight: 800;
+        font-size: 16px;
+        color: var(--navy);
+      }
+      .lb-score {
+        color: #c47f00;
+        font-weight: 900;
+        font-size: 15px;
       }
 
       .settings-row {
@@ -1504,6 +1536,7 @@
   }
 
   #level-screen,
+  #leaderboard-screen,
   #settings-screen {
     padding: 14px;
     padding-top: 72px;
@@ -1575,7 +1608,11 @@
     <div class="cloud-blob"></div>
     <div class="cloud-blob"></div>
 
-    <!-- BE CRE8V LOGO -->
+
+
+    <!-- ========== HOME SCREEN ========== -->
+    <div id="home-screen" class="screen active">
+          <!-- BE CRE8V LOGO -->
 <div style="
   position: absolute;
   top: 16px;
@@ -1583,18 +1620,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255,255,255,0.92);
-  border-radius: 14px;
   padding: 7px 14px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
   z-index: 10;
 ">
-  <span style="font-size: 20px;">🎮</span>
-  <span style="font-family: 'Fredoka One', cursive; font-size: 16px; color: #9b6dff; font-weight: 700; letter-spacing: 0.5px;">Be Cre8v</span>
-</div>
-
-    <!-- ========== HOME SCREEN ========== -->
-    <div id="home-screen" class="screen active">
+<img src="/assets/logo.png" height="40" />
+  </div>
       <div class="home-hero">
         <span class="mascot-home">🧠</span>
         <div class="home-title">Brain <span>Blast</span> IQ</div>
@@ -1625,6 +1655,10 @@
         <button class="hbtn hbtn-levels" onclick="showScreen('level-screen')">
           <span class="hbtn-icon">🧩</span><span class="hbtn-text">Levels</span>
         </button>
+        <button class="hbtn hbtn-lb" onclick="showScreen('leaderboard-screen')">
+          <span class="hbtn-icon">🏆</span
+          ><span class="hbtn-text">Leaderboard</span>
+        </button>
         <button class="hbtn hbtn-daily" onclick="claimDaily()">
           <span class="hbtn-icon">🎁</span
           ><span class="hbtn-text">Daily Reward</span>
@@ -1647,6 +1681,19 @@
     </div>
 
     <!-- ========== LEADERBOARD ========== -->
+    <div id="leaderboard-screen" class="screen">
+      <button class="back-btn" onclick="showScreen('home-screen')">←</button>
+      <h2 class="screen-heading">🏆 Leaderboard</h2>
+      <div
+        id="lb-list"
+        style="
+          width: 100%;
+          max-width: 420px;
+          padding: 16px 16px 0;
+          margin-top: 80px;
+        "
+      ></div>
+    </div>
 
     <!-- ========== SETTINGS ========== -->
     <div id="settings-screen" class="screen">
@@ -1806,6 +1853,7 @@
       ⭐ <b>Stars:</b> Earn 1–3 stars per level<br>
       ⏱️ <b>Speed:</b> Answer faster = more stars<br>
       🎁 <b>Daily:</b> Claim free coins every day!<br>
+      🔢 <b>Levels:</b> 44 unique puzzles to solve
     </div>
     <div class="popup-btns">
       <button class="pp-btn primary" onclick="closeOverlay('howtoplay-overlay')">Got it! 🚀</button>
@@ -1821,9 +1869,11 @@
       🆕 <b>First Clear:</b> +10 coins (any star)<br>
       🌟 <b>First 3-Star Clear:</b> +25 coins<br>
       ⬆️ <b>Improve to 3 Stars:</b> +15 coins<br>
+      🏆 <b>Beat Your High Score:</b> +20 coins<br>
       📦 <b>Every 10 Levels Done:</b> +100 coins<br>
       🎁 <b>Daily Reward:</b> +50 coins<br>
-      🧩 <b>Hard Puzzle, No Hint:</b> +30 coins
+      🧩 <b>Hard Puzzle, No Hint:</b> +30 coins<br><br>
+      <h4><b>Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.</b></h2>
     </div>
     <div class="popup-btns">
       <button class="pp-btn primary" onclick="closeOverlay('earncoins-overlay')">Let's Earn! 💪</button>
@@ -1924,6 +1974,30 @@ async function initializeSocket() {
 
 });
 
+    socket.on("leaderboardUpdated", () => {
+      socket.on("walletUpdated", (data) => {
+
+  console.log("💰 Wallet updated:", data);
+
+  if (data.balance !== undefined) {
+
+    state.coins = data.balance;
+
+    updateHomeUI();
+
+    const gc = document.getElementById("game-coins");
+
+    if (gc) {
+      gc.textContent = state.coins;
+    }
+
+  }
+
+});
+      console.log("🏆 Leaderboard refresh");
+      renderLeaderboard();
+    });
+
   } catch (err) {
     console.error("Socket init error:", err);
   }
@@ -1951,6 +2025,14 @@ async function initializeSocket() {
 
       // join wallet room
       socket.emit("join-wallet", session.user.id);
+
+    });
+
+    socket.on("leaderboardUpdated", () => {
+
+      console.log("🏆 Leaderboard updated");
+
+      renderLeaderboard();
 
     });
 
@@ -2102,6 +2184,7 @@ state.sessionHighScore = 0;
         mc.style.display = id === "game-screen" ? "block" : "none";
         if (id === "level-screen") renderLevelGrid();
         if (id === "home-screen") updateHomeUI();
+        if (id === "leaderboard-screen") renderLeaderboard();
         if (id === "settings-screen") {
           document.getElementById("settings-coins").textContent = state.coins;
           document.getElementById("sound-toggle").className =
@@ -2154,6 +2237,32 @@ state.sessionHighScore = 0;
       }
 
       // ==================== LEADERBOARD ====================
+      function renderLeaderboard() {
+        const lb = [
+          {
+            name: "You",
+            score: Object.keys(state.progress).length,
+            coins: state.coins,
+          },
+          { name: "AlphaGenius", score: 48, coins: 1450 },
+          { name: "BrainQueen", score: 45, coins: 1280 },
+          { name: "MindHacker", score: 42, coins: 1100 },
+          { name: "PuzzleKing", score: 38, coins: 980 },
+          { name: "LogicLord", score: 35, coins: 870 },
+          { name: "SmartCookie", score: 30, coins: 750 },
+        ].sort((a, b) => b.score - a.score);
+        const medals = ["🥇", "🥈", "🥉"];
+        const list = document.getElementById("lb-list");
+        list.innerHTML = "";
+        lb.forEach((row, i) => {
+          const d = document.createElement("div");
+          d.className = "lb-row";
+          if (row.name === "You")
+            d.style.border = "2.5px solid rgba(155,109,255,0.5)";
+          d.innerHTML = `<div class="lb-rank">${medals[i] || "#" + (i + 1)}</div><div class="lb-name">${row.name === "You" ? '<span style="color:#9B6DFF;font-weight:900;">YOU</span>' : row.name}</div><div class="lb-score">Lvl ${row.score} 🪙${row.coins}</div>`;
+          list.appendChild(d);
+        });
+      }
 
       // ==================== LEVEL GRID ====================
       function renderLevelGrid() {

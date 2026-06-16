@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mini Sudoku</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231a73e8'/%3E%3Cpath d='M30 20 H70 M30 50 H70 M30 80 H70 M20 30 V70 M50 20 V80 M80 30 V70' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='35' cy='35' r='9' fill='%23ffca28'/%3E%3Ccircle cx='65' cy='65' r='9' fill='%23ffca28'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
@@ -48,6 +49,20 @@
     min-height: 100vh;
   }
 
+  .logo-container {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 12px 16px 0;
+  }
+  .becre8v-logo {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+  }
+
   /* ── HEADER ── */
   .header {
     width: 100%;
@@ -73,6 +88,37 @@
   }
   .header-icon-btn:hover { background: var(--gray-200); }
   .header-icon-btn svg { width: 20px; height: 20px; }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .how-to-play-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.15s;
+    box-shadow: 0 1.5px 3px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 30px;
+    white-space: nowrap;
+  }
+  .how-to-play-btn:hover {
+    background: #43a047;
+  }
+  .how-to-play-btn:active {
+    transform: scale(0.95);
+  }
 
   /* ── COIN CONTAINER ── */
   .coin-container {
@@ -238,17 +284,167 @@
   .popup-btn.secondary { background: var(--white); color: var(--black); }
   .popup-btn.secondary:hover { background: var(--gray-100); }
 
+  /* ── INSTRUCTIONS AUTO POPUP ── */
+  .instructions-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .instructions-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .instructions-popup {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 440px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .instructions-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--gray-500);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .instructions-close-btn:hover {
+    color: var(--black);
+  }
+  .instructions-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px dashed var(--gray-200);
+    padding-bottom: 12px;
+  }
+  .instructions-emoji {
+    font-size: 28px;
+  }
+  .instructions-header h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--black);
+  }
+  .instructions-section h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--black);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .instructions-section p, .instructions-section li {
+    font-size: 13px;
+    color: var(--gray-700);
+    line-height: 1.4;
+  }
+  .instructions-section ul {
+    padding-left: 18px;
+    margin-top: 4px;
+  }
+  .rewards-section {
+    background: #fbf9f0;
+    border: 1.5px solid #ffe082;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .rewards-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+  .reward-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 6px 8px;
+    flex: 1;
+    font-size: 12px;
+  }
+  .reward-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+  .no-penalties {
+    font-size: 11px !important;
+    color: #795548 !important;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .instructions-footer {
+    border-top: 1.5px solid var(--gray-200);
+    padding-top: 12px;
+    font-size: 11px;
+    color: #555;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .instructions-play-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.1s;
+    width: 100%;
+  }
+  .instructions-play-btn:hover {
+    background: #43a047;
+  }
+  .instructions-play-btn:active {
+    transform: scale(0.98);
+  }
+
   /* ============================================================
      DESKTOP LAYOUT — 1024px+
-     Strategy: centred two-column card. Left = grid. Right = controls.
-     Mobile elements are hidden; desktop elements shown.
   ============================================================ */
-
-  /* Hide desktop panel on mobile */
   .desktop-right { display: none; }
 
   @media (min-width: 1024px) {
-    /* Widen header & level bar to fill page */
+    .logo-container {
+      max-width: 100%;
+      padding: 16px 40px 0;
+    }
+    .becre8v-logo {
+      height: 34px;
+    }
+
     .header {
       max-width: 100%;
       padding: 14px 40px 6px;
@@ -271,7 +467,6 @@
       gap: 8px;
     }
 
-    /* Main becomes a centred row */
     .main {
       max-width: 960px;
       flex-direction: row;
@@ -281,7 +476,6 @@
       gap: 40px;
     }
 
-    /* Left column */
     .desktop-left {
       display: flex;
       flex-direction: column;
@@ -290,24 +484,20 @@
     }
 
     .level-info { margin: 0 0 14px; }
-
     .grid-container { margin-bottom: 0; width: auto; }
 
-    /* Hide mobile-only controls & numpad */
     .controls { display: none; }
     .numpad   { display: none; }
 
-    /* ── RIGHT PANEL ── */
     .desktop-right {
       display: flex;
       flex-direction: column;
       gap: 0;
       flex: 0 0 200px;
       width: 200px;
-      padding-top: 44px; /* align with grid top (below level-info bar) */
+      padding-top: 44px;
     }
 
-    /* Section label inside panel */
     .panel-section {
       display: flex;
       flex-direction: column;
@@ -322,7 +512,6 @@
       margin: 4px 0 16px;
     }
 
-    /* Hint & Notes row buttons */
     .panel-ctrl-btn {
       display: flex;
       align-items: center;
@@ -348,7 +537,6 @@
     .panel-ctrl-btn:disabled { opacity: 0.38; cursor: not-allowed; }
     .panel-ctrl-btn:disabled:hover { background: var(--gray-100); }
 
-    /* Desktop numpad grid */
     .desktop-numpad {
       display: grid;
       gap: 7px;
@@ -359,7 +547,6 @@
       aspect-ratio: 1;
     }
 
-    /* Erase + Undo row */
     .panel-action-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -386,13 +573,19 @@
   }
 
   @media (max-width: 380px) {
-    .header-title h1 { font-size: 16px; }
+    .header-title h1 { font-size: 14px; }
     .level-btn { width: 32px; height: 32px; font-size: 12px; }
     .control-btn span { font-size: 11px; }
+    .how-to-play-btn { font-size: 10px; padding: 4px 6px; }
   }
 </style>
 </head>
 <body>
+
+<!-- LOGO -->
+<div class="logo-container">
+  <img src="assets/logo.png" alt="BeCre8v Logo" class="becre8v-logo">
+</div>
 
 <!-- HEADER -->
 <div class="header">
@@ -402,12 +595,15 @@
     </svg>
   </button>
   <div class="header-title"><h1>Mini Sudoku</h1></div>
-  <div class="coin-container">
-    <svg viewBox="0 0 24 24" fill="#ffca28" stroke="#ffb300" stroke-width="1.5">
-      <circle cx="12" cy="12" r="10"/>
-      <circle cx="12" cy="12" r="6" fill="none" stroke="#ffb300" stroke-width="1.5"/>
-    </svg>
-    <span id="coinBalance">0</span>
+  <div class="header-right">
+    <button class="how-to-play-btn" id="howToPlayBtn" aria-label="How to play">❓ How to Play</button>
+    <div class="coin-container">
+      <svg viewBox="0 0 24 24" fill="#ffca28" stroke="#ffb300" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="12" r="6" fill="none" stroke="#ffb300" stroke-width="1.5"/>
+      </svg>
+      <span id="coinBalance">0</span>
+    </div>
   </div>
 </div>
 
@@ -514,6 +710,56 @@
   </div>
 </div>
 
+<!-- AUTO INSTRUCTIONS OVERLAY -->
+<div class="instructions-overlay" id="instructionsOverlay">
+  <div class="instructions-popup">
+    <button class="instructions-close-btn" id="instructionsCloseBtn" aria-label="Close">&times;</button>
+    <div class="instructions-header">
+      <span class="instructions-emoji">🎮</span>
+      <h2>How to Play Mini Sudoku!</h2>
+    </div>
+    
+    <div class="instructions-section">
+      <h3>🎯 Your Goal</h3>
+      <p>Fill empty cells with numbers! Every row, column, and smaller outline box must contain all numbers exactly once (1-4 for 4x4 grids, 1-6 for 6x6 grids, and 1-9 for 9x9 grids).</p>
+    </div>
+
+    <div class="instructions-section">
+      <h3>⚠️ Rules to Remember</h3>
+      <ul>
+        <li>Avoid repeating the same number in any row, column, or outline box.</li>
+        <li>Incorrect placements are automatically highlighted in red.</li>
+        <li>Use <strong>Notes</strong> mode to jot down possible ideas for any cell!</li>
+      </ul>
+    </div>
+
+    <div class="instructions-section rewards-section">
+      <h3>🪙 Coin Rewards</h3>
+      <div class="rewards-grid">
+        <div class="reward-item">
+          <span class="reward-badge diff-easy">Easy</span>
+          <span><strong>+20</strong> Coins</span>
+        </div>
+        <div class="reward-item">
+          <span class="reward-badge diff-medium">Medium</span>
+          <span><strong>+40</strong> Coins</span>
+        </div>
+        <div class="reward-item">
+          <span class="reward-badge diff-hard">Hard</span>
+          <span><strong>+65</strong> Coins</span>
+        </div>
+      </div>
+      <p class="no-penalties">✨ No timer limits or wrong move penalties! Play at your own pace.</p>
+    </div>
+
+    <div class="instructions-footer">
+      <p>Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.</p>
+    </div>
+    
+    <button class="instructions-play-btn" id="instructionsPlayBtn">Let's Play!</button>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    PUZZLE DATA
@@ -578,13 +824,13 @@ let state = {
 ============================================================ */
 function loadStorage() {
   const walletCoins = localStorage.getItem("walletCoins");
-const savedCoins = localStorage.getItem("mini_sudoku_coins");
+  const savedCoins = localStorage.getItem("mini_sudoku_coins");
 
-if (walletCoins !== null) {
-  state.coins = parseInt(walletCoins, 10) || 0;
-} else if (savedCoins !== null) {
-  state.coins = parseInt(savedCoins, 10) || 0;
-}
+  if (walletCoins !== null) {
+    state.coins = parseInt(walletCoins, 10) || 0;
+  } else if (savedCoins !== null) {
+    state.coins = parseInt(savedCoins, 10) || 0;
+  }
   const savedCompleted = localStorage.getItem('mini_sudoku_completed');
   if (savedCompleted !== null) {
     try {
@@ -672,13 +918,13 @@ async function creditSudokuCoins(amount) {
   const completedLevels =
   state.completed.filter(Boolean).length + 1;
 
-window.parent.postMessage({
-  type: "GAME_PROGRESS_UPDATE",
-  game: "mini_sudoku",
-  completedLevels,
-  totalLevels: 12,
-  progress: Math.round((completedLevels / 12) * 100)
-}, "*");
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "mini_sudoku",
+    completedLevels,
+    totalLevels: 12,
+    progress: Math.round((completedLevels / 12) * 100)
+  }, "*");
 
   return totalCoins;
 }
@@ -783,14 +1029,10 @@ function renderGrid() {
 
   let cellSize;
   if (isDesktop) {
-
     const viewportHeight = window.innerHeight;
-
-    // Header + level bar + margins reserve
     const usableHeight = viewportHeight - 280;
-
     cellSize = Math.floor(usableHeight / size);
-}else {
+  } else {
     const wrap = document.querySelector('.grid-container');
     const maxW = Math.min(wrap.clientWidth || 340, 620);
     cellSize = Math.floor(maxW / size);
@@ -1016,24 +1258,24 @@ async function checkWin() {
   const reward = getCoinReward(state.currentLevel);
   const alreadyCompleted = state.completed[state.currentLevel];
 
-if (!alreadyCompleted) {
-  state.completed[state.currentLevel] = true;
+  if (!alreadyCompleted) {
+    state.completed[state.currentLevel] = true;
 
-  await creditSudokuCoins(reward);
+    await creditSudokuCoins(reward);
 
-  saveState();
+    saveState();
 
-  const completedLevels =
-    state.completed.filter(Boolean).length;
+    const completedLevels =
+      state.completed.filter(Boolean).length;
 
-  window.parent.postMessage({
-    type: "GAME_PROGRESS_UPDATE",
-    game: "mini_sudoku",
-    completedLevels,
-    totalLevels: 12,
-    progress: Math.round((completedLevels / 12) * 100)
-  }, "*");
-}
+    window.parent.postMessage({
+      type: "GAME_PROGRESS_UPDATE",
+      game: "mini_sudoku",
+      completedLevels,
+      totalLevels: 12,
+      progress: Math.round((completedLevels / 12) * 100)
+    }, "*");
+  }
 
   buildLevelButtons();
   setTimeout(() => showWin(reward), 600);
@@ -1100,6 +1342,24 @@ document.getElementById('overlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
 
+const insOverlay = document.getElementById('instructionsOverlay');
+const insCloseBtn = document.getElementById('instructionsCloseBtn');
+const insPlayBtn = document.getElementById('instructionsPlayBtn');
+const howToPlayBtn = document.getElementById('howToPlayBtn');
+
+function openInstructions() {
+  insOverlay.classList.add('show');
+}
+function closeInstructions() {
+  insOverlay.classList.remove('show');
+}
+
+insCloseBtn.addEventListener('click', closeInstructions);
+insPlayBtn.addEventListener('click', closeInstructions);
+if (howToPlayBtn) {
+  howToPlayBtn.addEventListener('click', openInstructions);
+}
+
 let resizeTimer;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderGrid, 120); });
 
@@ -1112,20 +1372,21 @@ window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer
   }
 
   loadStorage();
-await syncSudokuWalletBalance();
+  await syncSudokuWalletBalance();
 
-const completedLevels =
-  state.completed.filter(Boolean).length;
+  const completedLevels =
+    state.completed.filter(Boolean).length;
 
-window.parent.postMessage({
-  type: "GAME_PROGRESS_UPDATE",
-  game: "mini_sudoku",
-  completedLevels,
-  totalLevels: 12,
-  progress: Math.round((completedLevels / 12) * 100)
-}, "*");
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "mini_sudoku",
+    completedLevels,
+    totalLevels: 12,
+    progress: Math.round((completedLevels / 12) * 100)
+  }, "*");
 
-loadLevel(0);
+  loadLevel(0);
+  openInstructions();
 })();
 </script>
 </body>

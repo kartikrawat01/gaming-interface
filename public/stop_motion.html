@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stop Motion Studio Jr</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -19,47 +19,102 @@
   --accent2:#4a9eca;--accent3:#2ecc71;--punch:#f7c948;
   --border:#d4c9b5;--muted:#9a8f82;--r:12px;
 }
-body{
-  font-family:'Nunito',sans-serif;
-  background:var(--paper);
-  color:var(--ink);
-  margin:0;
-  padding:0;
-  overflow:hidden;
-  touch-action:none;
-}
-
-.app{
-  font-family:'Nunito',sans-serif;
-  background:var(--paper);
-  color:var(--ink);
-  height:100dvh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-}
-.topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:10px 12px;
-  border-bottom:2px solid var(--ink);
-  background:var(--ink);
-  flex-shrink:0;
-}
+body{font-family:'Nunito',sans-serif;background:var(--paper);color:var(--ink);margin:0;padding:0;overflow:hidden}
+.app{font-family:'Nunito',sans-serif;background:var(--paper);color:var(--ink);height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:2px solid var(--ink);background:var(--ink);flex-shrink:0}
 .logo{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--punch);letter-spacing:-0.5px}
 .logo span{color:#fff}
-.top-actions{
+.brand-left{
   display:flex;
-  gap:6px;
   align-items:center;
-  flex-wrap:wrap;
-  justify-content:flex-end;
+  gap:22px;
+  flex-shrink:0;
 }
+
+#game-logo{
+  height:34px;
+  width:auto;
+  object-fit:contain;
+  filter:brightness(0) invert(1);
+}
+.top-actions{display:flex;gap:8px;align-items:center}
 .tbtn{font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;border:none;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px}
 .tbtn-ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.3)}
 .tbtn-ghost:hover{background:rgba(255,255,255,0.1)}
+.how-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(26,26,46,0.75);
+  z-index:400;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.2s;
+}
+
+.how-modal.show{
+  opacity:1;
+  pointer-events:all;
+}
+
+.how-box{
+  background:var(--paper);
+  border:3px solid var(--ink);
+  border-radius:20px;
+  padding:28px 34px;
+  max-width:420px;
+  width:90%;
+  box-shadow:8px 8px 0 var(--ink);
+  color:var(--ink);
+}
+
+.how-title{
+  font-family:'Space Mono',monospace;
+  font-size:19px;
+  font-weight:800;
+  margin-bottom:16px;
+}
+
+.how-step{
+  display:flex;
+  gap:12px;
+  margin:12px 0;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.45;
+}
+
+.how-num{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:var(--punch);
+  color:var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  font-family:'Space Mono',monospace;
+  font-weight:800;
+}
+
+.how-close{
+  margin-top:18px;
+  width:100%;
+  background:var(--ink);
+  color:white;
+  border:none;
+  border-radius:20px;
+  padding:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.how-close:hover{
+  background:var(--accent);
+}
 .tbtn-accent{background:var(--accent);color:#fff}
 .tbtn-accent:hover{background:#d04d1a}
 .tbtn-play{background:var(--accent3);color:#fff;display:flex;align-items:center;gap:6px}
@@ -67,13 +122,7 @@ body{
 .tbtn-play.playing{background:var(--accent);animation:pulse-btn 1s infinite}
 @keyframes pulse-btn{0%,100%{opacity:1}50%{opacity:0.85}}
 
-.workspace{
-  display:grid;
-  grid-template-columns:200px 1fr;
-  flex:1;
-  overflow:hidden;
-  min-height:0;
-}
+.workspace{display:grid;grid-template-columns:200px 1fr;flex:1;overflow:hidden}
 
 .filmstrip{background:var(--ink);padding:12px 8px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
 .filmstrip::-webkit-scrollbar{width:4px}
@@ -88,13 +137,7 @@ body{
 .add-frame-btn{border-radius:8px;border:2px dashed rgba(255,255,255,0.15);cursor:pointer;background:transparent;color:rgba(255,255,255,0.4);font-family:'Nunito',sans-serif;font-size:22px;font-weight:700;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
 .add-frame-btn:hover{border-color:var(--punch);color:var(--punch)}
 
-.canvas-area{
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  min-width:0;
-  min-height:0;
-}
+.canvas-area{display:flex;flex-direction:column;overflow:hidden}
 .canvas-top{display:flex;align-items:center;gap:0;border-bottom:2px solid var(--ink);background:var(--paper);flex-shrink:0;flex-wrap:wrap}
 
 .tool-group{display:flex;gap:0;padding:6px 10px;border-right:1.5px solid var(--border)}
@@ -141,17 +184,7 @@ body{
 .opacity-group{display:flex;align-items:center;gap:6px;padding:6px 10px;border-left:1.5px solid var(--border)}
 .opacity-label{font-size:10px;font-weight:700;color:var(--muted)}
 
-.canvas-wrap{
-  flex:1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--paper2);
-  position:relative;
-  overflow:hidden;
-  min-height:0;
-  padding:8px;
-}
+.canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:var(--paper2);position:relative;overflow:hidden}
 .canvas-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:20px 20px;opacity:0.4}
 #main-canvas{border-radius:var(--r);border:2.5px solid var(--ink);cursor:crosshair;position:relative;z-index:2;background:#fff}
 #onion-canvas{position:absolute;z-index:4;border-radius:var(--r);pointer-events:none;mix-blend-mode:multiply}
@@ -189,6 +222,54 @@ body{
 
 /* Wallet Modal */
 .wallet-modal{position:fixed;inset:0;background:rgba(26,26,46,0.75);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.coins-info-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(26,26,46,0.75);
+  z-index:350;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s;
+}
+
+.coins-info-modal.show{
+  opacity:1;
+  pointer-events:all;
+}
+
+.coins-info-box{
+  background:var(--paper);
+  border-radius:20px;
+  border:3px solid var(--ink);
+  padding:28px;
+  width:90%;
+  max-width:500px;
+  box-shadow:8px 8px 0 var(--ink);
+}
+
+.coins-info-title{
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:15px;
+}
+
+.coins-info-list{
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+
+.coins-info-list li{
+  margin-bottom:10px;
+}
+
+.coins-info-close{
+  margin-top:20px;
+  width:100%;
+}
 .wallet-modal.show{opacity:1;pointer-events:all}
 .wallet-box{background:var(--paper);border-radius:20px;border:3px solid var(--ink);padding:28px 36px;text-align:center;max-width:360px;width:90%;box-shadow:8px 8px 0 var(--ink);transform:scale(0.9);transition:transform 0.2s}
 .wallet-modal.show .wallet-box{transform:scale(1)}
@@ -236,205 +317,28 @@ body{
 .shape-opt.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 
 .undo-redo-group{display:flex;gap:2px;padding:6px 8px;border-right:1.5px solid var(--border)}
-/* ===== MOBILE FIRST FIX ===== */
-@media (max-width: 768px){
-
-  .topbar{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .logo{
-    font-size:14px;
-  }
-
-  .top-actions{
-    width:100%;
-    justify-content:flex-start;
-    gap:6px;
-  }
-
-  .tbtn,
-  .wallet-btn{
-    font-size:11px;
-    padding:6px 10px;
-  }
-
-  .challenge-bar{
-    padding:8px 10px;
-    gap:8px;
-  }
-
-  .challenge-txt{
-    font-size:12px;
-  }
-
-  .challenge-sub{
-    font-size:10px;
-  }
-
-  .coins-pill{
-    font-size:11px;
-    padding:5px 8px;
-    white-space:nowrap;
-  }
-
-  .workspace{
-    grid-template-columns:1fr;
-    grid-template-rows:auto 1fr;
-  }
-
-  .filmstrip{
-    order:1;
-    flex-direction:row;
-    overflow-x:auto;
-    overflow-y:hidden;
-    padding:8px;
-    max-height:96px;
-  }
-
-  #frames-list{
-    display:flex;
-    gap:8px;
-  }
-
-  .strip-label{
-    display:none;
-  }
-
-  .frame-thumb,
-  .add-frame-btn{
-    width:92px;
-    min-width:92px;
-    height:68px;
-    aspect-ratio:auto;
-  }
-
-  .canvas-area{
-    order:2;
-  }
-
-  .canvas-top{
-    overflow-x:auto;
-    overflow-y:hidden;
-    flex-wrap:nowrap;
-    align-items:center;
-    -webkit-overflow-scrolling:touch;
-  }
-
-  .tool-group,
-  .undo-redo-group,
-  .size-group,
-  .opacity-group,
-  .color-group,
-  .recent-colors,
-  .onion-group,
-  .fps-group,
-  .shape-fill-toggle{
-    flex-shrink:0;
-  }
-
-  .tool-btn{
-    width:36px;
-    height:36px;
-  }
-
-  .tool-btn .tooltip{
-    display:none;
-  }
-
-  .color-group{
-    flex-wrap:nowrap;
-  }
-
-  .canvas-wrap{
-    padding:8px;
-  }
-
-  #main-canvas,
-  #onion-canvas,
-  #onion-canvas2,
-  #shape-preview-canvas{
-    max-width:100%;
-    max-height:100%;
-  }
-
-  .status-bar{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:6px;
-    padding:6px 10px;
-  }
-
-  .status-right{
-    width:100%;
-    overflow-x:auto;
-    gap:10px;
-    padding-bottom:2px;
-  }
-
-  .status-item{
-    white-space:nowrap;
-  }
-
-  .zoom-track{
-    width:70px !important;
-  }
-
-  .wallet-box,
-  .save-popup-box{
-    width:90%;
-    padding:24px 20px;
-  }
-}
-
-@media (max-width: 420px){
-
-  .top-actions .tbtn-ghost:nth-child(1),
-  .top-actions .tbtn-ghost:nth-child(2),
-  .top-actions .tbtn-ghost:nth-child(3){
-    display:none;
-  }
-
-  .challenge-bar{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .frame-thumb,
-  .add-frame-btn{
-    width:78px;
-    min-width:78px;
-    height:58px;
-  }
-
-  .canvas-top{
-    padding-bottom:2px;
-  }
-
-  .size-track{
-    width:58px;
-  }
-
-  .onion-mode-select{
-    max-width:80px;
-  }
-
-  .status-left,
-  .status-item{
-    font-size:10px;
-  }
-}
 </style>
 </head>
 <body>
 <div id="cursor-preview"></div>
 <div class="app">
   <div class="topbar">
-    <div class="logo"><span>Stop</span>Motion <span>Studio</span></div>
+    <div class="brand-left">
+  <img id="game-logo" src="/assets/logo.png" alt="BE CRE8V Logo">
+  <div class="logo"><span>Stop</span>Motion <span>Studio</span></div>
+</div>
     <div class="top-actions">
+            <button class="tbtn tbtn-ghost" onclick="openHowToPlay()">
+  How to Play
+</button>
+<button class="tbtn tbtn-ghost" onclick="openCoinsInfo()">
+  🪙 How to Earn Coins
+</button>
       <button class="tbtn tbtn-ghost" onclick="clearFrame()">Clear frame</button>
       <button class="tbtn tbtn-ghost" onclick="duplicateFrame()">Duplicate</button>
+      <button class="tbtn tbtn-ghost" onclick="openCameraModal()">
+📷 Camera
+</button>
       <button class="tbtn tbtn-ghost" onclick="exportGIF()">Export GIF</button>
       <button class="tbtn tbtn-ghost" onclick="uploadCreation()" style="display:flex;align-items:center;gap:5px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -444,6 +348,7 @@ body{
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Save
       </button>
+
       <button class="wallet-btn" onclick="openWallet()">
         <span class="wallet-coin-icon">🪙</span>
         <span class="wallet-amount" id="wallet-display">0</span>
@@ -591,10 +496,37 @@ body{
         <canvas id="shape-preview-canvas" width="480" height="320" style="display:none"></canvas>
 
         <div class="preview-modal hidden" id="preview-modal">
+          
           <div class="preview-screen"><canvas id="preview-canvas" width="480" height="320"></canvas></div>
           <div class="preview-info" id="preview-info">Frame 1 / 1</div>
           <button class="preview-close" onclick="closePreview()">Close preview</button>
         </div>
+        <div class="preview-modal hidden" id="camera-modal">
+
+  <div class="preview-screen">
+
+    <video
+      id="camera-video"
+      autoplay
+      playsinline
+      style="width:100%;height:auto;"
+    ></video>
+
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:10px">
+
+    <button onclick="captureCameraFrame()">
+      Capture Frame
+    </button>
+
+    <button onclick="closeCameraModal()">
+      Close
+    </button>
+
+  </div>
+
+</div>
       </div>
 
       <div class="status-bar">
@@ -617,6 +549,58 @@ body{
   </div>
 </div>
 
+<div class="how-modal" id="how-modal">
+  <div class="how-box">
+    <div class="how-title">🎬 How to Play?</div>
+
+    <div class="how-step">
+  <div class="how-num">1</div>
+  <div>Add frames using the + button in the left filmstrip to build your animation sequence.</div>
+</div>
+
+<div class="how-step">
+  <div class="how-num">2</div>
+  <div>Draw frame by frame using Brush, Pencil, Shapes, Fill, Eyedropper and Eraser tools.</div>
+</div>
+
+<div class="how-step">
+  <div class="how-num">3</div>
+  <div>Use Duplicate Frame to copy the current frame and make small changes for smooth motion.</div>
+</div>
+
+<div class="how-step">
+  <div class="how-num">4</div>
+  <div>Use the Camera tool to capture real-world photos and turn them into stop motion animations.</div>
+</div>
+
+<div class="how-step">
+  <div class="how-num">5</div>
+  <div>Enable Onion Skin to see previous frames while drawing and create smoother animations.</div>
+</div>
+
+<div class="how-step">
+  <div class="how-num">6</div>
+  <div>Adjust FPS (Frames Per Second) to control how fast your animation plays.</div>
+</div>
+
+<div class="how-step">
+  <div class="how-num">7</div>
+  <div>Use Zoom controls for detailed drawing and precise editing.</div>
+</div>
+
+<div class="how-step">
+  <div class="how-num">8</div>
+  <div>Click Preview to watch your stop motion animation before saving or exporting.</div>
+</div>
+
+<div class="how-step">
+  <div class="how-num">9</div>
+  <div>Save, Export GIF, or Upload your creation when your animation is ready.</div>
+</div>
+
+    <button class="how-close" onclick="closeHowToPlay()">Got it, let’s animate! 🚀</button>
+  </div>
+</div>
 <!-- Save Popup -->
 <div class="save-popup" id="save-popup">
   <div class="save-popup-box" id="save-popup-box">
@@ -628,6 +612,38 @@ body{
   </div>
 </div>
 
+<!-- Coins Info Modal -->
+<div class="coins-info-modal" id="coins-info-modal">
+  <div class="coins-info-box">
+
+    <div class="coins-info-title">
+      🪙 How to Earn Coins
+    </div>
+
+    <ul class="coins-info-list">
+      <li>🎁 Welcome Bonus → 10 Coins</li>
+
+      <li>🎬 Reach 10 Frames → 20 Coins (up to 3 times)</li>
+
+      <li>📤 Export Animation (10+ Frames) → 50 Coins (up to 5 times)</li>
+
+      <li>🚀 Create 30+ Frames → 100 Bonus Coins</li>
+
+      <li>🌟 Upload Your Creation → 150 Coins (once)</li>
+
+      <li>🏆 Featured Film of the Week → 1000 Coins</li>
+      <h3><b>Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius, etc.</b></h3>
+    </ul>
+
+    <button
+      class="wallet-close-btn coins-info-close"
+      onclick="closeCoinsInfo()"
+    >
+      Close
+    </button>
+
+  </div>
+</div>
 <!-- Wallet Modal -->
 <div class="wallet-modal" id="wallet-modal">
   <div class="wallet-box">
@@ -647,6 +663,14 @@ body{
 </div>
 
 <script>
+
+  function openHowToPlay(){
+  document.getElementById("how-modal").classList.add("show");
+}
+
+function closeHowToPlay(){
+  document.getElementById("how-modal").classList.remove("show");
+}
 // ---- State ----
 const COLORS = ['#1a1a2e','#e85d26','#4a9eca','#2ecc71','#f7c948','#e91e8c','#9b59b6','#ffffff'];
 let currentColor = '#1a1a2e';
@@ -658,6 +682,7 @@ let onionOn = true;
 let onionMode = 'prev';
 let fps = 4;
 let frames = [];
+let cameraStream = null;
 let currentFrame = 0;
 let drawing = false;
 let lastX = 0, lastY = 0;
@@ -718,25 +743,11 @@ function syncOnionCanvases() {
 let canvasZoom = 100;
 function applyZoom(val) {
   canvasZoom = parseInt(val);
-
-  const wrap = document.getElementById('canvas-wrap');
-  const availableW = wrap.clientWidth - 16;
-  const availableH = wrap.clientHeight - 16;
-
-  const baseScale = Math.min(
-    availableW / CW,
-    availableH / CH,
-    1
-  );
-
-  const scale = baseScale * (canvasZoom / 100);
-
+  const scale = canvasZoom / 100;
   mainCanvas.style.width = (CW * scale) + 'px';
   mainCanvas.style.height = (CH * scale) + 'px';
-
   document.getElementById('zoom-val').textContent = canvasZoom + '%';
   document.getElementById('zoom-slider').value = canvasZoom;
-
   requestAnimationFrame(syncOnionCanvases);
 }
 function changeZoom(delta) {
@@ -970,7 +981,9 @@ function saveCurrentFrame() {
 }
 
 function loadFrame(idx) {
-  saveCurrentFrame();
+  if(frames[currentFrame]){
+    saveCurrentFrame();
+}
   currentFrame = idx;
   mainCtx.clearRect(0,0,CW,CH);
   if(frames[idx]) mainCtx.drawImage(frames[idx],0,0);
@@ -1398,6 +1411,18 @@ function closeWallet() {
   document.getElementById('wallet-modal').classList.remove('show');
 }
 
+function openCoinsInfo() {
+  document
+    .getElementById('coins-info-modal')
+    .classList.add('show');
+}
+
+function closeCoinsInfo() {
+  document
+    .getElementById('coins-info-modal')
+    .classList.remove('show');
+}
+
 async function addCoinsToWallet(amount, label) {
 
   try {
@@ -1466,7 +1491,95 @@ else{
 function closeSavePopup() {
   document.getElementById('save-popup').classList.remove('show');
 }
+async function openCameraModal(){
 
+  try{
+
+    cameraStream =
+      await navigator.mediaDevices.getUserMedia({
+        video:true
+      });
+
+    const video =
+  document.getElementById("camera-video");
+
+video.srcObject = cameraStream;
+
+await video.play();
+
+    document
+      .getElementById("camera-modal")
+      .classList.remove("hidden");
+
+  }
+  catch(err){
+
+    alert("Camera permission denied");
+
+    console.error(err);
+
+  }
+
+}
+function closeCameraModal(){
+
+  document
+    .getElementById("camera-modal")
+    .classList.add("hidden");
+
+  if(cameraStream){
+
+    cameraStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    cameraStream = null;
+
+  }
+
+}
+
+function captureCameraFrame(){
+
+  const video =
+    document.getElementById("camera-video");
+
+  saveCurrentFrame();
+
+  const frame =
+    initFrame();
+
+  const ctx =
+    frame.getContext("2d");
+
+  if(video.videoWidth === 0){
+
+   alert("Camera not ready");
+
+   return;
+
+}
+
+ctx.drawImage(
+   video,
+   0,
+   0,
+   CW,
+   CH
+);
+
+  frames.splice(
+    currentFrame + 1,
+    0,
+    frame
+  );
+
+  renderFilmstrip();
+
+  loadFrame(currentFrame + 1);
+  closeCameraModal();
+
+}
 // ---- Upload Creation ----
 function uploadCreation() {
   if(galleryShares < 1){
@@ -1525,10 +1638,19 @@ function fallbackUploadDownload(exportCanvas) {
 
 // ---- Init ----
 frames.push(initFrame());
+
 undoStacks = [[]];
 redoStacks = [[]];
+
 buildColorGroup();
-loadFrame(0);
+
+currentFrame = 0;
+
+mainCtx.drawImage(frames[0],0,0);
+
+renderFilmstrip();
+
+updateFilmstrip();
 updateBrush();
 fetchWalletBalance().then(balance => {
    walletCoins = balance || 0;
@@ -1547,12 +1669,7 @@ window.addEventListener("walletUpdated", (event) => {
 
 });
 // Sync onion canvas positions on resize
-window.addEventListener('resize', () => {
-  requestAnimationFrame(() => {
-    applyZoom(canvasZoom);
-    syncOnionCanvases();
-  });
-});
+window.addEventListener('resize', () => requestAnimationFrame(syncOnionCanvases));
 // Wait for layout before first sync
 setTimeout(() => { applyZoom(100); syncOnionCanvases(); }, 80);
 </script>

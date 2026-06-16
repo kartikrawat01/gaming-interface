@@ -146,18 +146,21 @@ window.removeEventListener("userProfileUpdated", handleProfileUpdate);
       <aside className="hidden lg:flex w-72 min-h-screen shrink-0 bg-gradient-to-b from-indigo-500 to-purple-600 border-r border-white/10 p-5 flex-col">
 
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
-            <Code2 className="h-5 w-5 text-white" />
-          </div>
+<div className="mb-8 flex flex-col items-start">
+  <img
+  src="/assets/logo.png"
+  alt="BE CRE8V"
+  className="h-9 w-auto object-contain mb-3 brightness-0 invert"
+/>
 
-          <div>
-            <h1 className="text-lg font-bold text-white">GameVerse</h1>
-            <p className="text-xs text-white/80">
-              Play. Learn. Earn Rewards.
-            </p>
-          </div>
-        </div>
+  <div>
+    <h1 className="text-base font-bold text-white">GameVerse</h1>
+    <p className="text-xs text-white/80">
+      Play. Learn. Earn Rewards.
+    </p>
+  </div>
+</div>
+        
 
         {/* MENU */}
         <nav className="space-y-2 flex-1">
@@ -217,15 +220,18 @@ window.removeEventListener("userProfileUpdated", handleProfileUpdate);
 
     <aside className="absolute left-0 top-0 h-full w-[82%] max-w-[320px] bg-gradient-to-b from-indigo-500 to-purple-600 p-5 flex flex-col">
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
-            <Code2 className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-white">GameVerse</h1>
-            <p className="text-xs text-white/80">Play. Learn. Earn Rewards.</p>
-          </div>
-        </div>
+        <div className="flex flex-col items-start">
+  <img
+  src="/assets/logo.png"
+  alt="BE CRE8V"
+  className="h-9 w-auto object-contain mb-3 brightness-0 invert"
+/>
+
+  <div>
+    <h1 className="text-base font-bold text-white">GameVerse</h1>
+    <p className="text-xs text-white/80">Play. Learn. Earn Rewards.</p>
+  </div>
+</div>
 
         <button onClick={() => setMobileMenuOpen(false)}>
           <X className="h-6 w-6 text-white" />
