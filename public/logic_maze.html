@@ -1374,13 +1374,29 @@
 </xml>`;
         }
 
-        if (level >= 4 && level <= 6) {
+        if (level >= 4 && level <= 5) {
           return `
 <xml>
   <block type="move_forward"></block>
   <block type="move_backward"></block>
   <block type="turn_left"></block>
   <block type="turn_right"></block>
+</xml>`;
+        }
+        
+                if (level === 6) {
+          return `
+<xml>
+  <block type="move_forward"></block>
+  <block type="turn_left"></block>
+  <block type="turn_right"></block>
+    <block type="controls_repeat_ext">
+  <value name="TIMES">
+    <shadow type="math_number">
+      <field name="NUM">4</field>
+    </shadow>
+  </value>
+</block>
 </xml>`;
         }
 
@@ -1390,8 +1406,13 @@
   <block type="move_forward"></block>
   <block type="turn_left"></block>
   <block type="turn_right"></block>
-
-  <block type="controls_if"></block>
+    <block type="controls_repeat_ext">
+  <value name="TIMES">
+    <shadow type="math_number">
+      <field name="NUM">4</field>
+    </shadow>
+  </value>
+</block>
 </xml>`;
         }
 
@@ -1402,8 +1423,13 @@
   <block type="move_backward"></block>
   <block type="turn_left"></block>
   <block type="turn_right"></block>
-
-  <block type="controls_if"></block>
+    <block type="controls_repeat_ext">
+  <value name="TIMES">
+    <shadow type="math_number">
+      <field name="NUM">4</field>
+    </shadow>
+  </value>
+</block>
 </xml>`;
         }
         if (level >= 10 && level <= 13) {
@@ -1413,10 +1439,14 @@
   <block type="move_backward"></block>
   <block type="turn_left"></block>
   <block type="turn_right"></block>
+    <block type="controls_repeat_ext">
+  <value name="TIMES">
+    <shadow type="math_number">
+      <field name="NUM">4</field>
+    </shadow>
+  </value>
+</block>
 
-  <block type="controls_if"></block>
-  <block type="logic_compare"></block>
-  <block type="logic_boolean"></block>
 </xml>`;
         }
 
@@ -1427,7 +1457,13 @@
   <block type="turn_left"></block>
   <block type="turn_right"></block>
 
-  <block type="controls_repeat_ext"></block>
+  <block type="controls_repeat_ext">
+  <value name="TIMES">
+    <shadow type="math_number">
+      <field name="NUM">4</field>
+    </shadow>
+  </value>
+</block>
 </xml>`;
         }
 
@@ -1438,9 +1474,13 @@
   <block type="move_backward"></block>
   <block type="turn_left"></block>
   <block type="turn_right"></block>
-
-  <block type="controls_repeat_ext"></block>
-  <block type="controls_if"></block>
+  <block type="controls_repeat_ext">
+  <value name="TIMES">
+    <shadow type="math_number">
+      <field name="NUM">4</field>
+    </shadow>
+  </value>
+</block>
 </xml>`;
         }
         if (level >= 17 && level <= 18) {
@@ -1450,10 +1490,13 @@
   <block type="move_backward"></block>
   <block type="turn_left"></block>
   <block type="turn_right"></block>
-
-  <block type="controls_repeat_ext"></block>
-  <block type="controls_whileUntil"></block>
-  <block type="controls_if"></block>
+  <block type="controls_repeat_ext">
+  <value name="TIMES">
+    <shadow type="math_number">
+      <field name="NUM">4</field>
+    </shadow>
+  </value>
+</block>
 </xml>`;
         }
 
@@ -1463,12 +1506,13 @@
   <block type="move_backward"></block>
   <block type="turn_left"></block>
   <block type="turn_right"></block>
-
-  <block type="controls_if"></block>
-  <block type="controls_repeat_ext"></block>
-  <block type="controls_whileUntil"></block>
-  <block type="logic_compare"></block>
-  <block type="logic_boolean"></block>
+  <block type="controls_repeat_ext">
+  <value name="TIMES">
+    <shadow type="math_number">
+      <field name="NUM">4</field>
+    </shadow>
+  </value>
+</block>
 </xml>`;
       }
 
@@ -1640,7 +1684,7 @@ function closeHelpModal() {
             { x: 2, y: 1 }, { x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 },
             { x: 4, y: 2 }, { x: 4, y: 3 }, { x: 4, y: 4 }, { x: 4, y: 5 },
           ],
-          maxBlocks: 18,
+          maxBlocks: 16,
           story: {
             title: "The Reef Gates",
             speaker: "Navigator Kaia",
@@ -1659,7 +1703,7 @@ function closeHelpModal() {
             { x: 3, y: 2 }, { x: 3, y: 5 },
             { x: 4, y: 3 },
           ],
-          maxBlocks: 20,
+          maxBlocks: 16,
           story: {
             title: "Storm Debris",
             speaker: "Navigator Kaia",
@@ -2419,7 +2463,7 @@ try {
         }, "*");
 
         const level = LEVELS[currentLevelIdx];
-        document.getElementById("overlay-emoji").textContent = "⭐";
+        document.getElementById("overlay-emoji").textContent = `🪙 ${reward}`;
         document.getElementById("overlay-title").textContent =
           currentLevelIdx === 19
             ? "🌟 Final Level Complete!"
