@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Color Sort Puzzle</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='35' y='15' width='30' height='70' rx='15' fill='none' stroke='%233e4e68' stroke-width='8'/%3E%3Cpath d='M 39 50 Q 50 45 61 50 L 61 70 Q 50 78 39 70 Z' fill='%234facfe'/%3E%3Cpath d='M 39 70 Q 50 65 61 70 L 61 80 Q 50 82 39 80 Z' fill='%23ff5e5e'/%3E%3Ccircle cx='50' cy='30' r='5' fill='%23f6d55c'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
+            --panel-bg: rgba(255, 255, 255, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.4);
+            --shadow-color: rgba(142, 168, 189, 0.3);
+            --primary-font: 'Fredoka', sans-serif;
+            --secondary-font: 'Nunito', sans-serif;
+            --text-color: #3e4e68;
+            --primary-color: #4facfe;
+            --accent-color: #f6d55c;
+            --success-color: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-gradient);
+            font-family: var(--primary-font);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            max-height: 850px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px var(--shadow-color);
+            border: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 481px) {
+            #app {
+                border-radius: 30px;
+                height: 92vh;
+            }
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            z-index: 2;
+        }
+
+        .screen.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .btn {
+            background: white;
+            border: none;
+            border-radius: 20px;
+            color: var(--text-color);
+            font-family: var(--primary-font);
+            font-weight: 700;
+            font-size: 16px;
+            padding: 12px 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 15px var(--shadow-color), inset 0 -4px 0 rgba(0,0,0,0.1);
+            transition: transform 0.1s ease, box-shadow 0.2s ease, background 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 4px 6px var(--shadow-color), inset 0 -1px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, #f6d55c 0%, #f5af19 100%);
+            color: #5d4037;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #81c784 100%);
+            color: white;
+        }
+
+        .btn-round {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        /* --- GLOBAL TOP BAR --- */
+        .top-bar {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .brand-logo-container {
+            display: flex;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .brand-logo {
+            height: 30px;
+            width: auto;
+            display: block;
+        }
+
+        .perm-how-btn {
+            background: white;
+            border: 2px solid #ff9f43;
+            border-radius: 16px;
+            color: #d35400;
+            font-family: var(--primary-font);
+            font-weight: 700;
+            font-size: 11px;
+            padding: 5px 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.1s ease;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .perm-how-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- SCREEN 1: WELCOME SCREEN --- */
+        #screen-welcome {
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .logo-container {
+            margin-top: 55px;
+        }
+
+        .logo-title {
+            font-size: 40px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin: 0;
+            background: linear-gradient(45deg, #ff5e62, #ff9966, #ff5e62);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+            animation: text-glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes text-glow {
+            0% { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05)); }
+            100% { filter: drop-shadow(0 4px 12px rgba(255,94,98,0.3)); }
+        }
+
+        .logo-subtitle {
+            font-family: var(--secondary-font);
+            font-weight: 700;
+            font-size: 16px;
+            color: #7b8e9b;
+            margin-top: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .welcome-graphic {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 40px auto;
+        }
+
+        .welcome-graphic-jar {
+            width: 50px;
+            height: 120px;
+            border: 4px solid white;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            position: absolute;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.4), 0 10px 20px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .w-jar-1 {
+            transform: rotate(-15deg) translate(-25px, 10px);
+            z-index: 1;
+        }
+
+        .w-jar-2 {
+            transform: rotate(15deg) translate(25px, 10px);
+            z-index: 2;
+        }
+
+        .w-fluid-1 { background-color: #ff5e5e; height: 35%; }
+        .w-fluid-2 { background-color: #20639b; height: 30%; }
+        .w-fluid-3 { background-color: #f6d55c; height: 25%; }
+
+        .w-fluid-4 { background-color: #3caea3; height: 50%; }
+        .w-fluid-5 { background-color: #9b5de5; height: 30%; }
+
+        .welcome-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            max-width: 280px;
+            margin-bottom: 20px;
+        }
+
+        /* --- SCREEN 2: LEVEL MAP SCREEN --- */
+        #screen-map {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            margin-top: 50px;
+        }
+
+        .map-title {
+            font-size: 26px;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .coin-display {
+            background: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            font-size: 16px;
+        }
+
+        .coin-display span {
+            color: #ff9f43;
+        }
+
+        .levels-grid-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-bottom: 20px;
+        }
+
+        .levels-grid-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .levels-grid-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .levels-grid-container::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding-bottom: 20px;
+        }
+
+        @media (max-width: 380px) {
+            .levels-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .level-card {
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 18px;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px var(--shadow-color);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .level-card:active {
+            transform: scale(0.95);
+        }
+
+        .level-card.completed {
+            background: linear-gradient(135deg, #fdf6e2 0%, #fcedc5 100%);
+            border-color: #f5af19;
+            color: #d35400;
+        }
+
+        .level-card.completed::after {
+            content: '★';
+            position: absolute;
+            bottom: 4px;
+            font-size: 12px;
+            color: #f39c12;
+        }
+
+        .level-card.uncompleted {
+            background: white;
+            color: var(--text-color);
+        }
+
+        .level-card.easy-tier {
+            border-bottom: 4px solid #48dbfb;
+        }
+
+        .level-card.mod-tier {
+            border-bottom: 4px solid #ff9f43;
+        }
+
+        .level-card.mod-hard-tier {
+            border-bottom: 4px solid #ff6b6b;
+        }
+
+        .level-card.hard-tier {
+            border-bottom: 4px solid #10ac84;
+        }
+
+        /* --- SCREEN 3: GAME SCREEN --- */
+        #screen-game {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            margin-top: 50px;
+        }
+
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .current-level-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .level-tier-label {
+            font-family: var(--secondary-font);
+            font-weight: 700;
+            font-size: 12px;
+            color: #7b8e9b;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .game-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .back-btn {
+            font-size: 22px;
+            font-weight: bold;
+            background: white;
+            color: var(--text-color);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+
+        .back-btn:active {
+            transform: scale(0.9);
+        }
+
+        .game-board-wrapper {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 0;
+            position: relative;
+        }
+
+        #game-board {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px 14px;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.45);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            min-height: 240px;
+            position: relative;
+        }
+
+        .tube {
+            width: 54px;
+            height: 180px;
+            border: 4px solid white;
+            border-bottom-left-radius: 28px;
+            border-bottom-right-radius: 28px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.4), 0 8px 16px rgba(142,168,189,0.2);
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: flex-start;
+            overflow: hidden;
+            padding-bottom: 4px;
+            box-sizing: border-box;
+            z-index: 5;
+        }
+
+        @media (max-width: 420px) {
+            .tube {
+                width: 46px;
+                height: 150px;
+                border-bottom-left-radius: 24px;
+                border-bottom-right-radius: 24px;
+            }
+            #game-board {
+                gap: 15px 10px;
+                padding: 10px;
+            }
+        }
+
+        .tube.selected {
+            transform: translateY(-20px);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.4), 0 15px 25px rgba(0, 0, 0, 0.1);
+            border-color: #ffda79;
+        }
+
+        @keyframes pulse-source {
+            0%, 100% { box-shadow: 0 0 0 0px rgba(79, 172, 254, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(79, 172, 254, 0); }
+        }
+        @keyframes pulse-target {
+            0%, 100% { box-shadow: 0 0 0 0px rgba(76, 175, 80, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+        }
+
+        .hint-source {
+            animation: pulse-source 1.2s infinite;
+            border-color: #4facfe !important;
+        }
+
+        .hint-target {
+            animation: pulse-target 1.2s infinite;
+            border-color: #4caf50 !important;
+        }
+
+        .liquid {
+            width: 100%;
+            height: 23%;
+            background-color: var(--color);
+            position: relative;
+            box-sizing: border-box;
+            border-top: 1px solid rgba(255, 255, 255, 0.45);
+            transition: height 0.3s ease, background-color 0.3s;
+        }
+
+        .liquid::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5%;
+            width: 30%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+        }
+
+        .liquid:last-child {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        @media (max-width: 420px) {
+            .liquid:last-child {
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }
+        }
+
+        .liquid.shrink {
+            height: 0 !important;
+            border-top: none;
+        }
+
+        .pour-stream {
+            position: absolute;
+            width: 6px;
+            left: calc(50% - 3px);
+            top: 0;
+            z-index: 10;
+            border-radius: 4px;
+            background: var(--color);
+            opacity: 0.95;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            transform-origin: top center;
+            transition: height 0.15s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake {
+            animation: shake 0.3s ease;
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--panel-border);
+        }
+
+        /* --- HOW TO PLAY MODAL --- */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(62, 78, 104, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 100;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 380px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transform: scale(1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.hidden .modal-card {
+            transform: scale(0.9);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            text-align: center;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .modal-body {
+            font-family: var(--secondary-font);
+            font-size: 14px;
+            line-height: 1.5;
+            color: #5c6b80;
+        }
+
+        .modal-body p {
+            margin: 0 0 8px 0;
+        }
+
+        .rules-list {
+            padding-left: 20px;
+            margin: 8px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* --- WIN MODAL SPECIFICS --- */
+        .win-stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 36px;
+            color: #ffd24c;
+            animation: bounce-stars 0.8s ease infinite alternate;
+        }
+
+        @keyframes bounce-stars {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+
+        .win-reward-box {
+            background: #fdfaf0;
+            border: 2px dashed #ff9f43;
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #d35400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .modal-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- GLOBAL TOP BAR -->
+        <div class="top-bar">
+            <div class="brand-logo-container">
+                <img src="assets/logocre8v.png" alt="BeCre8v Logo" class="brand-logo">
+            </div>
+            <button class="perm-how-btn" onclick="openHowToPlay()">💡 How to Play</button>
+        </div>
+
+        <canvas id="confetti-canvas"></canvas>
+
+        <!-- SCREEN 1: WELCOME SCREEN -->
+        <div id="screen-welcome" class="screen">
+            <div class="logo-container">
+                <h1 class="logo-title">Water Color<br>Sort Puzzle</h1>
+                <div class="logo-subtitle">Educational Kids Puzzle</div>
+            </div>
+
+            <div class="welcome-graphic">
+                <div class="welcome-graphic-jar w-jar-1">
+                    <div class="w-fluid-1"></div>
+                    <div class="w-fluid-2"></div>
+                    <div class="w-fluid-3"></div>
+                </div>
+                <div class="welcome-graphic-jar w-jar-2">
+                    <div class="w-fluid-4"></div>
+                    <div class="w-fluid-5"></div>
+                </div>
+            </div>
+
+            <div class="welcome-buttons">
+                <button class="btn btn-primary" onclick="navigateTo('map')">▶ Play Game</button>
+                <button class="btn" onclick="openHowToPlay()">💡 How To Play</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: LEVEL MAP -->
+        <div id="screen-map" class="screen hidden">
+            <div class="map-header">
+                <button class="btn btn-round" onclick="navigateTo('welcome')">🏠</button>
+                <h2 class="map-title">Select Level</h2>
+                <div class="coin-display">
+                    🪙 <span id="map-coin-count">0</span>
+                </div>
+            </div>
+            <div class="progress-wrapper">
+
+    <div class="progress-bar">
+        <div
+            id="progress-fill"
+            class="progress-fill">
+        </div>
+
+    </div>
+
+    <div id="progress-text">
+        0%
+    </div>
+
+</div>
+
+            <div class="levels-grid-container">
+                <div class="levels-grid" id="levels-grid"></div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: GAME SCREEN -->
+        <div id="screen-game" class="screen hidden">
+            <div class="game-header">
+                <button class="back-btn" onclick="navigateTo('map')">←</button>
+                
+                <div class="game-info">
+                    <h2 class="current-level-title" id="game-level-title">Level 1</h2>
+                    <span class="level-tier-label" id="game-level-tier">EASY</span>
+                </div>
+                
+                <div class="game-actions">
+                    <div class="coin-display" style="padding: 6px 12px; font-size: 14px;">
+                        🪙 <span id="game-coin-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-board-wrapper">
+                <div id="game-board"></div>
+            </div>
+
+            <div class="game-controls">
+                <button class="btn" id="btn-undo" onclick="undoMove()">↩️ Undo</button>
+                <button class="btn" onclick="restartLevel()">🔄 Restart</button>
+                <button class="btn btn-accent" id="btn-hint" onclick="triggerHint()">💡 Hint</button>
+            </div>
+        </div>
+
+        <!-- HOW TO PLAY MODAL -->
+        <div id="modal-how" class="modal-overlay">
+            <div class="modal-card" style="max-height: 85vh; overflow-y: auto;">
+                <h3 class="modal-title">How To Play! 🌈</h3>
+                
+                <!-- Short Child Friendly Instruction -->
+                <div class="modal-body" style="border-bottom: 1px dashed #ddd; padding-bottom: 12px;">
+                    <p style="font-weight: 700; color: var(--text-color); margin-bottom: 6px;">🎮 Game Rules:</p>
+                    <ul class="rules-list" style="margin: 0; padding-left: 15px;">
+                        <li>Tap a jar, then tap another jar to <strong>pour water</strong>.</li>
+                        <li>You can only pour if the topmost liquid is the <strong>exact same color</strong> or if the target jar is empty.</li>
+                        <li>Avoid getting stuck! Use <strong>Undo</strong> or <strong>Restart</strong> if needed.</li>
+                        <li><strong>How to Win:</strong> Sort all colors perfectly so each jar contains only one single color!</li>
+                    </ul>
+                </div>
+
+                <!-- Coins & Rewards Panel (Directly read from existing logic) -->
+                <div class="modal-body" style="padding-top: 5px;">
+                    <p style="font-weight: 700; color: var(--text-color); margin-bottom: 6px;">🪙 Coins & Rewards:</p>
+                    <ul class="rules-list" style="margin: 0; padding-left: 15px; gap: 4px;">
+                        <li><strong>Levels 1 - 5:</strong> 🪙 15 Coins</li>
+                        <li><strong>Levels 6 - 10:</strong> 🪙 20 Coins</li>
+                        <li><strong>Levels 11 - 15:</strong> 🪙 30 Coins</li>
+                        <li><strong>Levels 16 - 25:</strong> 🪙 50 Coins</li>
+                        <li><strong>Timer-based Rewards:</strong> None (Play at your own pace!)</li>
+                        <li><strong>Move-based Rewards:</strong> None (Infinite moves permitted!)</li>
+                        <li><strong>Penalties:</strong> None (No deduction for retries!)</li>
+                    </ul>
+                </div>
+
+                <!-- Footer Promo Text -->
+                <div class="modal-body" style="text-align: center; padding-top: 5px;">
+                    <p style="font-style: italic; font-weight: 700; color: #ff9f43; font-size: 13px; line-height: 1.4; margin: 0;">
+                        "Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius and Infinity Mirror."
+                    </p>
+                </div>
+
+                <button class="btn btn-primary" onclick="closeHowToPlay()">Got it! 👍</button>
+            </div>
+        </div>
+
+        <!-- WIN/LEVEL COMPLETE MODAL -->
+        <div id="modal-win" class="modal-overlay hidden">
+            <div class="modal-card">
+                <div class="win-stars">★★★</div>
+                <h3 class="modal-title" id="win-praise-text">Awesome! 🏆</h3>
+                <div class="modal-body" style="text-align: center;">
+                    <p>You sorted all colors perfectly!</p>
+                    <div class="win-reward-box">
+                        🪙 Reward: <span id="win-reward-amount">+15</span> Coins
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" id="btn-next-level" onclick="nextLevel()">Play Next Level ➔</button>
+                    <button class="btn" onclick="closeWinModal()">Back to Map</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let gameStats = {
+
+    totalCoinsEarned: 0,
+
+    levelsCompleted: 0,
+
+    progress: 0
+
+};
+let gameProgress = 0;
+        let state = {
+    completedLevels: []
+};
+
+let walletCoins = 0;
+
+        function getLevelReward(lvl) {
+            if (lvl <= 5) return 15;
+            if (lvl <= 10) return 20;
+            if (lvl <= 15) return 30;
+            return 50;
+        }
+
+        function getLevelTierLabel(lvl) {
+            if (lvl <= 5) return 'EASY';
+            if (lvl <= 10) return 'MODERATE';
+            if (lvl <= 15) return 'MODERATE-HARD';
+            return 'HARD';
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('water_sort_puzzle_save');
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch(e) {
+                    console.error("Corrupted state, resetting", e);
+                }
+            }
+            updateCoinDisplays();
+        }
+
+        function saveState() {
+            localStorage.setItem('water_sort_puzzle_save', JSON.stringify(state));
+            updateCoinDisplays();
+            updateProgressBar();
+        }
+        function syncProgress(){
+
+    const percent =
+        Math.round(
+            (state.completedLevels.length / 25) * 100
+        );
+
+    localStorage.setItem(
+        "waterSortProgress",
+        percent
+    );
+
+    gameProgress = percent;
+    window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+
+    game: "water-sort",
+
+    progress: gameProgress,
+
+    completedLevels:
+        state.completedLevels.length
+
+}, "*");
+}
+
+        function updateCoinDisplays() {
+
+    document.getElementById(
+        "map-coin-count"
+    ).innerText = walletCoins;
+
+    document.getElementById(
+        "game-coin-count"
+    ).innerText = walletCoins;
+}
+        async function syncWalletBalance() {
+    try {
+        const balance = await window.gameSDK.getBalance();
+
+        walletCoins = balance || 0;
+
+        document.getElementById("map-coin-count").innerText =
+            walletCoins;
+
+        document.getElementById("game-coin-count").innerText =
+            walletCoins;
+
+    } catch(err){
+        console.error(err);
+    }
+    localStorage.setItem(
+    "walletCoins",
+    walletCoins
+);
+}
+function updateProgressBar(){
+
+    const percent =
+        Math.round(
+            (state.completedLevels.length/25)*100
+        );
+
+    document.getElementById(
+        "progress-fill"
+    ).style.width =
+        percent + "%";
+
+    document.getElementById(
+        "progress-text"
+    ).innerText =
+        percent + "%";
+}
+        let audioCtx = null;
+
+        function playSound(type) {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+                
+                if (type === 'click') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(450, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start();
+                    osc.stop(now + 0.1);
+                } 
+                else if (type === 'pour') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(280, now);
+                    osc.frequency.linearRampToValueAtTime(120, now + 0.35);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start();
+                    osc.stop(now + 0.35);
+                } 
+                else if (type === 'win') {
+                    const notes = [261.63, 329.63, 392.00, 523.25];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, now + idx * 0.12);
+                        g.gain.setValueAtTime(0.08, now + idx * 0.12);
+                        g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.35);
+                        o.start(now + idx * 0.12);
+                        o.stop(now + idx * 0.12 + 0.35);
+                    });
+                } 
+                else if (type === 'error') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start();
+                    osc.stop(now + 0.25);
+                }
+            } catch (err) {
+                console.warn("Web Audio is restricted or unsupported.", err);
+            }
+        }
+
+        function getCanonicalKey(stateTubes) {
+            let keys = [];
+            for (let i = 0; i < stateTubes.length; i++) {
+                keys.push(stateTubes[i].join(''));
+            }
+            return keys.sort().join('|');
+        }
+
+        function isWonState(stateTubes) {
+            for (let i = 0; i < stateTubes.length; i++) {
+                if (stateTubes[i].length === 0) continue;
+                if (stateTubes[i].length !== 4) return false;
+                if (!stateTubes[i].every(v => v === stateTubes[i][0])) return false;
+            }
+            return true;
+        }
+
+        function canPourState(stateTubes, srcIdx, dstIdx) {
+            const src = stateTubes[srcIdx];
+            const dst = stateTubes[dstIdx];
+            if (src.length === 0 || dst.length === 4) return false;
+            if (dst.length === 0) return true;
+            return src[src.length - 1] === dst[dst.length - 1];
+        }
+
+        function pourState(stateTubes, srcIdx, dstIdx) {
+            const next = [];
+            for (let i = 0; i < stateTubes.length; i++) {
+                next.push([...stateTubes[i]]);
+            }
+            const src = next[srcIdx];
+            const dst = next[dstIdx];
+
+            const color = src[src.length - 1];
+            let count = 0;
+            for (let i = src.length - 1; i >= 0; i--) {
+                if (src[i] === color) count++;
+                else break;
+            }
+            const space = 4 - dst.length;
+            const pourAmount = Math.min(count, space);
+
+            for (let i = 0; i < pourAmount; i++) {
+                dst.push(src.pop());
+            }
+            return next;
+        }
+
+        function isSolvable(initialTubes, levelNum) {
+            const queue = [initialTubes];
+            const visited = new Set();
+            visited.add(getCanonicalKey(initialTubes));
+
+            let steps = 0;
+            const maxSteps = 150 + (levelNum * 10); 
+
+            while (queue.length > 0) {
+                steps++;
+                if (steps > maxSteps) return false;
+
+                const current = queue.shift();
+
+                if (isWonState(current)) {
+                    return true;
+                }
+
+                for (let i = 0; i < current.length; i++) {
+                    if (current[i].length === 0) continue;
+
+                    if (current[i].length === 4 && current[i].every(v => v === current[i][0])) {
+                        continue;
+                    }
+
+                    for (let j = 0; j < current.length; j++) {
+                        if (i === j) continue;
+
+                        if (canPourState(current, i, j)) {
+                            const nextState = pourState(current, i, j);
+                            const key = getCanonicalKey(nextState);
+                            if (!visited.has(key)) {
+                                visited.add(key);
+                                queue.push(nextState);
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function getSeededRandom(seed) {
+            return function() {
+                var x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            };
+        }
+
+        function generateLevel(levelNum) {
+            let numColors, numEmpty;
+            if (levelNum <= 5) {
+                numColors = levelNum + 1;
+                numEmpty = (levelNum >= 3) ? 2 : 1; 
+            } else if (levelNum <= 10) {
+                numColors = Math.min(6, levelNum - 1); 
+                numEmpty = 2;
+            } else if (levelNum <= 15) {
+                numColors = Math.min(7, levelNum - 4); 
+                numEmpty = 2;
+            } else {
+                numColors = Math.min(8, 5 + Math.floor((levelNum - 16) / 2));
+                numEmpty = 2;
+            }
+
+            const palette = [
+                '#FF5E5E',
+                '#3CAEA3',
+                '#F6D55C',
+                '#20639B',
+                '#ED553B',
+                '#9B5DE5',
+                '#F15BB5',
+                '#00F5D4',
+                '#8AC926'
+            ];
+
+            let seed = levelNum * 314 + 159;
+            let attempts = 0;
+
+            while (true) {
+                attempts++;
+                let rng = getSeededRandom(seed);
+                
+                let colorPool = [];
+                for (let i = 0; i < numColors; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        colorPool.push(palette[i]);
+                    }
+                }
+                
+                for (let i = colorPool.length - 1; i > 0; i--) {
+                    const j = Math.floor(rng() * (i + 1));
+                    const temp = colorPool[i];
+                    colorPool[i] = colorPool[j];
+                    colorPool[j] = temp;
+                }
+                
+                let tubes = [];
+                for (let i = 0; i < numColors; i++) {
+                    let tube = [];
+                    for (let j = 0; j < 4; j++) {
+                        tube.push(colorPool[i * 4 + j]);
+                    }
+                    tubes.push(tube);
+                }
+                for (let i = 0; i < numEmpty; i++) {
+                    tubes.push([]);
+                }
+                
+                if (isWonState(tubes)) {
+                    seed++;
+                    continue;
+                }
+                
+                if (attempts > 40) {
+                    tubes.push([]);
+                    return tubes;
+                }
+                
+                if (isSolvable(tubes, levelNum)) {
+                    return tubes;
+                }
+                
+                seed++;
+            }
+        }
+
+        function navigateTo(screenId) {
+            playSound('click');
+            const screens = ['welcome', 'map', 'game'];
+            screens.forEach(s => {
+                const el = document.getElementById(`screen-${s}`);
+                if (s === screenId) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            if (screenId === 'map') {
+                renderMap();
+            }
+        }
+
+        function renderMap() {
+            const grid = document.getElementById('levels-grid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 25; i++) {
+                const card = document.createElement('div');
+                card.classList.add('level-card');
+                
+                if (i <= 5) card.classList.add('easy-tier');
+                else if (i <= 10) card.classList.add('mod-tier');
+                else if (i <= 15) card.classList.add('mod-hard-tier');
+                else card.classList.add('hard-tier');
+
+                if (state.completedLevels.includes(i)) {
+                    card.classList.add('completed');
+                } else {
+                    card.classList.add('uncompleted');
+                }
+
+                card.innerHTML = `<span>${i}</span>`;
+                card.onclick = () => launchLevel(i);
+                grid.appendChild(card);
+            }
+        }
+
+        function openHowToPlay() {
+            playSound('click');
+            document.getElementById('modal-how').classList.remove('hidden');
+        }
+
+        function closeHowToPlay() {
+            playSound('click');
+            document.getElementById('modal-how').classList.add('hidden');
+        }
+
+        let currentLevel = 1;
+        let tubes = [];
+        let selectedTubeIndex = null;
+        let isAnimating = false;
+        let undoStack = [];
+
+        function launchLevel(levelNum) {
+            currentLevel = levelNum;
+            tubes = generateLevel(levelNum);
+            selectedTubeIndex = null;
+            isAnimating = false;
+            undoStack = [];
+
+            document.getElementById('game-level-title').innerText = `Level ${levelNum}`;
+            document.getElementById('game-level-tier').innerText = getLevelTierLabel(levelNum);
+
+            navigateTo('game');
+            drawBoard();
+        }
+
+        function restartLevel() {
+            if (isAnimating) return;
+            playSound('click');
+            launchLevel(currentLevel);
+        }
+
+        function drawBoard() {
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+
+            tubes.forEach((tube, idx) => {
+                const tubeEl = document.createElement('div');
+                tubeEl.className = 'tube';
+                tubeEl.id = `tube-${idx}`;
+                tubeEl.dataset.idx = idx;
+
+                tube.forEach(color => {
+                    const liq = document.createElement('div');
+                    liq.className = 'liquid';
+                    liq.style.setProperty('--color', color);
+                    tubeEl.appendChild(liq);
+                });
+
+                tubeEl.onclick = () => handleTubeClick(idx);
+                board.appendChild(tubeEl);
+            });
+        }
+
+        function handleTubeClick(idx) {
+            if (isAnimating) return;
+            clearHints();
+
+            const clickedTube = tubes[idx];
+
+            if (selectedTubeIndex === null) {
+                if (clickedTube.length === 0) {
+                    triggerShake(idx);
+                    playSound('error');
+                    return;
+                }
+                selectedTubeIndex = idx;
+                document.getElementById(`tube-${idx}`).classList.add('selected');
+                playSound('click');
+            } else {
+                if (selectedTubeIndex === idx) {
+                    document.getElementById(`tube-${idx}`).classList.remove('selected');
+                    selectedTubeIndex = null;
+                    playSound('click');
+                } else {
+                    if (isValidMove(selectedTubeIndex, idx)) {
+                        executePour(selectedTubeIndex, idx);
+                    } else {
+                        document.getElementById(`tube-${selectedTubeIndex}`).classList.remove('selected');
+                        triggerShake(idx);
+                        playSound('error');
+                        selectedTubeIndex = null;
+                    }
+                }
+            }
+        }
+
+        function isValidMove(fromIdx, toIdx) {
+            const src = tubes[fromIdx];
+            const tgt = tubes[toIdx];
+
+            if (src.length === 0) return false;
+            if (tgt.length === 4) return false;
+
+            if (tgt.length === 0) return true;
+
+            return src[src.length - 1] === tgt[tgt.length - 1];
+        }
+
+        function getPourCount(fromIdx, toIdx) {
+            const src = tubes[fromIdx];
+            const tgt = tubes[toIdx];
+            const color = src[src.length - 1];
+
+            let matches = 0;
+            for (let i = src.length - 1; i >= 0; i--) {
+                if (src[i] === color) matches++;
+                else break;
+            }
+
+            const freeSpace = 4 - tgt.length;
+            return Math.min(matches, freeSpace);
+        }
+
+        function executePour(fromIdx, toIdx) {
+            isAnimating = true;
+            const amount = getPourCount(fromIdx, toIdx);
+            
+            undoStack.push(JSON.stringify(tubes));
+
+            animatePour(fromIdx, toIdx, amount);
+        }
+
+        function animatePour(fromIdx, toIdx, amount) {
+            const srcEl = document.getElementById(`tube-${fromIdx}`);
+            const tgtEl = document.getElementById(`tube-${toIdx}`);
+            const srcColor = tubes[fromIdx][tubes[fromIdx].length - 1];
+
+            srcEl.classList.remove('selected');
+            selectedTubeIndex = null;
+
+            const srcRect = srcEl.getBoundingClientRect();
+            const tgtRect = tgtEl.getBoundingClientRect();
+
+            const dx = tgtRect.left - srcRect.left;
+            const dy = tgtRect.top - srcRect.top;
+
+            if (dx > 0) {
+                srcEl.style.transformOrigin = '90% 10%';
+                srcEl.style.transform = `translate(${dx + 16}px, ${dy - 60}px) rotate(85deg)`;
+            } else {
+                srcEl.style.transformOrigin = '10% 10%';
+                srcEl.style.transform = `translate(${dx - 16}px, ${dy - 60}px) rotate(-85deg)`;
+            }
+            srcEl.style.zIndex = '15';
+
+            setTimeout(() => {
+                playSound('pour');
+
+                const stream = document.createElement('div');
+                stream.className = 'pour-stream';
+                stream.style.setProperty('--color', srcColor);
+                
+                const targetCurrentLength = tubes[toIdx].length;
+                const streamHeightPct = 100 - (targetCurrentLength * 23);
+                stream.style.height = `calc(${streamHeightPct}% - 6px)`;
+                
+                tgtEl.appendChild(stream);
+
+                const srcLiquids = Array.from(srcEl.querySelectorAll('.liquid'));
+                for (let i = 0; i < amount; i++) {
+                    const liqToShrink = srcLiquids[srcLiquids.length - 1 - i];
+                    if (liqToShrink) liqToShrink.classList.add('shrink');
+                }
+
+                for (let i = 0; i < amount; i++) {
+                    const extraLiq = document.createElement('div');
+                    extraLiq.className = 'liquid';
+                    extraLiq.style.setProperty('--color', srcColor);
+                    extraLiq.style.height = '0';
+                    tgtEl.appendChild(extraLiq);
+                    
+                    void extraLiq.offsetHeight;
+                    extraLiq.style.height = '23%';
+                }
+
+                setTimeout(() => {
+                    stream.style.opacity = '0';
+                    setTimeout(() => stream.remove(), 120);
+
+                    srcEl.style.transform = 'none';
+                    srcEl.style.transformOrigin = 'unset';
+                    srcEl.style.zIndex = '5';
+
+                    setTimeout(() => {
+                        for (let i = 0; i < amount; i++) {
+                            const unit = tubes[fromIdx].pop();
+                            tubes[toIdx].push(unit);
+                        }
+
+                        drawBoard();
+                        isAnimating = false;
+
+                        if (checkWinCondition()) {
+                            triggerWin();
+                        }
+                    }, 250);
+
+                }, 400);
+
+            }, 300);
+        }
+
+        function triggerShake(idx) {
+            const el = document.getElementById(`tube-${idx}`);
+            if (el) {
+                el.classList.add('shake');
+                setTimeout(() => el.classList.remove('shake'), 300);
+            }
+        }
+
+        function undoMove() {
+            if (isAnimating) return;
+            if (undoStack.length === 0) {
+                playSound('error');
+                return;
+            }
+
+            playSound('click');
+            const previous = JSON.parse(undoStack.pop());
+            tubes = previous;
+            selectedTubeIndex = null;
+            clearHints();
+            drawBoard();
+        }
+
+        function triggerHint() {
+            if (isAnimating) return;
+            clearHints();
+
+            const move = findValidMove();
+            if (move) {
+                playSound('click');
+                const src = document.getElementById(`tube-${move.from}`);
+                const tgt = document.getElementById(`tube-${move.to}`);
+                
+                if (src && tgt) {
+                    src.classList.add('hint-source');
+                    tgt.classList.add('hint-target');
+                }
+            } else {
+                playSound('error');
+                alert("Oh no! No valid moves left. Try to Undo or Restart! 🔄");
+            }
+        }
+
+        function clearHints() {
+            document.querySelectorAll('.tube').forEach(t => {
+                t.classList.remove('hint-source', 'hint-target');
+            });
+        }
+
+        function findValidMove() {
+            let matches = [];
+
+            for (let i = 0; i < tubes.length; i++) {
+                if (tubes[i].length === 0) continue;
+
+                const isFullySolved = tubes[i].length === 4 && tubes[i].every(v => v === tubes[i][0]);
+                if (isFullySolved) continue;
+
+                for (let j = 0; j < tubes.length; j++) {
+                    if (i === j) continue;
+
+                    if (isValidMove(i, j)) {
+                        const isOneColorOnly = tubes[i].every(v => v === tubes[i][0]);
+                        if (isOneColorOnly && tubes[j].length === 0) {
+                            continue;
+                        }
+
+                        matches.push({ from: i, to: j });
+                    }
+                }
+            }
+
+            if (matches.length > 0) {
+                return matches[Math.floor(Math.random() * matches.length)];
+            }
+
+            for (let i = 0; i < tubes.length; i++) {
+                if (tubes[i].length === 0) continue;
+                for (let j = 0; j < tubes.length; j++) {
+                    if (i !== j && isValidMove(i, j)) {
+                        return { from: i, to: j };
+                    }
+                }
+            }
+
+            return null;
+        }
+async function creditCoins(amount){
+
+    try{
+
+        await window.gameSDK.rewardCoins({
+            amount: amount,
+            reason: `Water Sort Level ${currentLevel}`
+        });
+
+        await syncWalletBalance();
+
+    }catch(err){
+        console.error(err);
+    }
+}
+        function checkWinCondition() {
+            for (let i = 0; i < tubes.length; i++) {
+                if (tubes[i].length === 0) continue;
+                if (tubes[i].length !== 4) return false;
+                const matches = tubes[i].every(val => val === tubes[i][0]);
+                if (!matches) return false;
+            }
+            return true;
+        }
+
+       async function triggerWin() {
+            playSound('win');
+            startConfetti();
+
+            const isFirstComplete = !state.completedLevels.includes(currentLevel);
+            const reward = getLevelReward(currentLevel);
+
+            if (isFirstComplete) {
+
+    state.completedLevels.push(currentLevel);
+
+    syncProgress();
+
+    gameStats.totalCoinsEarned += reward;
+
+    gameStats.levelsCompleted =
+        state.completedLevels.length;
+
+    gameStats.progress =
+        gameProgress;
+
+    saveState();
+
+    await creditCoins(reward);
+}
+
+            setTimeout(() => {
+                const phrases = ["Super Job! 🌟", "Amazing! 🏆", "Brilliant! 🎨", "Awesome! 🎉", "Genius! 🧠", "Fabulous! ✨"];
+                document.getElementById('win-praise-text').innerText = phrases[Math.floor(Math.random() * phrases.length)];
+                document.getElementById('win-reward-amount').innerText = `+${reward}`;
+
+                const nextBtn = document.getElementById('btn-next-level');
+                if (currentLevel < 25) {
+                    nextBtn.style.display = 'block';
+                } else {
+                    nextBtn.style.display = 'none';
+                }
+
+                document.getElementById('modal-win').classList.remove('hidden');
+            }, 600);
+        }
+
+        function closeWinModal() {
+            document.getElementById('modal-win').classList.add('hidden');
+            stopConfetti();
+            navigateTo('map');
+        }
+
+        function nextLevel() {
+            document.getElementById('modal-win').classList.add('hidden');
+            stopConfetti();
+            if (currentLevel < 25) {
+                launchLevel(currentLevel + 1);
+            }
+        }
+
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettiActive = false;
+        let confettiParticles = [];
+        const confettiColors = ['#ff5e5e', '#3caea3', '#f6d55c', '#20639b', '#ed553b', '#9b5de5', '#f15bb5'];
+
+        function resizeConfetti() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+
+        function spawnConfetti() {
+            confettiParticles = [];
+            for (let i = 0; i < 110; i++) {
+                confettiParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    radius: Math.random() * 5 + 4,
+                    density: Math.random() * canvas.height,
+                    color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+                    tilt: Math.random() * 10 - 5,
+                    tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                    tiltAngle: 0
+                });
+            }
+        }
+
+        function updateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let activeCount = 0;
+
+            confettiParticles.forEach(p => {
+                p.tiltAngle += p.tiltAngleIncremental;
+                p.y += (Math.cos(p.density) + 3 + p.radius / 2) / 2;
+                p.x += Math.sin(p.tiltAngle);
+                p.tilt = Math.sin(p.tiltAngle) * 12;
+
+                if (p.y <= canvas.height) {
+                    activeCount++;
+                }
+
+                ctx.beginPath();
+                ctx.lineWidth = p.radius;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.radius / 2, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.radius / 2);
+                ctx.stroke();
+            });
+
+            if (activeCount > 0 && confettiActive) {
+                requestAnimationFrame(updateConfetti);
+            } else {
+                canvas.style.display = 'none';
+            }
+        }
+
+        function startConfetti() {
+            canvas.style.display = 'block';
+            confettiActive = true;
+            resizeConfetti();
+            spawnConfetti();
+            updateConfetti();
+        }
+
+        function stopConfetti() {
+            confettiActive = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener('resize', () => {
+            if (confettiActive) {
+                resizeConfetti();
+            }
+        });
+
+       window.onload = async () => {
+
+    loadState();
+
+    walletCoins =
+        parseInt(
+            localStorage.getItem("walletCoins")
+        ) || 0;
+
+    await syncWalletBalance();
+
+};
+window.addEventListener(
+    "walletUpdated",
+    async () => {
+
+        await syncWalletBalance();
+
+    }
+);
+    </script>
+</body>
+</html>

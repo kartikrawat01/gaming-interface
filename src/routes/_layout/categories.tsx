@@ -225,6 +225,8 @@ const [gameProgress, setGameProgress] = useState<Record<string, number>>({
     "Sort and Think": 0,
   "Motor Boat": 0,
   "Bubble Maths Challenge": 0,
+  "Smart Traffic Controller": 0,
+"Water Color Sort Puzzle": 0,
 });
 useEffect(() => {
   const loadAllGameProgress = () => {
@@ -293,7 +295,7 @@ const motorBoatCompleted =
 
 const motorBoatProgress =
   Number(localStorage.getItem("motorBoatProgress")) ||
-  Math.round((motorBoatCompleted / 10) * 100) ||
+  Math.round((motorBoatCompleted / 19) * 100) ||
   0;
 
 const bubbleMathCompleted =
@@ -303,6 +305,23 @@ const bubbleMathProgress =
   Number(localStorage.getItem("bubbleMathProgress")) ||
   Math.round((bubbleMathCompleted / 25) * 100) ||
   0;
+
+  const trafficCompleted =
+  Number(localStorage.getItem("trafficCompleted")) || 0;
+
+const trafficProgress =
+  Number(localStorage.getItem("trafficProgress")) ||
+  Math.round((trafficCompleted / 10) * 100) ||
+  0;
+
+const colorSortCompleted =
+  Number(localStorage.getItem("colorSortCompleted")) || 0;
+
+const colorSortProgress =
+  Number(localStorage.getItem("colorSortProgress")) ||
+  Math.round((colorSortCompleted / 25) * 100) ||
+  0;
+
     setGameProgress({
       "Logic Maze": Math.min(logicMazeProgress, 100),
       "Brain Blast": Math.min(brainBlastProgress, 100),
@@ -315,6 +334,8 @@ const bubbleMathProgress =
       "Sort and Think": Math.min(sortProgress, 100),
 "Motor Boat": Math.min(motorBoatProgress, 100),
 "Bubble Maths Challenge": Math.min(bubbleMathProgress, 100),
+"Smart Traffic Controller": Math.min(trafficProgress, 100),
+"Water Color Sort Puzzle": Math.min(colorSortProgress, 100),
     });
   };
 
