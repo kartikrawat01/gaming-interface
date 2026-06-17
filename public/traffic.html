@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚦 Smart Traffic Controller</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='25' y='5' width='50' height='90' rx='20' fill='%23222'/%3E%3Ccircle cx='50' cy='28' r='14' fill='%23e74c3c'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23f1c40f'/%3E%3Ccircle cx='50' cy='72' r='14' fill='%232ecc71'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg-color: #eef7f2;
+      --card-bg: #ffffff;
+      --text-color: #2c3e50;
+      --primary-color: #2ecc71;
+      --primary-dark: #27ae60;
+      --accent-color: #e67e22;
+      --danger-color: #e74c3c;
+      --glow-red: #ff3b30;
+      --glow-green: #4cd964;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    header {
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .logo-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .logo-img {
+      height: 48px;
+      max-width: 180px;
+      object-fit: contain;
+    }
+
+    .title-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 2px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      background-color: #f5f5f5;
+      transform: translateY(-2px);
+    }
+
+    .btn-how-to-play {
+      background-color: var(--accent-color);
+      color: white;
+      box-shadow: 0 4px 8px rgba(230, 126, 34, 0.25);
+    }
+
+    .btn-how-to-play:hover {
+      background-color: #d35400;
+      transform: translateY(-2px);
+    }
+
+    /* Levels Container */
+    .level-bar {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 10px 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .level-bar-label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      color: #7f8c8d;
+      text-align: left;
+    }
+
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+    }
+
+    .level-btn {
+      padding: 10px 0;
+      font-size: 1rem;
+      font-weight: bold;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      background: #fafafa;
+      color: #7f8c8d;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .level-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      background: #fff;
+    }
+
+    .level-btn.active {
+      background-color: var(--primary-color);
+      border-color: var(--primary-dark);
+      color: white;
+      box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4);
+    }
+
+    /* Scoreboard */
+    .scoreboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 15px;
+    }
+
+    .score-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+      border: 1px solid #eef2f5;
+    }
+
+    .score-label {
+      font-size: 0.8rem;
+      color: #95a5a6;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .score-value {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    /* Game Window Wrapper */
+    .game-viewport {
+      position: relative;
+      width: 800px;
+      height: 600px;
+      max-width: 100%;
+      background-color: #a2e8b4;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      overflow: hidden;
+      border: 6px solid var(--card-bg);
+      aspect-ratio: 4 / 3;
+    }
+
+    #gameCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* HTML Overlay Traffic Light Buttons */
+    .traffic-light {
+      position: absolute;
+      width: 32px;
+      height: 64px;
+      background: #222;
+      border: 3px solid #444;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+      padding: 4px 0;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 10;
+    }
+
+    .traffic-light:hover {
+      transform: scale(1.15);
+    }
+
+    .lamp {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #444;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .lamp.red.active {
+      background: var(--glow-red);
+      box-shadow: 0 0 14px var(--glow-red);
+    }
+
+    .lamp.green.active {
+      background: var(--glow-green);
+      box-shadow: 0 0 14px var(--glow-green);
+    }
+
+    /* Overlay Screen Modals */
+    .screen-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(44, 62, 80, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 30px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .screen-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .overlay-card {
+      background: var(--card-bg);
+      color: var(--text-color);
+      border-radius: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .screen-overlay.visible .overlay-card {
+      transform: translateY(0);
+    }
+
+    .overlay-card h2 {
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    .overlay-card p {
+      font-size: 1.05rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    .overlay-btns {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    /* Alert Banner (Flashing Announcements) */
+    .alert-banner {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(231, 76, 60, 0.95);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 1rem;
+      z-index: 15;
+      box-shadow: 0 6px 15px rgba(231,76,60,0.4);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      animation: bouncePulse 1s infinite alternate;
+    }
+
+    @keyframes bouncePulse {
+      0% { transform: translate(-50%, 0) scale(1); }
+      100% { transform: translate(-50%, -4px) scale(1.05); }
+    }
+
+    /* Instructions Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 25px 30px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-content h3 {
+      font-size: 1.6rem;
+      margin-bottom: 15px;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-content ul {
+      list-style-type: none;
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .modal-content li {
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    /* Responsive scaling */
+    @media (max-width: 840px) {
+      .game-viewport {
+        width: 100%;
+        height: auto;
+      }
+      .level-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .logo-row {
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-row">
+      <img src="/assets/logo.png" alt="BeCre8v Logo" class="logo-img">
+      <div class="header-btns">
+        <button class="btn btn-secondary" onclick="toggleMute()">
+          <span id="mute-icon">🔊</span> Mute
+        </button>
+        <button class="btn btn-how-to-play" onclick="openInstructions()">❓ How to Play</button>
+      </div>
+    </div>
+
+    <div class="title-bar">
+      <h1>Smart Traffic Controller</h1>
+    </div>
+
+    <!-- 10 level bar -->
+    <div class="level-bar">
+      <div class="level-bar-label">Select Intersection Level</div>
+      <div class="level-grid" id="level-buttons-container"></div>
+    </div>
+
+    <!-- HUD Score Board -->
+    <div class="scoreboard">
+      <div class="score-card">
+        <div class="score-label">⭐ Score</div>
+        <div class="score-value" id="score-val">0</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label">🪙 Coins</div>
+        <div class="score-value" id="coins-val">0</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label">🚗 Flow Tally</div>
+        <div class="score-value" id="flow-val">0/8</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label">🚑 Saved</div>
+        <div class="score-value" id="emergencies-val">0</div>
+      </div>
+      <div class="score-card">
+        <div class="score-label" id="weather-label">🌤 Weather</div>
+        <div class="score-value" id="weather-val" style="font-size: 1.15rem; margin-top: 3px;">Day</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Game Container Box -->
+  <div class="game-viewport" id="viewport">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <!-- Interactive HTML Traffic Lights Overlaid -->
+    <!-- North Bound (Bottom lane moving Northwards) -->
+    <div class="traffic-light" id="light-up" style="left: 57%; top: 72%;" onclick="toggleLight('up')">
+      <div class="lamp red active"></div>
+      <div class="lamp green"></div>
+    </div>
+    
+    <!-- South Bound (Top lane moving Southwards) -->
+    <div class="traffic-light" id="light-down" style="left: 39%; top: 15%;" onclick="toggleLight('down')">
+      <div class="lamp red active"></div>
+      <div class="lamp green"></div>
+    </div>
+
+    <!-- East Bound (Left lane moving Eastwards) -->
+    <div class="traffic-light" id="light-right" style="left: 28%; top: 56%;" onclick="toggleLight('right')">
+      <div class="lamp red active"></div>
+      <div class="lamp green"></div>
+    </div>
+
+    <!-- West Bound (Right lane moving Westwards) -->
+    <div class="traffic-light" id="light-left" style="left: 68%; top: 31%;" onclick="toggleLight('left')">
+      <div class="lamp red active"></div>
+      <div class="lamp green"></div>
+    </div>
+
+    <!-- Active Siren Emergency warning -->
+    <div class="alert-banner" id="emergency-banner">
+      <span>🚨</span> EMERGENCY APPROOCHING! PRIORITY GREEN!
+    </div>
+
+    <!-- Level Start Info Screen -->
+    <div class="screen-overlay visible" id="start-overlay">
+      <div class="overlay-card">
+        <h2 id="start-title">Level 1: Quick Crossings</h2>
+        <p id="start-desc">Warm up! Keep the basic lines moving smoothly. Keep eye on both lines!</p>
+        <div class="overlay-btns">
+          <button class="btn btn-primary" onclick="startCurrentLevel()" style="padding: 12px 30px; font-size: 1.1rem;">
+            🟢 GO!
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory Screen -->
+    <div class="screen-overlay" id="win-overlay">
+      <div class="overlay-card">
+        <h2 style="color: var(--primary-color);">🏆 Level Complete!</h2>
+        <p id="win-summary">Fantastic job! Perfect Flow achieved.</p>
+        <div style="font-size: 1.25rem; font-weight: bold; margin-bottom: 25px; display: flex; justify-content: center; gap: 20px;">
+          <span id="win-coins">🪙 +20 Coins</span>
+          <span id="win-bonus" style="color: #f1c40f;">⭐ Bonus!</span>
+        </div>
+        <div class="overlay-btns">
+          <button class="btn btn-primary" onclick="proceedToNextLevel()" id="next-lvl-btn">
+            Next Level ➡️
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Defeat Screen -->
+    <div class="screen-overlay" id="fail-overlay">
+      <div class="overlay-card">
+        <h2 style="color: var(--danger-color);" id="fail-title">💥 Level Failed!</h2>
+        <p id="fail-desc">Traffic collided in the intersection. Safety first!</p>
+        <div class="overlay-btns">
+          <button class="btn btn-primary" onclick="restartLevel()" style="background-color: var(--danger-color);">
+            🔄 Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to Play Pop up -->
+  <div class="modal visible" id="instructions-modal" onclick="closeInstructions()">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 520px; border-radius: 20px; overflow: hidden; padding: 0;">
+      <div style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: 20px; text-align: center;">
+        <h3 style="margin: 0; color: white; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          🚦 How to Play & Rewards!
+        </h3>
+        <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.9;">Master the flows and keep everyone safe!</p>
+      </div>
+      
+      <div style="padding: 20px 25px; max-height: 380px; overflow-y: auto; text-align: left;">
+        <div style="margin-bottom: 18px;">
+          <h4 style="color: var(--primary-dark); font-size: 1.1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            🎮 Simple Rules
+          </h4>
+          <ul style="list-style-type: none; padding-left: 0;">
+            <li style="margin-bottom: 8px; font-size: 0.95rem; line-height: 1.4; display: flex; align-items: flex-start; gap: 6px;">
+              <span>👉</span> <span><strong>Tap lights</strong> to switch them between Red 🔴 and Green 🟢.</span>
+            </li>
+            <li style="margin-bottom: 8px; font-size: 0.95rem; line-height: 1.4; display: flex; align-items: flex-start; gap: 6px;">
+              <span>🚗</span> <span><strong>Complete levels</strong> by guiding the target number of cars safely.</span>
+            </li>
+            <li style="margin-bottom: 8px; font-size: 0.95rem; line-height: 1.4; display: flex; align-items: flex-start; gap: 6px;">
+              <span>⚠️</span> <span><strong>Avoid Crashes & Gridlocks!</strong> Keep opposite flows separated and prevent queues from stacking up.</span>
+            </li>
+            <li style="margin-bottom: 8px; font-size: 0.95rem; line-height: 1.4; display: flex; align-items: flex-start; gap: 6px;">
+              <span>🏆</span> <span><strong>Win the Game</strong> by safely conquering all 10 intersection levels!</span>
+            </li>
+          </ul>
+        </div>
+
+        <div style="background-color: #f9fbf9; border: 1px solid #e2ece2; border-radius: 12px; padding: 15px; margin-bottom: 18px;">
+          <h4 style="color: var(--accent-color); font-size: 1.1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            🪙 Coins & Rewards
+          </h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.88rem; line-height: 1.4;">
+            <div>
+              <strong>Level Complete:</strong>
+              <ul style="padding-left: 12px; margin-top: 4px; list-style-type: circle;">
+                <li>Lvl 1 - 3: 🪙 20</li>
+                <li>Lvl 4 - 6: 🪙 40</li>
+                <li>Lvl 7 - 10: 🪙 60</li>
+              </ul>
+            </div>
+            <div>
+              <strong>Bonuses & Combos:</strong>
+              <ul style="padding-left: 12px; margin-top: 4px; list-style-type: circle;">
+                <li>Perfect Escort: +🪙15</li>
+                <li>Quick Passes: Combo Multiplier</li>
+                <li>Emergency Save: +25 Points</li>
+              </ul>
+            </div>
+          </div>
+          <div style="font-size: 0.85rem; margin-top: 10px; color: #7f8c8d; border-top: 1px dashed #ddd; padding-top: 8px;">
+            <strong>⚠️ Penalties:</strong> Gridlocks (5+ stopped cars in a lane) or delaying emergency vehicles for too long results in instant failure.
+          </div>
+        </div>
+
+        <div style="font-size: 0.9rem; line-height: 1.4; text-align: center; color: var(--text-color); font-weight: bold; background-color: #fff3cd; border: 1px solid #ffeeba; padding: 12px; border-radius: 12px;">
+          Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius and Infinity Mirror.
+        </div>
+      </div>
+
+      <div style="background-color: #f5f5f5; padding: 15px 25px; text-align: right; display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" onclick="closeInstructions()" style="padding: 10px 24px; font-size: 1rem; border-radius: 20px;">
+          Let's Play! 🎮
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Audio Synthesis Core (Web Audio API)
+    const Sound = {
+      ctx: null,
+      muted: false,
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+      playClick() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1000, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      },
+      playLight() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(550, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+      },
+      playPass() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.08); // E5
+        osc.frequency.setValueAtTime(783.99, this.ctx.currentTime + 0.16); // G5
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+      },
+      playSiren() {
+        if (this.muted) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        const now = this.ctx.currentTime;
+        osc.frequency.setValueAtTime(650, now);
+        osc.frequency.linearRampToValueAtTime(850, now + 0.2);
+        osc.frequency.linearRampToValueAtTime(650, now + 0.4);
+        gain.gain.setValueAtTime(0.03, now);
+        gain.gain.linearRampToValueAtTime(0.03, now + 0.3);
+        gain.gain.linearRampToValueAtTime(0, now + 0.4);
+        osc.start();
+        osc.stop(now + 0.4);
+      },
+      playCrash() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const noiseGain = this.ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.6);
+        
+        noiseGain.gain.setValueAtTime(0.4, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        
+        osc.connect(noiseGain);
+        noiseGain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.6);
+      },
+      playWin() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C Major Fanfare
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+          gain.gain.setValueAtTime(0.08, now + idx * 0.1);
+          gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.35);
+          osc.start(now + idx * 0.1);
+          osc.stop(now + idx * 0.1 + 0.35);
+        });
+      },
+      playLose() {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const notes = [392.00, 349.23, 311.13, 261.63]; // Descending Sad G-F-Eb-C
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.15);
+          gain.gain.setValueAtTime(0.08, now + idx * 0.15);
+          gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.15 + 0.4);
+          osc.start(now + idx * 0.15);
+          osc.stop(now + idx * 0.15 + 0.4);
+        });
+      }
+    };
+
+    // Game Database & Levels Setup
+    const levels = [
+      {
+        num: 1,
+        title: "🚦 Level 1: Quick Crossings",
+        desc: "Warm up! Manage traffic for a simple 2-road crossing. Keep things moving safely.",
+        lanes: ['right', 'down'],
+        targetCount: 8,
+        spawnInterval: 2800,
+        vehicleSpeedRange: [2.0, 2.5],
+        reward: 20,
+        hasEmergency: false,
+        environment: 'day'
+      },
+      {
+        num: 2,
+        title: "🛣️ Level 2: Flow Progression",
+        desc: "A few more vehicles are arriving. Maintain smooth rhythm and don't make them wait.",
+        lanes: ['right', 'down'],
+        targetCount: 12,
+        spawnInterval: 2500,
+        vehicleSpeedRange: [2.2, 2.8],
+        reward: 20,
+        hasEmergency: false,
+        environment: 'day'
+      },
+      {
+        num: 3,
+        title: "⚡ Level 3: Tri-Flow Avenue",
+        desc: "A third traffic lane opens up! Coordinate the vertical and horizontal movements.",
+        lanes: ['right', 'left', 'down'],
+        targetCount: 15,
+        spawnInterval: 2200,
+        vehicleSpeedRange: [2.2, 3.0],
+        reward: 20,
+        hasEmergency: false,
+        environment: 'day'
+      },
+      {
+        num: 4,
+        title: "🚑 Level 4: Priority Service",
+        desc: "All four lanes active now! Keep eye out for incoming sirens of emergency vehicles.",
+        lanes: ['right', 'left', 'down', 'up'],
+        targetCount: 18,
+        spawnInterval: 2000,
+        vehicleSpeedRange: [2.4, 3.2],
+        reward: 40,
+        hasEmergency: true,
+        environment: 'day'
+      },
+      {
+        num: 5,
+        title: "🌙 Level 5: Midnight Junction",
+        desc: "Night Shift! Turn on headlights. Kids school bus and rapid responses are out.",
+        lanes: ['right', 'left', 'down', 'up'],
+        targetCount: 20,
+        spawnInterval: 1800,
+        vehicleSpeedRange: [2.5, 3.2],
+        reward: 40,
+        hasEmergency: true,
+        environment: 'night'
+      },
+      {
+        num: 6,
+        title: "🌧️ Level 6: Rainy Weather",
+        desc: "Slick asphalt! Safe braking takes slightly longer. Plan your signal changes earlier.",
+        lanes: ['right', 'left', 'down', 'up'],
+        targetCount: 22,
+        spawnInterval: 1700,
+        vehicleSpeedRange: [2.0, 2.8],
+        reward: 40,
+        hasEmergency: true,
+        environment: 'rain'
+      },
+      {
+        num: 7,
+        title: "⛈️ Level 7: Wet Midnight",
+        desc: "Heavy rainstorm after midnight! Visibility is down and traffic density is high.",
+        lanes: ['right', 'left', 'down', 'up'],
+        targetCount: 25,
+        spawnInterval: 1500,
+        vehicleSpeedRange: [2.2, 3.0],
+        reward: 60,
+        hasEmergency: true,
+        environment: 'night-rain'
+      },
+      {
+        num: 8,
+        title: "🚨 Level 8: Rapid Emergencies",
+        desc: "Multiple ambulances and firetrucks on active runs. Prioritize sirens above all!",
+        lanes: ['right', 'left', 'down', 'up'],
+        targetCount: 28,
+        spawnInterval: 1400,
+        vehicleSpeedRange: [2.6, 3.4],
+        reward: 60,
+        hasEmergency: true,
+        environment: 'day'
+      },
+      {
+        num: 9,
+        title: "🚗 Level 9: Gridlock Hour",
+        desc: "Absolute rush hour. Ensure no lanes stack up with 5 or more cars or you lose!",
+        lanes: ['right', 'left', 'down', 'up'],
+        targetCount: 35,
+        spawnInterval: 1200,
+        vehicleSpeedRange: [2.8, 3.6],
+        reward: 60,
+        hasEmergency: true,
+        environment: 'day'
+      },
+      {
+        num: 10,
+        title: "🌈 Level 10: Master Controller",
+        desc: "Ultimate traffic test! Fast chaotic speeds, rain conditions, and random sirens.",
+        lanes: ['right', 'left', 'down', 'up'],
+        targetCount: 40,
+        spawnInterval: 1100,
+        vehicleSpeedRange: [3.0, 4.0],
+        reward: 60,
+        hasEmergency: true,
+        environment: 'chaos'
+      }
+    ];
+
+    // Game variables
+    let currentLevelIdx = 0;
+    let score = 0;
+    let coins = 0;
+    let passedCount = 0;
+    let savedEmergencies = 0;
+    let hasFailedThisLevel = false;
+    let trafficCompletedLevels = JSON.parse(
+  localStorage.getItem("trafficCompletedLevels") || "[]"
+);
+
+function syncTrafficProgress() {
+  const completed = trafficCompletedLevels.filter(Boolean).length;
+  const progress = Math.round((completed / 10) * 100);
+
+  localStorage.setItem("trafficCompleted", String(completed));
+  localStorage.setItem("trafficProgress", String(progress));
+
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "smart_traffic_controller",
+    progress,
+    completed,
+    coins,
+    level: currentLevelIdx + 1,
+    score,
+  }, "*");
+}
+    async function syncTrafficWalletBalance() {
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(localStorage.getItem("traffic_coins")) ||
+    0;
+
+  coins = saved;
+  updateScoreboardHUD();
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        coins = Number(balance);
+        localStorage.setItem("walletCoins", String(coins));
+        localStorage.setItem("traffic_coins", String(coins));
+        updateScoreboardHUD();
+      }
+    }
+  } catch (err) {
+    console.warn("Traffic wallet sync failed:", err);
+  }
+}
+
+async function creditTrafficCoins(amount) {
+  let finalBalance =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(coins) ||
+    0;
+
+  try {
+    const rewardResult = await window.gameSDK.rewardCoins({
+      amount,
+      description: `Smart Traffic Controller Level ${currentLevelIdx + 1} Complete`,
+      game: "smart_traffic_controller",
+      level: currentLevelIdx + 1,
+      score: score,
+    });
+
+    if (rewardResult && rewardResult.balance !== undefined) {
+      finalBalance = Number(rewardResult.balance);
+    } else {
+      const freshBalance = await window.gameSDK.getBalance();
+      if (freshBalance !== undefined && freshBalance !== null) {
+        finalBalance = Number(freshBalance);
+      }
+    }
+  } catch (err) {
+    console.error("Traffic reward error:", err);
+    finalBalance += amount;
+  }
+
+  coins = finalBalance;
+  localStorage.setItem("walletCoins", String(coins));
+  localStorage.setItem("traffic_coins", String(coins));
+
+  updateScoreboardHUD();
+
+  syncTrafficProgress();
+}
+
+function notifyTrafficProgress() {
+  syncTrafficProgress();
+}
+
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+
+  if (balance !== undefined) {
+    coins = Number(balance);
+    localStorage.setItem("walletCoins", String(coins));
+    localStorage.setItem("traffic_coins", String(coins));
+    updateScoreboardHUD();
+  }
+});
+
+    // Simulation states
+    let gameState = "START"; // START, PLAYING, WIN, FAIL
+    let vehicles = [];
+    let rainParticles = [];
+    let confettiParticles = [];
+    let floatingTexts = [];
+    let explosionAnims = [];
+    
+    // Light states
+    let lights = {
+      right: 'RED',
+      left: 'RED',
+      down: 'RED',
+      up: 'RED'
+    };
+
+    // Spawn parameters
+    let lastSpawnTime = 0;
+    let lastSirenSoundTime = 0;
+    let lastPassTime = 0;
+    let comboCount = 1;
+    let levelPerfectStatus = true; // tracking if any car's patience drops below 40%
+
+    // Gridlock timers per direction
+    let gridlockTimers = {
+      right: 0,
+      left: 0,
+      down: 0,
+      up: 0
+    };
+
+    // Canvas Element
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Initialize Levels on Menu Bar
+    function buildLevelMenu() {
+      const container = document.getElementById("level-buttons-container");
+      container.innerHTML = "";
+      levels.forEach((lvl, i) => {
+        const btn = document.createElement("button");
+        btn.className = "level-btn" + (i === currentLevelIdx ? " active" : "");
+        btn.innerText = lvl.num;
+        btn.onclick = () => {
+          Sound.playClick();
+          selectLevel(i);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    // Load Level Configuration details
+    function selectLevel(idx) {
+      currentLevelIdx = idx;
+      buildLevelMenu();
+      const cfg = levels[currentLevelIdx];
+      
+      // Setup HTML lights visual layout depends on active lanes
+      // Hide buttons if current level does not use those directions
+      document.getElementById("light-right").style.display = cfg.lanes.includes('right') ? 'flex' : 'none';
+      document.getElementById("light-left").style.display = cfg.lanes.includes('left') ? 'flex' : 'none';
+      document.getElementById("light-down").style.display = cfg.lanes.includes('down') ? 'flex' : 'none';
+      document.getElementById("light-up").style.display = cfg.lanes.includes('up') ? 'flex' : 'none';
+
+      // Setup Level Start Intro Card
+      document.getElementById("start-title").innerText = cfg.title;
+      document.getElementById("start-desc").innerText = cfg.desc;
+      
+      // Update weather labels
+      let weatherStr = cfg.environment.toUpperCase().replace('-', ' ');
+      document.getElementById("weather-val").innerText = weatherStr;
+      
+      // Configure initial states
+      gameState = "START";
+      vehicles = [];
+      rainParticles = [];
+      confettiParticles = [];
+      floatingTexts = [];
+      explosionAnims = [];
+      passedCount = 0;
+      levelPerfectStatus = true;
+
+      // Reset lights to Red
+      for (let dir in lights) {
+        lights[dir] = 'RED';
+        updateLightUI(dir);
+      }
+
+      // Fill rain particles if weather is rainy
+      if (cfg.environment.includes('rain')) {
+        for (let i = 0; i < 60; i++) {
+          rainParticles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            speedY: 8 + Math.random() * 5,
+            speedX: -2 - Math.random() * 2
+          });
+        }
+      }
+
+      // Update UI elements
+      updateScoreboardHUD();
+      
+      // Show screen overlay
+      hideOverlays();
+      document.getElementById("start-overlay").classList.add("visible");
+    }
+
+    // Toggle interactive HTML traffic light buttons
+    function toggleLight(direction) {
+      if (gameState !== "PLAYING") return;
+      Sound.playLight();
+      lights[direction] = lights[direction] === 'RED' ? 'GREEN' : 'RED';
+      updateLightUI(direction);
+    }
+
+    function updateLightUI(direction) {
+      const el = document.getElementById("light-" + direction);
+      if (!el) return;
+      const redLamp = el.querySelector(".lamp.red");
+      const greenLamp = el.querySelector(".lamp.green");
+      if (lights[direction] === 'RED') {
+        redLamp.classList.add("active");
+        greenLamp.classList.remove("active");
+      } else {
+        redLamp.classList.remove("active");
+        greenLamp.classList.add("active");
+      }
+    }
+
+    function hideOverlays() {
+      document.getElementById("start-overlay").classList.remove("visible");
+      document.getElementById("win-overlay").classList.remove("visible");
+      document.getElementById("fail-overlay").classList.remove("visible");
+    }
+
+    function startCurrentLevel() {
+      Sound.playClick();
+      hideOverlays();
+      gameState = "PLAYING";
+      lastSpawnTime = Date.now();
+      lastSirenSoundTime = Date.now();
+    }
+
+    function restartLevel() {
+      Sound.playClick();
+      selectLevel(currentLevelIdx);
+      startCurrentLevel();
+    }
+
+    function proceedToNextLevel() {
+      Sound.playClick();
+      if (currentLevelIdx < levels.length - 1) {
+        selectLevel(currentLevelIdx + 1);
+      } else {
+        selectLevel(0); // wrap around to first
+      }
+    }
+
+    // Handle instructions panel
+    function openInstructions() {
+      Sound.playClick();
+      document.getElementById("instructions-modal").classList.add("visible");
+    }
+
+    function closeInstructions() {
+      Sound.playClick();
+      document.getElementById("instructions-modal").classList.remove("visible");
+    }
+
+    // Audio mute
+    function toggleMute() {
+      Sound.muted = !Sound.muted;
+      document.getElementById("mute-icon").innerText = Sound.muted ? "🔇" : "🔊";
+      Sound.playClick();
+    }
+
+    // Updates Score, Coins values on HUD
+    function updateScoreboardHUD() {
+      const cfg = levels[currentLevelIdx];
+      document.getElementById("score-val").innerText = score;
+      document.getElementById("coins-val").innerText = coins;
+      document.getElementById("flow-val").innerText = `${passedCount}/${cfg.targetCount}`;
+      document.getElementById("emergencies-val").innerText = savedEmergencies;
+    }
+
+    // Generate Floating Texts directly on screen
+    function showFloatingText(txt, x, y, color = "#f1c40f") {
+      floatingTexts.push({
+        text: txt,
+        x: x,
+        y: y,
+        vy: -1.5,
+        alpha: 1.0,
+        color: color
+      });
+    }
+
+    // Level Completed Trigger
+    async function triggerWin() {
+      gameState = "WIN";
+      Sound.playWin();
+      
+      const cfg = levels[currentLevelIdx];
+      let winCoinsReward = cfg.reward;
+      let hasPerfectBonus = levelPerfectStatus;
+
+      if (hasPerfectBonus) {
+        winCoinsReward += 15; // +15 perfect performance bonus
+      }
+
+score += 150; // clear level score
+
+trafficCompletedLevels[currentLevelIdx] = true;
+localStorage.setItem(
+  "trafficCompletedLevels",
+  JSON.stringify(trafficCompletedLevels)
+);
+
+syncTrafficProgress();
+
+await creditTrafficCoins(winCoinsReward);
+
+      // Configure Win screen info
+      document.getElementById("win-coins").innerText = `🪙 +${winCoinsReward} Coins`;
+      const bonusEl = document.getElementById("win-bonus");
+      if (hasPerfectBonus) {
+        bonusEl.style.display = "inline";
+        bonusEl.innerText = "⭐ Perfect Escort Bonus! (+15)";
+      } else {
+        bonusEl.style.display = "none";
+      }
+
+      document.getElementById("win-summary").innerText = `Level completed safely! Escorted all ${cfg.targetCount} vehicles correctly.`;
+      
+      // Fire confetti particles
+      for (let i = 0; i < 100; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -200,
+          color: `hsl(${Math.random() * 360}, 90%, 60%)`,
+          size: Math.random() * 8 + 4,
+          speedY: 3 + Math.random() * 4,
+          speedX: Math.random() * 4 - 2,
+          rotation: Math.random() * 360,
+          rotationSpeed: Math.random() * 8 - 4
+        });
+      }
+
+      // Hide or show Next Level button on final stage
+      const nextBtn = document.getElementById("next-lvl-btn");
+      if (currentLevelIdx === levels.length - 1) {
+        nextBtn.innerText = "🔄 Start Over First Level";
+      } else {
+        nextBtn.innerText = "Next Level ➡️";
+      }
+
+      document.getElementById("win-overlay").classList.add("visible");
+    }
+
+    // Level Crash or Gridlock Fail Trigger
+    function triggerFail(reasonText, tx = null, ty = null) {
+      gameState = "FAIL";
+      Sound.playLose();
+
+      if (tx !== null && ty !== null) {
+        // Build beautiful expanding circles explosion
+        explosionAnims.push({
+          x: tx,
+          y: ty,
+          radius: 10,
+          maxRadius: 75,
+          alpha: 1.0
+        });
+        Sound.playCrash();
+      }
+
+      document.getElementById("fail-title").innerText = tx !== null ? "💥 Collided!" : "🚦 Gridlock Blockade!";
+      document.getElementById("fail-desc").innerText = reasonText;
+      document.getElementById("fail-overlay").classList.add("visible");
+    }
+
+    // Vehicle Spawning Logic
+    function attemptSpawnVehicle() {
+      const cfg = levels[currentLevelIdx];
+      const now = Date.now();
+      if (now - lastSpawnTime < cfg.spawnInterval) return;
+
+      // Select random allowed lane direction
+      const randomDirection = cfg.lanes[Math.floor(Math.random() * cfg.lanes.length)];
+      
+      // Prevent overlapping spawn by checking if lane boundary is clear
+      let spawnBlocked = false;
+      const safeDistanceBoundary = 110;
+
+      vehicles.forEach(v => {
+        if (v.direction === randomDirection) {
+          if (randomDirection === 'right' && v.x < safeDistanceBoundary) spawnBlocked = true;
+          if (randomDirection === 'left' && v.x > canvas.width - safeDistanceBoundary) spawnBlocked = true;
+          if (randomDirection === 'down' && v.y < safeDistanceBoundary) spawnBlocked = true;
+          if (randomDirection === 'up' && v.y > canvas.height - safeDistanceBoundary) spawnBlocked = true;
+        }
+      });
+
+      if (spawnBlocked) return; // delay spawn until lane clears
+
+      // Determine vehicle archetype
+      let type = 'car';
+      let emoji = '🚗';
+      let color = '#3498db';
+      let length = 46;
+      let width = 28;
+      let isEmergency = false;
+
+      const randType = Math.random();
+      if (cfg.hasEmergency && randType < 0.12) {
+        // Ambulance
+        type = 'ambulance';
+        emoji = '🚑';
+        color = '#ffffff';
+        isEmergency = true;
+      } else if (cfg.hasEmergency && randType >= 0.12 && randType < 0.18) {
+        // Fire truck
+        type = 'firetruck';
+        emoji = '🚒';
+        color = '#e74c3c';
+        isEmergency = true;
+      } else if (cfg.hasEmergency && randType >= 0.18 && randType < 0.28) {
+        // School bus
+        type = 'schoolbus';
+        emoji = '🏫';
+        color = '#f1c40f';
+        length = 56;
+        width = 30;
+      } else {
+        // Normal random assortment
+        const randomVeh = Math.floor(Math.random() * 4);
+        if (randomVeh === 0) {
+          type = 'car';
+          emoji = '🚗';
+          color = ['#3498db', '#9b59b6', '#2ecc71', '#1abc9c'][Math.floor(Math.random() * 4)];
+        } else if (randomVeh === 1) {
+          type = 'bus';
+          emoji = '🚌';
+          color = '#e67e22';
+          length = 56;
+          width = 30;
+        } else if (randomVeh === 2) {
+          type = 'truck';
+          emoji = '🚚';
+          color = '#95a5a6';
+          length = 52;
+          width = 30;
+        } else {
+          type = 'bike';
+          emoji = '🏍';
+          color = '#34495e';
+          length = 32;
+          width = 18;
+        }
+      }
+
+      // Spawn coordinates relative to 800x600 canvas coordinate map
+      let x = 0, y = 0;
+      if (randomDirection === 'right') {
+        x = -length;
+        y = 312; // lower horizontal lane (Eastbound)
+      } else if (randomDirection === 'left') {
+        x = canvas.width;
+        y = 262; // upper horizontal lane (Westbound)
+      } else if (randomDirection === 'down') {
+        x = 362; // left vertical lane (Southbound)
+        y = -length;
+      } else if (randomDirection === 'up') {
+        x = 412; // right vertical lane (Northbound)
+        y = canvas.height;
+      }
+
+      const spRange = cfg.vehicleSpeedRange;
+      const baseSpeed = spRange[0] + Math.random() * (spRange[1] - spRange[0]);
+
+      vehicles.push({
+        type: type,
+        emoji: emoji,
+        color: color,
+        isEmergency: isEmergency,
+        direction: randomDirection,
+        x: x,
+        y: y,
+        width: randomDirection === 'right' || randomDirection === 'left' ? length : width,
+        height: randomDirection === 'right' || randomDirection === 'left' ? width : length,
+        speed: baseSpeed,
+        maxSpeed: isEmergency ? baseSpeed * 1.35 : baseSpeed,
+        patience: 100, // drops when speed is zero/stopped
+        passedIntersection: false
+      });
+
+      lastSpawnTime = now;
+    }
+
+    // Central Update Logic Loop
+    function updateFrame() {
+      if (gameState === "PLAYING") {
+        attemptSpawnVehicle();
+        updateGameObjects();
+      } else if (gameState === "WIN") {
+        updateConfetti();
+      }
+      
+      drawCanvas();
+      requestAnimationFrame(updateFrame);
+    }
+
+    function updateGameObjects() {
+      const cfg = levels[currentLevelIdx];
+      let activeSirenExists = false;
+
+      // Group vehicles by their paths
+      const lanesMap = { right: [], left: [], down: [], up: [] };
+      vehicles.forEach(v => {
+        lanesMap[v.direction].push(v);
+        if (v.isEmergency && !v.passedIntersection) {
+          activeSirenExists = true;
+        }
+      });
+
+      // Show/Hide siren alert overlay banner
+      const banner = document.getElementById("emergency-banner");
+      if (activeSirenExists) {
+        banner.style.display = "flex";
+        // Play blip siren sound periodically
+        const now = Date.now();
+        if (now - lastSirenSoundTime > 600) {
+          Sound.playSiren();
+          lastSirenSoundTime = now;
+        }
+      } else {
+        banner.style.display = "none";
+      }
+
+      // Sort lanes so index 0 is closest to intersection (leading)
+      lanesMap['right'].sort((a, b) => b.x - a.x);
+      lanesMap['left'].sort((a, b) => a.x - b.x);
+      lanesMap['down'].sort((a, b) => b.y - a.y);
+      lanesMap['up'].sort((a, b) => a.y - b.y);
+
+      // Perform updates per lane path
+      for (let dir in lanesMap) {
+        let laneList = lanesMap[dir];
+        let stoppedCount = 0;
+
+        for (let i = 0; i < laneList.length; i++) {
+          let v = laneList[i];
+          let targetSpeed = v.maxSpeed;
+          let isLightRed = (lights[dir] === 'RED');
+
+          // Target boundaries calculations
+          let stopLine = 0;
+          let vehicleLeadingEdge = 0;
+
+          if (dir === 'right') {
+            stopLine = 310;
+            vehicleLeadingEdge = v.x + v.width;
+            if (isLightRed && vehicleLeadingEdge < stopLine) {
+              let dist = stopLine - vehicleLeadingEdge;
+              if (dist < 100) targetSpeed = Math.max(0, v.maxSpeed * (dist / 100));
+            }
+          } else if (dir === 'left') {
+            stopLine = 490;
+            vehicleLeadingEdge = v.x;
+            if (isLightRed && vehicleLeadingEdge > stopLine) {
+              let dist = vehicleLeadingEdge - stopLine;
+              if (dist < 100) targetSpeed = Math.max(0, v.maxSpeed * (dist / 100));
+            }
+          } else if (dir === 'down') {
+            stopLine = 210;
+            vehicleLeadingEdge = v.y + v.height;
+            if (isLightRed && vehicleLeadingEdge < stopLine) {
+              let dist = stopLine - vehicleLeadingEdge;
+              if (dist < 100) targetSpeed = Math.max(0, v.maxSpeed * (dist / 100));
+            }
+          } else if (dir === 'up') {
+            stopLine = 390;
+            vehicleLeadingEdge = v.y;
+            if (isLightRed && vehicleLeadingEdge > stopLine) {
+              let dist = vehicleLeadingEdge - stopLine;
+              if (dist < 100) targetSpeed = Math.max(0, v.maxSpeed * (dist / 100));
+            }
+          }
+
+          // Follow the leading car logic to avoid pile-ups
+          if (i > 0) {
+            let ahead = laneList[i-1];
+            let spacing = 0;
+
+            if (dir === 'right') spacing = ahead.x - (v.x + v.width);
+            else if (dir === 'left') spacing = v.x - (ahead.x + ahead.width);
+            else if (dir === 'down') spacing = ahead.y - (v.y + v.height);
+            else if (dir === 'up') spacing = v.y - (ahead.y + ahead.height);
+
+            const bufferSafe = 18;
+            const bufferSlow = 75;
+
+            if (spacing < bufferSlow) {
+              if (spacing <= bufferSafe) {
+                targetSpeed = 0;
+              } else {
+                let scaling = (spacing - bufferSafe) / (bufferSlow - bufferSafe);
+                targetSpeed = Math.min(targetSpeed, ahead.speed * scaling);
+              }
+            }
+          }
+
+          // Physics application with slide mechanics for rainy levels
+          let brakesEase = 0.16;
+          if (cfg.environment.includes('rain') && targetSpeed === 0) {
+            brakesEase = 0.07; // slippery slide
+          }
+
+          v.speed += (targetSpeed - v.speed) * brakesEase;
+          if (v.speed < 0.05) v.speed = 0;
+
+          // Apply physical offset movement
+          if (dir === 'right') v.x += v.speed;
+          else if (dir === 'left') v.x -= v.speed;
+          else if (dir === 'down') v.y += v.speed;
+          else if (dir === 'up') v.y -= v.speed;
+
+          // Process Patience ticks
+          if (v.speed < 0.25 && !v.passedIntersection) {
+            stoppedCount++;
+            v.patience -= v.isEmergency ? 0.32 : 0.11;
+            
+            if (v.patience < 40) {
+              levelPerfectStatus = false; // lose perfect level coin bonus
+            }
+
+            if (v.patience <= 0) {
+              v.patience = 0;
+              if (v.isEmergency) {
+                triggerFail("Emergency lives are at risk! 🚑 You blocked an active siren vehicle for too long.");
+                return;
+              }
+            }
+          } else {
+            if (v.patience < 100) v.patience += 0.06;
+          }
+
+          // Handle safe passage trigger beyond crosswalk boundary
+          if (!v.passedIntersection) {
+            let exitedIntersection = false;
+            if (dir === 'right' && v.x > 455) exitedIntersection = true;
+            else if (dir === 'left' && v.x + v.width < 345) exitedIntersection = true;
+            else if (dir === 'down' && v.y > 355) exitedIntersection = true;
+            else if (dir === 'up' && v.y + v.height < 245) exitedIntersection = true;
+
+            if (exitedIntersection) {
+              v.passedIntersection = true;
+              passedCount++;
+              score += 10;
+              Sound.playPass();
+
+              // Combo tracker
+              const clickNow = Date.now();
+              if (clickNow - lastPassTime < 1600) {
+                comboCount++;
+                score += comboCount * 5;
+                showFloatingText(`Combo x${comboCount}! +${comboCount * 5}`, v.x + v.width/2, v.y + v.height/2);
+              } else {
+                comboCount = 1;
+                showFloatingText(`+10`, v.x + v.width/2, v.y + v.height/2, "#2ecc71");
+              }
+              lastPassTime = clickNow;
+
+              if (v.type === 'schoolbus') {
+                score += 15;
+                showFloatingText(`🏫 Kids Safe! +15`, v.x, v.y, "#f1c40f");
+              } else if (v.isEmergency) {
+                score += 25;
+                savedEmergencies++;
+                showFloatingText(`🚨 Saved! +25`, v.x, v.y, "#e74c3c");
+              }
+
+              updateScoreboardHUD();
+              notifyTrafficProgress();
+
+              // Win State Trigger check
+              if (passedCount >= cfg.targetCount) {
+                triggerWin();
+                return;
+              }
+            }
+          }
+        }
+
+        // Gridlock blockage logic check
+        if (stoppedCount >= 5) {
+          gridlockTimers[dir] += 1;
+          if (gridlockTimers[dir] > 260) { // roughly ~4.3 seconds at 60 fps
+            triggerFail(`Gridlock Grid Alert! Too many blocked cars piled up on the entrance routes.`);
+            return;
+          }
+        } else {
+          gridlockTimers[dir] = 0;
+        }
+      }
+
+      // Filter out off-screen exited vehicles
+      vehicles = vehicles.filter(v => {
+        if (v.direction === 'right' && v.x > canvas.width + 100) return false;
+        if (v.direction === 'left' && v.x + v.width < -100) return false;
+        if (v.direction === 'down' && v.y > canvas.height + 100) return false;
+        if (v.direction === 'up' && v.y + v.height < -100) return false;
+        return true;
+      });
+
+      // Update weather effect animations
+      if (cfg.environment.includes('rain')) {
+        rainParticles.forEach(p => {
+          p.y += p.speedY;
+          p.x += p.speedX;
+          if (p.y > canvas.height) {
+            p.y = -20;
+            p.x = Math.random() * canvas.width;
+          }
+        });
+      }
+
+      // Update floating score visual texts
+      floatingTexts.forEach((ft, i) => {
+        ft.y += ft.vy;
+        ft.alpha -= 0.016;
+        if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+      });
+
+      // Active collision detections in mid of intersection box
+      checkIntersectionCollisions();
+    }
+
+    // Direct collision checking logic
+    function checkIntersectionCollisions() {
+      const midIntersectionLeft = 345;
+      const midIntersectionRight = 455;
+      const midIntersectionTop = 245;
+      const midIntersectionBottom = 355;
+
+      for (let i = 0; i < vehicles.length; i++) {
+        let v1 = vehicles[i];
+        if (v1.passedIntersection) continue;
+
+        // Check is v1 currently in target central box
+        let inV1 = (v1.x + v1.width > midIntersectionLeft && v1.x < midIntersectionRight &&
+                    v1.y + v1.height > midIntersectionTop && v1.y < midIntersectionBottom);
+
+        if (!inV1) continue;
+
+        for (let j = i + 1; j < vehicles.length; j++) {
+          let v2 = vehicles[j];
+          if (v2.passedIntersection || v1.direction === v2.direction) continue;
+
+          let inV2 = (v2.x + v2.width > midIntersectionLeft && v2.x < midIntersectionRight &&
+                      v2.y + v2.height > midIntersectionTop && v2.y < midIntersectionBottom);
+
+          if (!inV2) continue;
+
+          // Bounding intersection checks
+          if (v1.x < v2.x + v2.width &&
+              v1.x + v1.width > v2.x &&
+              v1.y < v2.y + v2.height &&
+              v1.y + v1.height > v2.y) {
+            // CRASH IMPACT
+            let impactX = (Math.max(v1.x, v2.x) + Math.min(v1.x + v1.width, v2.x + v2.width)) / 2;
+            let impactY = (Math.max(v1.y, v2.y) + Math.min(v1.y + v1.height, v2.y + v2.height)) / 2;
+            triggerFail("Drive safe! Keep opposite traffic flows separated.", impactX, impactY);
+            return;
+          }
+        }
+      }
+    }
+
+    // Victory confetti updater
+    function updateConfetti() {
+      confettiParticles.forEach((p, i) => {
+        p.y += p.speedY;
+        p.x += p.speedX;
+        p.rotation += p.rotationSpeed;
+        if (p.y > canvas.height + 20) {
+          confettiParticles.splice(i, 1);
+        }
+      });
+    }
+
+    // Draw Roads, Crosswalk markings, Parks, Trees
+    function drawCanvas() {
+      const cfg = levels[currentLevelIdx];
+      const env = cfg.environment;
+      
+      let colorGrass = "#a2e8b4";
+      let colorAsphalt = "#4d5656";
+      let colorLine = "#ffffff";
+
+      // Toggle environment visual theme
+      if (env === 'night' || env === 'night-rain') {
+        colorGrass = "#1e3f20";
+        colorAsphalt = "#2c3e50";
+        colorLine = "#bdc3c7";
+      } else if (env === 'chaos') {
+        // Rainbow glowing chaotic shifting colors
+        let rHue = Math.floor(Date.now() / 20) % 360;
+        colorGrass = `hsl(${rHue}, 40%, 35%)`;
+        colorAsphalt = "#242d38";
+      }
+
+      // Draw lawn background
+      ctx.fillStyle = colorGrass;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw horizontal road (E-W)
+      ctx.fillStyle = colorAsphalt;
+      ctx.fillRect(0, 250, canvas.width, 100);
+
+      // Draw vertical road (N-S)
+      ctx.fillStyle = colorAsphalt;
+      ctx.fillRect(350, 0, 100, canvas.height);
+
+      // Draw divider double yellow lanes
+      ctx.fillStyle = "#f1c40f";
+      // Horizontal lane divider
+      ctx.fillRect(0, 298, canvas.width, 4);
+      // Vertical lane divider
+      ctx.fillRect(398, 0, 4, canvas.height);
+
+      // Draw outer road borders
+      ctx.fillStyle = colorLine;
+      ctx.fillRect(0, 250, canvas.width, 3);
+      ctx.fillRect(0, 347, canvas.width, 3);
+      ctx.fillRect(350, 0, 3, canvas.height);
+      ctx.fillRect(447, 0, 3, canvas.height);
+
+      // Draw intersection boundaries markings (crosswalk zones)
+      drawZebraStripes(312, 250, 8, 100, true);  // Left (West) road exit
+      drawZebraStripes(480, 250, 8, 100, true);  // Right (East) road exit
+      drawZebraStripes(350, 212, 100, 8, false); // Top (North) road exit
+      drawZebraStripes(350, 380, 100, 8, false); // Bottom (South) road exit
+
+      // Decorative visual objects (Parks and trees inside grass zones)
+      drawSidewalkParkTrees(colorGrass === "#1e3f20");
+
+      // Draw gridlock warning prompts
+      drawGridlockWarnings();
+
+      // Render active vehicles on screen
+      vehicles.forEach(v => {
+        drawVehicle(v, env);
+      });
+
+      // Rain drop effects
+      if (env.includes('rain')) {
+        ctx.strokeStyle = "rgba(174, 214, 241, 0.4)";
+        ctx.lineWidth = 1.5;
+        rainParticles.forEach(p => {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + p.speedX, p.y + p.speedY);
+          ctx.stroke();
+        });
+      }
+
+      // Draw Explosion Animations on crash failures
+      explosionAnims.forEach((exp, idx) => {
+        ctx.save();
+        ctx.fillStyle = `rgba(230, 126, 34, ${exp.alpha})`;
+        ctx.beginPath();
+        ctx.arc(exp.x, exp.y, exp.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(241, 196, 15, ${exp.alpha * 0.9})`;
+        ctx.beginPath();
+        ctx.arc(exp.x, exp.y, exp.radius * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        exp.radius += 2.5;
+        exp.alpha -= 0.02;
+        if (exp.alpha <= 0) {
+          explosionAnims.splice(idx, 1);
+        }
+      });
+
+      // Render floating status texts
+      floatingTexts.forEach(ft => {
+        ctx.save();
+        ctx.fillStyle = ft.color;
+        ctx.font = "bold 16px 'Segoe UI', Arial";
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = 4;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      });
+
+      // Draw Confetti Overlay on complete
+      if (gameState === "WIN") {
+        confettiParticles.forEach(p => {
+          ctx.save();
+          ctx.fillStyle = p.color;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation * Math.PI / 180);
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+        });
+      }
+    }
+
+    // Zebra crosswalk utility drawing
+    function drawZebraStripes(x, y, w, h, isVertical) {
+      ctx.fillStyle = "rgba(255,255,255,0.75)";
+      const divisionsCount = 6;
+      if (isVertical) {
+        let stripeHeight = h / divisionsCount;
+        for (let i = 0; i < divisionsCount; i++) {
+          if (i % 2 === 0) {
+            ctx.fillRect(x, y + (i * stripeHeight), w, stripeHeight);
+          }
+        }
+      } else {
+        let stripeWidth = w / divisionsCount;
+        for (let i = 0; i < divisionsCount; i++) {
+          if (i % 2 === 0) {
+            ctx.fillRect(x + (i * stripeWidth), y, stripeWidth, h);
+          }
+        }
+      }
+    }
+
+    // Tree aesthetics
+    function drawSidewalkParkTrees(isNight) {
+      const treeColor = isNight ? "#113013" : "#27ae60";
+      const shadowColor = "rgba(0,0,0,0.15)";
+      const positions = [
+        {x: 80, y: 80}, {x: 180, y: 110}, {x: 620, y: 90}, {x: 720, y: 130},
+        {x: 100, y: 480}, {x: 150, y: 520}, {x: 640, y: 490}, {x: 710, y: 530}
+      ];
+      positions.forEach(pos => {
+        ctx.beginPath();
+        ctx.fillStyle = shadowColor;
+        ctx.arc(pos.x + 3, pos.y + 3, 16, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.fillStyle = treeColor;
+        ctx.arc(pos.x, pos.y, 16, 0, Math.PI*2);
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.fillStyle = isNight ? "#17441b" : "#2ecc71";
+        ctx.arc(pos.x - 2, pos.y - 2, 10, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+
+    // Blinking gridlock alerts over crowded lanes
+    function drawGridlockWarnings() {
+      const pulseColor = Math.floor(Date.now() / 250) % 2 === 0 ? "rgba(231, 76, 60, 0.45)" : "rgba(231, 76, 60, 0.05)";
+      
+      for (let dir in gridlockTimers) {
+        if (gridlockTimers[dir] > 60) {
+          ctx.save();
+          ctx.fillStyle = pulseColor;
+          
+          let alertLabelText = "";
+          let labelX = 0, labelY = 0;
+
+          // Draw red glowing danger area overlay and calculate indicator labels
+          if (dir === 'right') {
+            ctx.fillRect(0, 250, 310, 100);
+            alertLabelText = "⚠️ GRIDLOCK RISK WEST ROAD!";
+            labelX = 140; labelY = 275;
+          } else if (dir === 'left') {
+            ctx.fillRect(490, 250, 310, 100);
+            alertLabelText = "⚠️ GRIDLOCK RISK EAST ROAD!";
+            labelX = 580; labelY = 275;
+          } else if (dir === 'down') {
+            ctx.fillRect(350, 0, 100, 210);
+            alertLabelText = "⚠️ GRIDLOCK TOP!";
+            labelX = 400; labelY = 120;
+          } else if (dir === 'up') {
+            ctx.fillRect(350, 390, 100, 210);
+            alertLabelText = "⚠️ GRIDLOCK BOTTOM!";
+            labelX = 400; labelY = 480;
+          }
+
+          // Blinking countdown display text warning
+          ctx.fillStyle = "#ff0000";
+          ctx.font = "bold 12px Arial";
+          ctx.textAlign = "center";
+          
+          let remSeconds = Math.max(1, Math.ceil((260 - gridlockTimers[dir]) / 60));
+          ctx.fillText(alertLabelText, labelX, labelY);
+          ctx.fillText(`CLEAR ROAD IN: ${remSeconds}s`, labelX, labelY + 16);
+          ctx.restore();
+        }
+      }
+    }
+
+    // Draw customized detailed vehicles on canvas context map
+    function drawVehicle(v, env) {
+      ctx.save();
+      ctx.translate(v.x, v.y);
+
+      // Night Headlights Cone Gradient rendering
+      if (env === 'night' || env === 'night-rain') {
+        const hGrad = ctx.createRadialGradient(v.width/2, v.height/2, 10, v.width/2, v.height/2, 110);
+        hGrad.addColorStop(0, "rgba(254, 249, 195, 0.4)");
+        hGrad.addColorStop(1, "rgba(254, 249, 195, 0.0)");
+        
+        ctx.fillStyle = hGrad;
+        ctx.beginPath();
+        if (v.direction === 'right') {
+          ctx.moveTo(v.width, 2);
+          ctx.lineTo(v.width + 100, -25);
+          ctx.lineTo(v.width + 100, v.height + 25);
+        } else if (v.direction === 'left') {
+          ctx.moveTo(0, 2);
+          ctx.lineTo(-100, -25);
+          ctx.lineTo(-100, v.height + 25);
+        } else if (v.direction === 'down') {
+          ctx.moveTo(2, v.height);
+          ctx.lineTo(-25, v.height + 100);
+          ctx.lineTo(v.width + 25, v.height + 100);
+        } else if (v.direction === 'up') {
+          ctx.moveTo(2, 0);
+          ctx.lineTo(-25, -100);
+          ctx.lineTo(v.width + 25, -100);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Rounded rect main body
+      ctx.fillStyle = v.color;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, v.width, v.height, 6);
+      ctx.fill();
+
+      // Black details border outline
+      ctx.strokeStyle = "rgba(0,0,0,0.15)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Render windows / windscreen glass detail
+      ctx.fillStyle = "rgba(135, 211, 248, 0.7)";
+      if (v.direction === 'right') {
+        ctx.fillRect(v.width - 12, 3, 6, v.height - 6);
+        ctx.fillRect(8, 3, 5, v.height - 6);
+      } else if (v.direction === 'left') {
+        ctx.fillRect(6, 3, 6, v.height - 6);
+        ctx.fillRect(v.width - 13, 3, 5, v.height - 6);
+      } else if (v.direction === 'down') {
+        ctx.fillRect(3, v.height - 12, v.width - 6, 6);
+        ctx.fillRect(3, 8, v.width - 6, 5);
+      } else if (v.direction === 'up') {
+        ctx.fillRect(3, 6, v.width - 6, 6);
+        ctx.fillRect(3, v.height - 13, v.width - 6, 5);
+      }
+
+      // Emergency flasher strobe system
+      if (v.isEmergency) {
+        let cycle = Math.floor(Date.now() / 120) % 2 === 0;
+        ctx.fillStyle = cycle ? "#f00" : "#00f";
+        ctx.beginPath();
+        ctx.arc(v.width / 2, v.height / 2, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw inside Emoji
+      ctx.font = "14px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(v.emoji, v.width / 2, v.height / 2);
+
+      // Patience indicators bar above stopped vehicles
+      if (v.patience < 85 && !v.passedIntersection) {
+        let barW = v.width * 0.8;
+        let barX = (v.width - barW) / 2;
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillRect(barX, -9, barW, 4);
+
+        let fillCol = "#2ecc71";
+        if (v.patience < 35) fillCol = "#f1c40f";
+        if (v.patience < 18) fillCol = "#e74c3c";
+        
+        ctx.fillStyle = fillCol;
+        ctx.fillRect(barX, -9, barW * (v.patience / 100), 4);
+
+        // Angry bubble icon above extremely waiting cars
+        if (v.patience < 35) {
+          ctx.font = "12px Arial";
+          ctx.fillText("😡", v.width / 2, -18);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    // Startup Execution trigger
+    window.onload = async () => {
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+  }
+
+  buildLevelMenu();
+  selectLevel(0);
+  await syncTrafficWalletBalance();
+  updateFrame();
+};
+  </script>
+</body>
+</html>

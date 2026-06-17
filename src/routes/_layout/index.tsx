@@ -107,6 +107,26 @@ const games: Game[] = [
   time: "10 min",
   accent: "from-purple-500/20 to-pink-500/5"
 },
+{
+  title: "Smart Traffic Controller",
+  icon: "🚦",
+  image: "/images/smart-traffic.png",
+  difficulty: "Intermediate",
+  progress: 0,
+  xp: 180,
+  time: "12 min",
+  accent: "from-red-500/20 to-yellow-500/5"
+},
+{
+  title: "Water Color Sort Puzzle",
+  icon: "🧪",
+  image: "/images/water-color-sort.png",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 160,
+  time: "10 min",
+  accent: "from-blue-500/20 to-cyan-500/5"
+},
 ];
 
 // const sidebarItems = [
@@ -447,6 +467,14 @@ const [bubbleMathStats, setBubbleMathStats] = useState({
   completed: 0,
   time: "0 min",
 });
+
+const [trafficStats, setTrafficStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
   const {
   coins: walletCoins,
   setCoins: setWalletCoins,
@@ -1294,6 +1322,51 @@ useEffect(() => {
 }, []);
 
 
+useEffect(() => {
+  const loadTrafficProgress = () => {
+    const completed =
+      Number(localStorage.getItem("trafficCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("trafficProgress")) ||
+      Math.round((completed / 10) * 100) ||
+      0;
+
+    setTrafficStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadTrafficProgress();
+
+  const handleTrafficMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "smart_traffic_controller"
+    ) {
+      setTrafficStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+        time: `${event.data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadTrafficProgress);
+  window.addEventListener("storage", loadTrafficProgress);
+  window.addEventListener("message", handleTrafficMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadTrafficProgress);
+    window.removeEventListener("storage", loadTrafficProgress);
+    window.removeEventListener("message", handleTrafficMessage);
+  };
+}, []);
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -1371,6 +1444,7 @@ useEffect(() => {
   sortStats={sortStats}
   motorBoatStats={motorBoatStats}
   bubbleMathStats={bubbleMathStats}
+  trafficStats={trafficStats}
   searchTerm={searchTerm}
   
 />
@@ -1769,6 +1843,7 @@ const GamesSection = memo(function GamesSection({
   sortStats,
   motorBoatStats,
   bubbleMathStats,
+  trafficStats,
   searchTerm,
 }: any) {
 const filteredGames = games.filter((g) =>
@@ -1868,6 +1943,13 @@ const filteredGames = games.filter((g) =>
     xp: bubbleMathStats.coins,
     time: bubbleMathStats.time,
   }
+  : g.title === "Smart Traffic Controller"
+? {
+    ...g,
+    progress: trafficStats.progress,
+    xp: trafficStats.coins,
+    time: trafficStats.time,
+  }
 : g.title === "Connect the Water Pipes"
 ? {
     ...g,
@@ -1942,6 +2024,14 @@ if (game.title === "Motor Boat") {
 
 if (game.title === "Bubble Maths Challenge") {
   window.open("/bubble_math_challenge.html", "_blank");
+}
+
+if (game.title === "Smart Traffic Controller") {
+  window.open("/traffic.html", "_blank");
+}
+
+if (game.title === "Water Color Sort Puzzle") {
+  window.open("/color-sort.html", "_blank");
 }
   }}
 

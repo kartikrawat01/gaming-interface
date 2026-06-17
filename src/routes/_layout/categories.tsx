@@ -183,6 +183,24 @@ const games: Game[] = [
   progress: 0,
   accent: "from-purple-400/30 to-pink-500/20",
 },
+{
+  title: "Smart Traffic Controller",
+  icon: "🚦",
+  image: "/images/smart-traffic.png",
+  category: "Logic & Puzzles",
+  difficulty: "Intermediate",
+  progress: 0,
+  accent: "from-red-400/30 to-yellow-500/20",
+},
+{
+  title: "Water Color Sort Puzzle",
+  icon: "🧪",
+  image: "/images/water-color-sort.png",
+  category: "Logic & Puzzles",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-blue-400/30 to-cyan-500/20",
+},
 ];
 
 const difficultyStyles = {
@@ -456,6 +474,13 @@ if (game.title === "Motor Boat") {
 if (game.title === "Bubble Maths Challenge") {
   window.open("/bubble_math_challenge.html", "_blank");
 }
+if (game.title === "Smart Traffic Controller") {
+  window.open("/traffic.html", "_blank");
+}
+
+if (game.title === "Water Color Sort Puzzle") {
+  window.open("/color-sort.html", "_blank");
+}
 }}
               >
                 {/* Top */}
@@ -554,6 +579,13 @@ if (game.title === "Motor Boat") {
 
 if (game.title === "Bubble Maths Challenge") {
   window.open("/bubble_math_challenge.html", "_blank");
+}
+if (game.title === "Smart Traffic Controller") {
+  window.open("/traffic.html", "_blank");
+}
+
+if (game.title === "Water Color Sort Puzzle") {
+  window.open("/color-sort.html", "_blank");
 }
 }}
                   >
