@@ -882,9 +882,10 @@
 
     <script>
         let state = {
-            coins: 0,
-            completedLevels: []
-        };
+    coins: 0,
+    completedLevels: [],
+    walletRewardedLevels: []
+};
 
         async function syncWaterSortWalletBalance() {
     const saved =
@@ -989,6 +990,13 @@ window.addEventListener("walletUpdated", (e) => {
             if (saved) {
                 try {
                     state = JSON.parse(saved);
+                    if (!Array.isArray(state.completedLevels)) {
+    state.completedLevels = [];
+}
+
+if (!Array.isArray(state.walletRewardedLevels)) {
+    state.walletRewardedLevels = [];
+}
                 } catch(e) {
                     console.error("Corrupted state, resetting", e);
                 }
@@ -1626,19 +1634,21 @@ localStorage.setItem("colorSortProgress", String(progress));
             startConfetti();
 
             const isFirstComplete = !state.completedLevels.includes(currentLevel);
-            const reward = getLevelReward(currentLevel);
+const isWalletRewarded = state.walletRewardedLevels.includes(currentLevel);
+const reward = getLevelReward(currentLevel);
 
-            if (isFirstComplete) {
-
+if (isFirstComplete) {
     state.completedLevels.push(currentLevel);
-
-    await creditWaterSortCoins(reward);
-
-} else {
-
-    updateCoinDisplays();
-
 }
+
+if (!isWalletRewarded) {
+    state.walletRewardedLevels.push(currentLevel);
+    await creditWaterSortCoins(reward);
+} else {
+    updateCoinDisplays();
+    saveState();
+}
+
 
             setTimeout(() => {
                 const phrases = ["Super Job! 🌟", "Amazing! 🏆", "Brilliant! 🎨", "Awesome! 🎉", "Genius! 🧠", "Fabulous! ✨"];
