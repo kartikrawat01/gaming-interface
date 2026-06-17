@@ -741,7 +741,7 @@
         <!-- GLOBAL TOP BAR -->
         <div class="top-bar">
             <div class="brand-logo-container">
-                <img src="assets/logocre8v.png" alt="BeCre8v Logo" class="brand-logo">
+                <img src="/assets/logo.png" alt="BeCre8v Logo" class="brand-logo">
             </div>
             <button class="perm-how-btn" onclick="openHowToPlay()">💡 How to Play</button>
         </div>
@@ -782,21 +782,6 @@
                     🪙 <span id="map-coin-count">0</span>
                 </div>
             </div>
-            <div class="progress-wrapper">
-
-    <div class="progress-bar">
-        <div
-            id="progress-fill"
-            class="progress-fill">
-        </div>
-
-    </div>
-
-    <div id="progress-text">
-        0%
-    </div>
-
-</div>
 
             <div class="levels-grid-container">
                 <div class="levels-grid" id="levels-grid"></div>
@@ -894,15 +879,12 @@
 
     <script>
         let gameStats = {
-
     totalCoinsEarned: 0,
-
     levelsCompleted: 0,
-
     progress: 0
-
 };
 let gameProgress = 0;
+const TOTAL_LEVELS = 25;
         let state = {
     completedLevels: []
 };
@@ -938,32 +920,27 @@ let walletCoins = 0;
         function saveState() {
             localStorage.setItem('water_sort_puzzle_save', JSON.stringify(state));
             updateCoinDisplays();
-            updateProgressBar();
         }
-        function syncProgress(){
+       function syncProgress() {
 
     const percent =
         Math.round(
-            (state.completedLevels.length / 25) * 100
+            (state.completedLevels.length / TOTAL_LEVELS) * 100
         );
+
+    gameProgress = percent;
 
     localStorage.setItem(
         "waterSortProgress",
         percent
     );
 
-    gameProgress = percent;
     window.parent.postMessage({
-    type: "GAME_PROGRESS_UPDATE",
-
-    game: "water-sort",
-
-    progress: gameProgress,
-
-    completedLevels:
-        state.completedLevels.length
-
-}, "*");
+        type: "GAME_PROGRESS_UPDATE",
+        game: "water-sort",
+        progress: percent,
+        completedLevels: state.completedLevels.length
+    }, "*");
 }
 
         function updateCoinDisplays() {
@@ -996,23 +973,7 @@ let walletCoins = 0;
     walletCoins
 );
 }
-function updateProgressBar(){
 
-    const percent =
-        Math.round(
-            (state.completedLevels.length/25)*100
-        );
-
-    document.getElementById(
-        "progress-fill"
-    ).style.width =
-        percent + "%";
-
-    document.getElementById(
-        "progress-text"
-    ).innerText =
-        percent + "%";
-}
         let audioCtx = null;
 
         function playSound(type) {
