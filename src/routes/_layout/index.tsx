@@ -49,18 +49,18 @@ type Game = {
 };
 
 const games: Game[] = [
-  { title: "Logic Maze", icon: "🧩", image: "/images/logic-maze.png", difficulty: "Beginner", progress: 0, xp: 120, time: "10 min", accent: "from-secondary/30 to-primary/10" },
-  { title: "Brain Blast", icon: "🔁", image: "/images/brain-blast.png", difficulty: "Intermediate", progress: 0, xp: 150, time: "12 min", accent: "from-indigo-500/20 to-indigo-500/5" },
-  { title: "Trivia", icon: "🐛", image: "/images/trivia.png",difficulty: "Intermediate", progress: 30, xp: 220, time: "18 min", accent: "from-violet-500/20 to-violet-500/5" },
-  { title: "Zip", icon: "⚔️", image: "/images/zip-master.png", difficulty: "Intermediate", progress: 0, xp: 240, time: "20 min", accent: "from-emerald-500/20 to-emerald-500/5" },
-  { title: "Stop Motion Studio",image: "/images/stop-motion.png", icon: "📦", difficulty: "Beginner", progress: 88, xp: 130, time: "8 min", accent: "from-secondary/30 to-primary/10" },
-  { title: "Piano", icon: "🎯",image: "/images/piano.png", difficulty: "Intermediate", progress: 12, xp: 260, time: "22 min", accent: "from-indigo-500/20 to-indigo-500/5" },
-  { title: "Math Shop Game", icon: "⚡", image: "/images/math-shop.png",difficulty: "Advanced", progress: 0, xp: 380, time: "30 min", accent: "from-rose-500/20 to-rose-500/5" },
-  { title: "Mini Sudoku", icon: "🤖", image: "/images/mini-suduko.png",difficulty: "Advanced", progress: 0, xp: 420, time: "35 min", accent: "from-violet-500/20 to-violet-500/5" },
+  { title: "Logic Maze", icon: "🧩", image: "/images/logic-maze.webp", difficulty: "Beginner", progress: 0, xp: 120, time: "10 min", accent: "from-secondary/30 to-primary/10" },
+  { title: "Brain Blast", icon: "🔁", image: "/images/brain-blast.webp", difficulty: "Intermediate", progress: 0, xp: 150, time: "12 min", accent: "from-indigo-500/20 to-indigo-500/5" },
+  { title: "Trivia", icon: "🐛", image: "/images/trivia.webp",difficulty: "Intermediate", progress: 30, xp: 220, time: "18 min", accent: "from-violet-500/20 to-violet-500/5" },
+  { title: "Zip", icon: "⚔️", image: "/images/zip-master.webp", difficulty: "Intermediate", progress: 0, xp: 240, time: "20 min", accent: "from-emerald-500/20 to-emerald-500/5" },
+  { title: "Stop Motion Studio",image: "/images/stop-motion.webp", icon: "📦", difficulty: "Beginner", progress: 88, xp: 130, time: "8 min", accent: "from-secondary/30 to-primary/10" },
+  { title: "Piano", icon: "🎯",image: "/images/piano.webp", difficulty: "Intermediate", progress: 12, xp: 260, time: "22 min", accent: "from-indigo-500/20 to-indigo-500/5" },
+  { title: "Math Shop Game", icon: "⚡", image: "/images/math-shop.webp",difficulty: "Advanced", progress: 0, xp: 380, time: "30 min", accent: "from-rose-500/20 to-rose-500/5" },
+  { title: "Mini Sudoku", icon: "🤖", image: "/images/mini-suduko.webp",difficulty: "Advanced", progress: 0, xp: 420, time: "35 min", accent: "from-violet-500/20 to-violet-500/5" },
   {
   title: "Match the Pairs",
   icon: "🃏",
-  image: "/images/match-the-pairs.png",
+  image: "/images/match-the-pairs.webp",
   difficulty: "Beginner",
   progress: 0,
   xp: 150,
@@ -70,7 +70,7 @@ const games: Game[] = [
 {
   title: "Connect the Water Pipes",
   icon: "🚰",
-  image: "/images/connect-pipes.png",
+  image: "/images/connect-pipes.webp",
   difficulty: "Beginner",
   progress: 0,
   xp: 180,
@@ -80,7 +80,7 @@ const games: Game[] = [
 {
   title: "Sort and Think",
   icon: "🧠",
-  image: "/images/sort-and-think.png",
+  image: "/images/sort-and-think.webp",
   difficulty: "Beginner",
   progress: 0,
   xp: 150,
@@ -90,7 +90,7 @@ const games: Game[] = [
 {
   title: "Motor Boat",
   icon: "🚤",
-  image: "/images/motor-boat.png",
+  image: "/images/motor-boat.webp",
   difficulty: "Intermediate",
   progress: 0,
   xp: 180,
@@ -100,7 +100,7 @@ const games: Game[] = [
 {
   title: "Bubble Maths Challenge",
   icon: "🫧",
-  image: "/images/bubble-maths.png",
+  image: "/images/bubble-maths.webp",
   difficulty: "Beginner",
   progress: 0,
   xp: 170,
@@ -110,7 +110,7 @@ const games: Game[] = [
 {
   title: "Smart Traffic Controller",
   icon: "🚦",
-  image: "/images/smart-traffic.png",
+  image: "/images/smart-traffic.webp",
   difficulty: "Intermediate",
   progress: 0,
   xp: 180,
@@ -120,7 +120,7 @@ const games: Game[] = [
 {
   title: "Water Color Sort Puzzle",
   icon: "🧪",
-  image: "/images/water-color-sort.png",
+  image: "/images/water-color-sort.webp",
   difficulty: "Beginner",
   progress: 0,
   xp: 160,
