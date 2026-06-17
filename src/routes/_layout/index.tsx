@@ -468,6 +468,13 @@ const [bubbleMathStats, setBubbleMathStats] = useState({
   time: "0 min",
 });
 
+const [colorSortStats, setColorSortStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
 const [trafficStats, setTrafficStats] = useState({
   progress: 0,
   coins: 0,
@@ -1367,6 +1374,51 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  const loadColorSortProgress = () => {
+    const completed =
+      Number(localStorage.getItem("colorSortCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("colorSortProgress")) ||
+      Math.round((completed / 25) * 100) ||
+      0;
+
+    setColorSortStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadColorSortProgress();
+
+  const handleColorSortMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "water_color_sort_puzzle"
+    ) {
+      setColorSortStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+        time: `${event.data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadColorSortProgress);
+  window.addEventListener("storage", loadColorSortProgress);
+  window.addEventListener("message", handleColorSortMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadColorSortProgress);
+    window.removeEventListener("storage", loadColorSortProgress);
+    window.removeEventListener("message", handleColorSortMessage);
+  };
+}, []);
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -1444,6 +1496,7 @@ useEffect(() => {
   sortStats={sortStats}
   motorBoatStats={motorBoatStats}
   bubbleMathStats={bubbleMathStats}
+  colorSortStats={colorSortStats}
   trafficStats={trafficStats}
   searchTerm={searchTerm}
   
@@ -1843,6 +1896,7 @@ const GamesSection = memo(function GamesSection({
   sortStats,
   motorBoatStats,
   bubbleMathStats,
+  colorSortStats,
   trafficStats,
   searchTerm,
 }: any) {
@@ -1942,6 +1996,13 @@ const filteredGames = games.filter((g) =>
     progress: bubbleMathStats.progress,
     xp: bubbleMathStats.coins,
     time: bubbleMathStats.time,
+  }
+  : g.title === "Water Color Sort Puzzle"
+? {
+    ...g,
+    progress: colorSortStats.progress,
+    xp: colorSortStats.coins,
+    time: colorSortStats.time,
   }
   : g.title === "Smart Traffic Controller"
 ? {

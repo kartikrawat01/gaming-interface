@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water Color Sort Puzzle</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='35' y='15' width='30' height='70' rx='15' fill='none' stroke='%233e4e68' stroke-width='8'/%3E%3Cpath d='M 39 50 Q 50 45 61 50 L 61 70 Q 50 78 39 70 Z' fill='%234facfe'/%3E%3Cpath d='M 39 70 Q 50 65 61 70 L 61 80 Q 50 82 39 80 Z' fill='%23ff5e5e'/%3E%3Ccircle cx='50' cy='30' r='5' fill='%23f6d55c'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./supabaseClient.js"></script>
-<script src="./walletApi.js"></script>
-<script src="./gameSDK.js"></script>
+    
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
@@ -741,7 +744,7 @@
         <!-- GLOBAL TOP BAR -->
         <div class="top-bar">
             <div class="brand-logo-container">
-                <img src="/assets/logo.png" alt="BeCre8v Logo" class="brand-logo">
+                <img src="assets/logocre8v.png" alt="BeCre8v Logo" class="brand-logo">
             </div>
             <button class="perm-how-btn" onclick="openHowToPlay()">💡 How to Play</button>
         </div>
@@ -878,18 +881,94 @@
     </div>
 
     <script>
-        let gameStats = {
-    totalCoinsEarned: 0,
-    levelsCompleted: 0,
-    progress: 0
-};
-let gameProgress = 0;
-const TOTAL_LEVELS = 25;
         let state = {
-    completedLevels: []
-};
+            coins: 0,
+            completedLevels: []
+        };
 
-let walletCoins = 0;
+        async function syncWaterSortWalletBalance() {
+    const saved =
+        Number(localStorage.getItem("walletCoins")) ||
+        Number(state.coins) ||
+        0;
+
+    state.coins = saved;
+    updateCoinDisplays();
+
+    try {
+        if (window.gameSDK) {
+            const balance = await window.gameSDK.getBalance();
+
+            if (balance !== undefined && balance !== null) {
+                state.coins = Number(balance);
+                localStorage.setItem("walletCoins", String(state.coins));
+                saveState();
+                updateCoinDisplays();
+            }
+        }
+    } catch (err) {
+        console.warn("Water Sort wallet sync failed:", err);
+    }
+}
+
+async function creditWaterSortCoins(amount) {
+    let finalBalance =
+        Number(localStorage.getItem("walletCoins")) ||
+        Number(state.coins) ||
+        0;
+
+    try {
+        const rewardResult = await window.gameSDK.rewardCoins({
+            amount,
+            description: `Water Color Sort Puzzle Level ${currentLevel} Complete`,
+            game: "water_color_sort_puzzle",
+            level: currentLevel
+        });
+
+        if (rewardResult && rewardResult.balance !== undefined) {
+            finalBalance = Number(rewardResult.balance);
+        } else {
+            const freshBalance = await window.gameSDK.getBalance();
+            if (freshBalance !== undefined && freshBalance !== null) {
+                finalBalance = Number(freshBalance);
+            }
+        }
+    } catch (err) {
+        console.error("Water Sort reward error:", err);
+        finalBalance += amount;
+    }
+
+    state.coins = finalBalance;
+    localStorage.setItem("walletCoins", String(state.coins));
+    saveState();
+    updateCoinDisplays();
+
+    const completed = state.completedLevels.length;
+const progress = Math.round((completed / 25) * 100);
+
+localStorage.setItem("colorSortCompleted", String(completed));
+localStorage.setItem("colorSortProgress", String(progress));
+
+window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "water_color_sort_puzzle",
+    progress,
+    completed,
+    coins: state.coins,
+    level: currentLevel
+}, "*");
+}
+
+window.addEventListener("walletUpdated", (e) => {
+    const balance = e.detail?.balance;
+
+    if (balance !== undefined) {
+        state.coins = Number(balance);
+        localStorage.setItem("walletCoins", String(state.coins));
+        saveState();
+        updateCoinDisplays();
+    }
+});
 
         function getLevelReward(lvl) {
             if (lvl <= 5) return 15;
@@ -914,65 +993,39 @@ let walletCoins = 0;
                     console.error("Corrupted state, resetting", e);
                 }
             }
+            const completed = state.completedLevels.length;
+const progress = Math.round((completed / 25) * 100);
+
+localStorage.setItem("colorSortCompleted", String(completed));
+localStorage.setItem("colorSortProgress", String(progress));
             updateCoinDisplays();
         }
 
         function saveState() {
-            localStorage.setItem('water_sort_puzzle_save', JSON.stringify(state));
-            updateCoinDisplays();
-        }
-       function syncProgress() {
+    localStorage.setItem('water_sort_puzzle_save', JSON.stringify(state));
 
-    const percent =
-        Math.round(
-            (state.completedLevels.length / TOTAL_LEVELS) * 100
-        );
+    const completed = state.completedLevels.length;
+    const progress = Math.round((completed / 25) * 100);
 
-    gameProgress = percent;
+    localStorage.setItem("colorSortCompleted", String(completed));
+    localStorage.setItem("colorSortProgress", String(progress));
 
-    localStorage.setItem(
-        "waterSortProgress",
-        percent
-    );
+    updateCoinDisplays();
 
     window.parent.postMessage({
         type: "GAME_PROGRESS_UPDATE",
-        game: "water-sort",
-        progress: percent,
-        completedLevels: state.completedLevels.length
+        game: "water_color_sort_puzzle",
+        progress,
+        completed,
+        coins: state.coins,
+        level: currentLevel
     }, "*");
 }
 
         function updateCoinDisplays() {
-
-    document.getElementById(
-        "map-coin-count"
-    ).innerText = walletCoins;
-
-    document.getElementById(
-        "game-coin-count"
-    ).innerText = walletCoins;
-}
-        async function syncWalletBalance() {
-    try {
-        const balance = await window.gameSDK.getBalance();
-
-        walletCoins = balance || 0;
-
-        document.getElementById("map-coin-count").innerText =
-            walletCoins;
-
-        document.getElementById("game-coin-count").innerText =
-            walletCoins;
-
-    } catch(err){
-        console.error(err);
-    }
-    localStorage.setItem(
-    "walletCoins",
-    walletCoins
-);
-}
+            document.getElementById('map-coin-count').innerText = state.coins;
+            document.getElementById('game-coin-count').innerText = state.coins;
+        }
 
         let audioCtx = null;
 
@@ -1557,21 +1610,7 @@ let walletCoins = 0;
 
             return null;
         }
-async function creditCoins(amount){
 
-    try{
-
-        await window.gameSDK.rewardCoins({
-            amount: amount,
-            reason: `Water Sort Level ${currentLevel}`
-        });
-
-        await syncWalletBalance();
-
-    }catch(err){
-        console.error(err);
-    }
-}
         function checkWinCondition() {
             for (let i = 0; i < tubes.length; i++) {
                 if (tubes[i].length === 0) continue;
@@ -1582,7 +1621,7 @@ async function creditCoins(amount){
             return true;
         }
 
-       async function triggerWin() {
+        async function triggerWin() {
             playSound('win');
             startConfetti();
 
@@ -1593,19 +1632,12 @@ async function creditCoins(amount){
 
     state.completedLevels.push(currentLevel);
 
-    syncProgress();
+    await creditWaterSortCoins(reward);
 
-    gameStats.totalCoinsEarned += reward;
+} else {
 
-    gameStats.levelsCompleted =
-        state.completedLevels.length;
+    updateCoinDisplays();
 
-    gameStats.progress =
-        gameProgress;
-
-    saveState();
-
-    await creditCoins(reward);
 }
 
             setTimeout(() => {
@@ -1713,26 +1745,16 @@ async function creditCoins(amount){
             }
         });
 
-       window.onload = async () => {
+        window.onload = async () => {
+
+    if (window.gameSDK) {
+        await window.gameSDK.init();
+    }
 
     loadState();
-
-    walletCoins =
-        parseInt(
-            localStorage.getItem("walletCoins")
-        ) || 0;
-
-    await syncWalletBalance();
+    await syncWaterSortWalletBalance();
 
 };
-window.addEventListener(
-    "walletUpdated",
-    async () => {
-
-        await syncWalletBalance();
-
-    }
-);
     </script>
 </body>
 </html>
