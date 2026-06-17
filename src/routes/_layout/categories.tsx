@@ -69,7 +69,7 @@ const games: Game[] = [
   {
     title: "Logic Maze",
     icon: "🧩",
-    image: "/images/logic-maze.png",
+    image: "/images/logic-maze.webp",
     category: "Logic & Puzzles",
     difficulty: "Beginner",
     progress: 0,
@@ -78,7 +78,7 @@ const games: Game[] = [
   {
     title: "Brain Blast",
     icon: "➗",
-    image: "/images/brain-blast.png",
+    image: "/images/brain-blast.webp",
     category: "Maths",
     difficulty: "Beginner",
     progress: 0,
@@ -87,7 +87,7 @@ const games: Game[] = [
   {
     title: "Trivia",
     icon: "🧪",
-    image: "/images/trivia.png",
+    image: "/images/trivia.webp",
     category: "Science",
     difficulty: "Intermediate",
     progress: 0,
@@ -96,7 +96,7 @@ const games: Game[] = [
   {
     title: "Zip",
     icon: "📚",
-    image: "/images/zip-master.png",
+    image: "/images/zip-master.webp",
     category: "Language",
     difficulty: "Beginner",
     progress: 0,
@@ -105,7 +105,7 @@ const games: Game[] = [
   {
     title: "Stop Motion Studio",
     icon: "🎨",
-    image: "/images/stop-motion.png",
+    image: "/images/stop-motion.webp",
     category: "Creative",
     difficulty: "Intermediate",
     progress: 0,
@@ -114,7 +114,7 @@ const games: Game[] = [
   {
     title: "Piano",
     icon: "⚡",
-    image: "/images/piano.png",
+    image: "/images/piano.webp",
     category: "Memory & Speed",
     difficulty: "Advanced",
     progress: 0,
@@ -123,7 +123,7 @@ const games: Game[] = [
   {
     title: "Math Shop Game",
     icon: "🎯",
-    image: "/images/math-shop.png",
+    image: "/images/math-shop.webp",
     category: "Logic & Puzzles",
     difficulty: "Intermediate",
     progress: 0,
@@ -132,7 +132,7 @@ const games: Game[] = [
   {
     title: "Mini Sudoku",
     icon: "🚀",
-    image: "/images/mini-suduko.png",
+    image: "/images/mini-suduko.webp",
     category: "Science",
     difficulty: "Advanced",
     progress: 0,
@@ -141,7 +141,7 @@ const games: Game[] = [
   {
   title: "Match the Pairs",
   icon: "🃏",
-  image: "/images/match-the-pairs.png",
+  image: "/images/match-the-pairs.webp",
   category: "Memory & Speed",
   difficulty: "Beginner",
   progress: 0,
@@ -150,7 +150,7 @@ const games: Game[] = [
 {
   title: "Connect the Water Pipes",
   icon: "🚰",
-  image: "/images/connect-pipes.png",
+  image: "/images/connect-pipes.webp",
   category: "Logic & Puzzles",
   difficulty: "Beginner",
   progress: 0,
@@ -159,7 +159,7 @@ const games: Game[] = [
 {
   title: "Sort and Think",
   icon: "🧠",
-  image: "/images/sort-and-think.png",
+  image: "/images/sort-and-think.webp",
   category: "Logic & Puzzles",
   difficulty: "Beginner",
   progress: 0,
@@ -168,7 +168,7 @@ const games: Game[] = [
 {
   title: "Motor Boat",
   icon: "🚤",
-  image: "/images/motor-boat.png",
+  image: "/images/motor-boat.webp",
   category: "Memory & Speed",
   difficulty: "Intermediate",
   progress: 0,
@@ -177,7 +177,7 @@ const games: Game[] = [
 {
   title: "Bubble Maths Challenge",
   icon: "🫧",
-  image: "/images/bubble-maths.png",
+  image: "/images/bubble-maths.webp",
   category: "Maths",
   difficulty: "Beginner",
   progress: 0,
@@ -186,7 +186,7 @@ const games: Game[] = [
 {
   title: "Smart Traffic Controller",
   icon: "🚦",
-  image: "/images/smart-traffic.png",
+  image: "/images/smart-traffic.webp",
   category: "Logic & Puzzles",
   difficulty: "Intermediate",
   progress: 0,
@@ -195,7 +195,7 @@ const games: Game[] = [
 {
   title: "Water Color Sort Puzzle",
   icon: "🧪",
-  image: "/images/water-color-sort.png",
+  image: "/images/water-color-sort.webp",
   category: "Logic & Puzzles",
   difficulty: "Beginner",
   progress: 0,
