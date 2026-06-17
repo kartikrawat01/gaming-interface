@@ -2463,7 +2463,33 @@ try {
         }, "*");
 
         const level = LEVELS[currentLevelIdx];
-        document.getElementById("overlay-emoji").textContent = `🪙 ${reward}`;
+        document.getElementById("overlay-emoji").innerHTML = `
+  <span style="
+    color:#44afda;
+    font-size:32px;
+    font-weight:900;
+    text-shadow:0 0 12px rgba(68,175,218,0.45);
+  ">
+    +${reward}
+  </span>
+
+  <span style="
+    font-size:22px;
+    margin-left:1px;
+    margin-right:1px;
+  ">
+    🪙
+  </span>
+
+  <span style="
+    color:#44afda;
+    font-size:32px;
+    font-weight:900;
+    text-shadow:0 0 12px rgba(68,175,218,0.45);
+  ">
+    Coins!
+  </span>
+`;
         document.getElementById("overlay-title").textContent =
           currentLevelIdx === 19
             ? "🌟 Final Level Complete!"
