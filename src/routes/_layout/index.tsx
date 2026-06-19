@@ -138,14 +138,14 @@ const games: Game[] = [
   accent: "from-yellow-500/20 to-amber-500/5"
 },
 {
-  title: "Sequencer Builder",
-  icon: "🔢",
-  image: "/images/sequence2.webp",
+  title: "Sequence Builder",
+  icon: "🧩",
+  image: "/images/sequence-builder.png",
   difficulty: "Beginner",
   progress: 0,
   xp: 170,
   time: "10 min",
-  accent: "from-green-500/20 to-emerald-500/5"
+  accent: "from-orange-500/20 to-pink-500/5"
 },
 ];
 
@@ -496,6 +496,13 @@ const [colorSortStats, setColorSortStats] = useState({
 });
 
 const [trafficStats, setTrafficStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
+const [sequenceBuilderStats, setSequenceBuilderStats] = useState({
   progress: 0,
   coins: 0,
   completed: 0,
@@ -1439,6 +1446,51 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  const loadSequenceBuilderProgress = () => {
+    const completed =
+      Number(localStorage.getItem("sequenceBuilderCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("sequenceBuilderProgress")) ||
+      Math.round((completed / 30) * 100) ||
+      0;
+
+    setSequenceBuilderStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadSequenceBuilderProgress();
+
+  const handleSequenceBuilderMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "sequence_builder"
+    ) {
+      setSequenceBuilderStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+        time: `${event.data.time || 0} min`,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadSequenceBuilderProgress);
+  window.addEventListener("storage", loadSequenceBuilderProgress);
+  window.addEventListener("message", handleSequenceBuilderMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadSequenceBuilderProgress);
+    window.removeEventListener("storage", loadSequenceBuilderProgress);
+    window.removeEventListener("message", handleSequenceBuilderMessage);
+  };
+}, []);
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -1516,6 +1568,7 @@ useEffect(() => {
   sortStats={sortStats}
   motorBoatStats={motorBoatStats}
   bubbleMathStats={bubbleMathStats}
+  sequenceBuilderStats={sequenceBuilderStats}
   colorSortStats={colorSortStats}
   trafficStats={trafficStats}
   searchTerm={searchTerm}
@@ -1916,6 +1969,7 @@ const GamesSection = memo(function GamesSection({
   sortStats,
   motorBoatStats,
   bubbleMathStats,
+  sequenceBuilderStats,
   colorSortStats,
   trafficStats,
   searchTerm,
@@ -2016,6 +2070,13 @@ const filteredGames = games.filter((g) =>
     progress: bubbleMathStats.progress,
     xp: bubbleMathStats.coins,
     time: bubbleMathStats.time,
+  }
+  : g.title === "Sequence Builder"
+? {
+    ...g,
+    progress: sequenceBuilderStats.progress,
+    xp: sequenceBuilderStats.coins,
+    time: sequenceBuilderStats.time,
   }
   : g.title === "Water Color Sort Puzzle"
 ? {
@@ -2119,8 +2180,8 @@ if (game.title === "Help The Bee") {
   window.open("/bee2.html", "_blank");
 }
 
-if (game.title === "Sequencer Builder") {
-  window.open("/sequence2.html", "_blank");
+if (game.title === "Sequence Builder") {
+  window.open("/sequence_builder.html", "_blank");
 }
   }}
 

@@ -6,6 +6,7 @@
 <title>Sequence Builder: Arrange the Steps!</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
 <script src="./supabaseClient.js"></script>
 <script src="./walletApi.js"></script>
 <script src="./gameSDK.js"></script>
@@ -684,7 +685,7 @@ Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Sp
 <div id="top-nav">
 <button class="btn-how" onclick="openInstructions()">❓ How to Play</button>
 <div class="logo-wrap">
-<img src="/assets/logo.png" alt="BeCre8v Logo" class="logo-img">
+<img src="assets/logocre8v.png" alt="BeCre8v Logo" class="logo-img">
 </div>
 </div>
 <div id="header">
@@ -1137,7 +1138,7 @@ steps: [
 
 let currentLevel = 0;
 let score = 0;
-let coins = Number(localStorage.getItem("walletCoins")) || 0;
+let coins = 0;
 let guideChar = "🤖";
 const guideChars = ["🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉"];
 let shuffledSteps = [];
@@ -1145,7 +1146,105 @@ let slotContents = [];
 let dragSource = null;
 let hintShown = false;
 let answered = false;
-let completedLevels = JSON.parse(localStorage.getItem("seqCompletedLevels") || "[]");
+let completedLevels = [];
+
+const GAME_KEY = "sequenceBuilder";
+const TOTAL_LEVELS = 30;
+
+async function syncSequenceWalletBalance() {
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(coins) ||
+    0;
+
+  coins = saved;
+  updateHUD();
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        coins = Number(balance);
+        localStorage.setItem("walletCoins", String(coins));
+        updateHUD();
+      }
+    }
+  } catch (err) {
+    console.warn("Sequence wallet sync failed:", err);
+  }
+}
+
+async function creditSequenceCoins(amount) {
+  let finalBalance =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(coins) ||
+    0;
+
+  try {
+    const rewardResult = await window.gameSDK.rewardCoins({
+      amount,
+      description: `Sequencer Builder Level ${currentLevel + 1} Complete`,
+      game: "sequence_builder",
+      level: currentLevel + 1,
+    });
+
+    if (rewardResult?.balance !== undefined) {
+      finalBalance = Number(rewardResult.balance);
+    } else {
+      const freshBalance = await window.gameSDK.getBalance();
+      if (freshBalance !== undefined && freshBalance !== null) {
+        finalBalance = Number(freshBalance);
+      }
+    }
+  } catch (err) {
+    console.error("Sequence reward error:", err);
+    finalBalance += amount;
+  }
+
+  coins = finalBalance;
+  localStorage.setItem("walletCoins", String(coins));
+
+  saveSequenceProgress();
+  updateHUD();
+}
+
+function saveSequenceProgress() {
+  const completed = completedLevels.length;
+  const progress = Math.round((completed / TOTAL_LEVELS) * 100);
+
+  localStorage.setItem("sequenceBuilderCompleted", String(completed));
+  localStorage.setItem("sequenceBuilderProgress", String(progress));
+  localStorage.setItem("sequenceBuilderScore", String(score));
+  localStorage.setItem("sequenceBuilderCoins", String(coins));
+  localStorage.setItem("walletCoins", String(coins));
+
+  const payload = {
+    type: "GAME_PROGRESS_UPDATE",
+    game: "sequence_builder",
+    progress,
+    completed,
+    score,
+    coins,
+    level: currentLevel + 1,
+  };
+
+  window.parent?.postMessage(payload, "*");
+  window.opener?.postMessage(payload, "*");
+}
+
+function loadSequenceProgress() {
+  score = Number(localStorage.getItem("sequenceBuilderScore")) || 0;
+  coins = Number(localStorage.getItem("walletCoins")) || 0;
+
+  const completed =
+    Number(localStorage.getItem("sequenceBuilderCompleted")) || 0;
+
+  completedLevels = Array.from({ length: completed }, (_, i) => i);
+
+  updateHUD();
+  updateLevelBar();
+}
 
 function openInstructions() {
 document.getElementById('instructions-popup').style.display = 'flex';
@@ -1172,32 +1271,30 @@ if (lvlIdx >= 20 && lvlIdx <= 29) return 65;
 return 0;
 }
 
-function startGame() {
-document.getElementById('start-screen').style.display = 'none';
-currentLevel = 0;
-score = 0;
-coins = 0;
-localStorage.removeItem("seqCompletedLevels");
-localStorage.setItem("seqCompleted", "0");
-localStorage.setItem("seqProgress", "0");
-completedLevels = [];
-updateHUD();
-loadLevel();
+async function startGame() {
+  document.getElementById('start-screen').style.display = 'none';
+
+  currentLevel = 0;
+
+  loadSequenceProgress();
+
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+    await syncSequenceWalletBalance();
+  }
+
+  loadLevel();
 }
 
 function restartGame() {
-document.getElementById('start-screen').style.display = 'none';
-document.getElementById('congrats-screen').style.display = 'none';
-document.getElementById('level-complete').classList.remove('show');
-currentLevel = 0;
-score = 0;
-coins = 0;
-localStorage.removeItem("seqCompletedLevels");
-localStorage.setItem("seqCompleted", "0");
-localStorage.setItem("seqProgress", "0");
-completedLevels = [];
-updateHUD();
-loadLevel();
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('congrats-screen').style.display = 'none';
+  document.getElementById('level-complete').classList.remove('show');
+
+  currentLevel = 0;
+
+  loadSequenceProgress();
+  loadLevel();
 }
 
 function nextLevel() {
@@ -1386,17 +1483,8 @@ renderCards();
 renderSlots();
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
 openInstructions();
-try {
-  if (window.gameSDK) await window.gameSDK.init();
-  const walletBalance = await syncSeqWalletBalance();
-  coins = walletBalance;
-  document.getElementById("hud-coins").textContent = walletBalance;
-} catch(e) {
-  console.warn("Seq wallet init failed:", e);
-}
-syncSeqProgressToParent();
 
 const cardsPanel = document.getElementById('cards-container');
 cardsPanel.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
@@ -1517,11 +1605,14 @@ if (correct) {
 answered = true;
 score += 10;
 const reward = getCoinReward(currentLevel);
+
 if (!completedLevels.includes(currentLevel)) {
   completedLevels.push(currentLevel);
+  creditSequenceCoins(reward);
+} else {
+  saveSequenceProgress();
+  updateHUD();
 }
-creditSeqCoins(reward); // async call — coins + localStorage + postMessage sab handle karega
-updateHUD();
 updateLevelBar();
 document.getElementById('slots-container').parentElement.classList.add('success-glow');
 launchConfetti();
@@ -1570,8 +1661,12 @@ document.getElementById('hud-coins').textContent = coins;
 }
 
 function updateProgress() {
-const pct = (currentLevel / LEVELS.length) * 100;
-document.getElementById('progress-bar').style.width = pct + '%';
+  const completed =
+    Number(localStorage.getItem("sequenceBuilderCompleted")) || 0;
+
+  const pct = Math.round((completed / TOTAL_LEVELS) * 100);
+
+  document.getElementById('progress-bar').style.width = pct + '%';
 }
 
 function setFeedback(msg, color) {
@@ -1630,80 +1725,7 @@ osc.stop(ctx.currentTime + 0.3);
 }
 } catch(e) {}
 }
-// ── Wallet Sync ──────────────────────────────────────────
-async function syncSeqWalletBalance() {
-  const saved = Number(localStorage.getItem("walletCoins")) || 0;
-  document.getElementById("hud-coins").textContent = saved;
-  try {
-    if (window.gameSDK) {
-      const balance = await window.gameSDK.getBalance();
-      if (balance !== undefined && balance !== null) {
-        localStorage.setItem("walletCoins", String(balance));
-        coins = Number(balance);
-        document.getElementById("hud-coins").textContent = balance;
-        return Number(balance);
-      }
-    }
-  } catch (err) {
-    console.warn("Seq wallet sync failed:", err);
-  }
-  return saved;
-}
 
-async function creditSeqCoins(amount) {
-  let finalBalance = Number(localStorage.getItem("walletCoins")) || coins;
-  try {
-    const rewardResult = await window.gameSDK.rewardCoins({
-      amount,
-      description: `Sequence Game Level ${currentLevel + 1} Complete`,
-      game: "sequence_game",
-      level: currentLevel + 1,
-      score: amount,
-    });
-    if (rewardResult && rewardResult.balance !== undefined) {
-      finalBalance = Number(rewardResult.balance);
-    } else if (window.gameSDK) {
-      const freshBalance = await window.gameSDK.getBalance();
-      if (freshBalance !== undefined && freshBalance !== null) {
-        finalBalance = Number(freshBalance);
-      }
-    }
-  } catch (err) {
-    console.error("Seq reward error:", err);
-    finalBalance = finalBalance + amount;
-  }
-  coins = finalBalance;
-  localStorage.setItem("walletCoins", String(finalBalance));
-  document.getElementById("hud-coins").textContent = finalBalance;
-  syncSeqProgressToParent();
-  return finalBalance;
-}
-
-function syncSeqProgressToParent() {
-  const completed = completedLevels.length;
-  const progress = Math.min(Math.round((completed / LEVELS.length) * 100), 100);
-  localStorage.setItem("seqCompleted", String(completed));
-  localStorage.setItem("seqProgress", String(progress));
-  localStorage.setItem("seqCompletedLevels", JSON.stringify(completedLevels));
-  window.parent.postMessage({
-    type: "GAME_PROGRESS_UPDATE",
-    game: "sequence_game",
-    progress,
-    completed,
-    coins: Number(localStorage.getItem("walletCoins")) || 0,
-    time: 0,
-  }, "*");
-}
-
-window.addEventListener("walletUpdated", (e) => {
-  const balance = e.detail?.balance;
-  if (balance !== undefined) {
-    localStorage.setItem("walletCoins", String(balance));
-    coins = Number(balance);
-    document.getElementById("hud-coins").textContent = balance;
-  }
-});
-// ─────────────────────────────────────────────────────────
 function shuffle(arr) {
 for (let i = arr.length - 1; i > 0; i--) {
 const j = Math.floor(Math.random() * (i + 1));
@@ -1711,6 +1733,24 @@ const j = Math.floor(Math.random() * (i + 1));
 }
 return arr;
 }
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+
+  if (balance !== undefined) {
+    coins = Number(balance);
+    localStorage.setItem("walletCoins", String(coins));
+    updateHUD();
+  }
+});
+
+window.addEventListener("load", async () => {
+  loadSequenceProgress();
+
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+    await syncSequenceWalletBalance();
+  }
+});
 </script>
 </body>
 </html>

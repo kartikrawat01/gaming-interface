@@ -343,6 +343,22 @@ const colorSortProgress =
   Math.round((colorSortCompleted / 25) * 100) ||
   0;
 
+  const beeCompleted =
+  Number(localStorage.getItem("beeCompleted")) || 0;
+
+const beeProgress =
+  Number(localStorage.getItem("beeProgress")) ||
+  Math.round((beeCompleted / 30) * 100) ||
+  0;
+
+const sequenceBuilderCompleted =
+  Number(localStorage.getItem("sequenceBuilderCompleted")) || 0;
+
+const sequenceBuilderProgress =
+  Number(localStorage.getItem("sequenceBuilderProgress")) ||
+  Math.round((sequenceBuilderCompleted / 30) * 100) ||
+  0;
+
     setGameProgress({
       "Logic Maze": Math.min(logicMazeProgress, 100),
       "Brain Blast": Math.min(brainBlastProgress, 100),
@@ -357,6 +373,8 @@ const colorSortProgress =
 "Bubble Maths Challenge": Math.min(bubbleMathProgress, 100),
 "Smart Traffic Controller": Math.min(trafficProgress, 100),
 "Water Color Sort Puzzle": Math.min(colorSortProgress, 100),
+"Help The Bee": Math.min(beeProgress, 100),
+"Sequencer Builder": Math.min(sequenceBuilderProgress, 100),
     });
   };
 
