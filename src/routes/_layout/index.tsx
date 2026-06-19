@@ -171,6 +171,7 @@ function Dashboard() {
   const [user, setUser] = useState<any>(null);
 const [showAuth, setShowAuth] = useState(false);
 const [currentStreak, setCurrentStreak] = useState(0);
+const [streakBonusPopup, setStreakBonusPopup] = useState<any>(null);
   // ADD THIS
 const sessionTimerRef = useRef<any>(null);
 
@@ -269,6 +270,17 @@ const handleUnload = async () => {
             "Daily login reward:",
             rewardData
           );
+          if (rewardData?.streak?.currentStreak) {
+  setCurrentStreak(Number(rewardData.streak.currentStreak));
+}
+
+if (rewardData?.streakBonus) {
+  setStreakBonusPopup(rewardData.streakBonus);
+
+  setTimeout(() => {
+    setStreakBonusPopup(null);
+  }, 5000);
+}
           await fetchLoginStreak();
 
         } catch (err) {
@@ -1637,6 +1649,38 @@ useEffect(() => {
   sessionTimer={sessionTimerRef.current}
   currentStreak={currentStreak}
 />
+{streakBonusPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="relative bg-white rounded-3xl p-8 text-center shadow-2xl max-w-sm w-[90%] overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none text-3xl animate-pulse">
+        🎉 ✨ 🎊 🪙 🎉 ✨
+      </div>
+
+      <div className="relative z-10">
+        <div className="text-5xl mb-3">🔥</div>
+
+        <h2 className="text-2xl font-bold text-orange-500 mb-2">
+          {streakBonusPopup.days} Day Streak!
+        </h2>
+
+        <p className="text-gray-700 font-semibold mb-4">
+          You earned a bonus reward
+        </p>
+
+        <div className="text-3xl font-bold text-yellow-500 mb-5">
+          +{streakBonusPopup.coins} Coins 🪙
+        </div>
+
+        <button
+          onClick={() => setStreakBonusPopup(null)}
+          className="px-5 py-2 rounded-xl bg-primary text-white font-semibold"
+        >
+          Awesome!
+        </button>
+      </div>
+    </div>
+  </div>
+)}
             <Hero />
             <div className="grid grid-cols-1 gap-8">
 <GamesSection
