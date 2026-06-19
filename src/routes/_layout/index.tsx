@@ -140,7 +140,7 @@ const games: Game[] = [
 {
   title: "Sequence Builder",
   icon: "🧩",
-  image: "/images/sequence-builder.png",
+  image: "/images/sequence2.webp",
   difficulty: "Beginner",
   progress: 0,
   xp: 170,
