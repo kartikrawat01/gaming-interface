@@ -712,6 +712,7 @@ function markWelcomeBonusGivenToday() {
 }
 
 let projectsCompleted = 0;        // 10 frame projects
+let lastTenFrameRewardAt = 0;
 let thirtyFrameBonusGiven = false;
 let exportsToday = 0;
 let lastExportDate = '';
@@ -1456,14 +1457,17 @@ function saveAnimation() {
   const count = frames.length;
   // Reward only after saving animation
 
-if(count >= 10 && projectsCompleted < 3){
+const newFramesSinceLastReward = count - lastTenFrameRewardAt;
+
+if(newFramesSinceLastReward >= 10 && projectsCompleted < 3){
 
     addCoinsToWallet(
         20,
-        `Project saved with 10+ frames (#${projectsCompleted+1})`
+        `Project saved with 10+ new frames (#${projectsCompleted+1})`
     );
 
     projectsCompleted++;
+    lastTenFrameRewardAt = count;
 }
 
 if(count >= 30 && !thirtyFrameBonusGiven){
