@@ -201,6 +201,25 @@ const games: Game[] = [
   progress: 0,
   accent: "from-blue-400/30 to-cyan-500/20",
 },
+{
+  title: "Help The Bee",
+  icon: "🐝",
+  image: "/images/bee2.webp",
+  category: "Logic & Puzzles",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-yellow-400/30 to-amber-500/20",
+},
+{
+  title: "Sequencer Builder",
+  icon: "🔢",
+  image: "/images/sequence2.webp",
+  category: "Logic & Puzzles",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-green-400/30 to-emerald-500/20",
+},
+
 ];
 
 const difficultyStyles = {
@@ -227,6 +246,8 @@ const [gameProgress, setGameProgress] = useState<Record<string, number>>({
   "Bubble Maths Challenge": 0,
   "Smart Traffic Controller": 0,
 "Water Color Sort Puzzle": 0,
+"Help The Bee": 0,
+"Sequencer Builder": 0,
 });
 useEffect(() => {
   const loadAllGameProgress = () => {
@@ -502,6 +523,13 @@ if (game.title === "Smart Traffic Controller") {
 if (game.title === "Water Color Sort Puzzle") {
   window.open("/color-sort.html", "_blank");
 }
+if (game.title === "Help The Bee") {
+  window.open("/bee2.html", "_blank");
+}
+
+if (game.title === "Sequencer Builder") {
+  window.open("/sequence2.html", "_blank");
+}
 }}
               >
                 {/* Top */}
@@ -608,6 +636,15 @@ if (game.title === "Smart Traffic Controller") {
 if (game.title === "Water Color Sort Puzzle") {
   window.open("/color-sort.html", "_blank");
 }
+
+if (game.title === "Help The Bee") {
+  window.open("/bee2.html", "_blank");
+}
+
+if (game.title === "Sequencer Builder") {
+  window.open("/sequence2.html", "_blank");
+}
+
 }}
                   >
                     {locked ? "Locked" : (

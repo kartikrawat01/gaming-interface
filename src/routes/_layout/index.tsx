@@ -127,6 +127,26 @@ const games: Game[] = [
   time: "10 min",
   accent: "from-blue-500/20 to-cyan-500/5"
 },
+{
+  title: "Help The Bee",
+  icon: "🐝",
+  image: "/images/bee2.webp",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 160,
+  time: "10 min",
+  accent: "from-yellow-500/20 to-amber-500/5"
+},
+{
+  title: "Sequencer Builder",
+  icon: "🔢",
+  image: "/images/sequence2.webp",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 170,
+  time: "10 min",
+  accent: "from-green-500/20 to-emerald-500/5"
+},
 ];
 
 // const sidebarItems = [
@@ -2093,6 +2113,14 @@ if (game.title === "Smart Traffic Controller") {
 
 if (game.title === "Water Color Sort Puzzle") {
   window.open("/color-sort.html", "_blank");
+}
+
+if (game.title === "Help The Bee") {
+  window.open("/bee2.html", "_blank");
+}
+
+if (game.title === "Sequencer Builder") {
+  window.open("/sequence2.html", "_blank");
 }
   }}
 

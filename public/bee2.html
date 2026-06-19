@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help the Bee: Collect the Nectar</title>
+  <!-- Cute Bee / Honey / Flower Favicon embedded directly -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐝</text></svg>">
+  
+  <!-- Rounded Child-friendly Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+  <style>
+    :root {
+      --primary: #FFB300;       /* Rich Honey Yellow */
+      --primary-dark: #E65100;  /* Warm Honey Orange */
+      --primary-light: #FFE082; /* Soft Honeycomb Yellow */
+      --accent: #FFF8E1;        /* Warm Nectar Cream */
+      --text: #4E342E;          /* Soft Hive Brown */
+      --white: #FFFFFF;
+      --grass-light: #E2F9D2;
+      --grass-dark: #C6F4A8;
+      --border-radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+    }
+
+    body {
+      background-color: #FFFDEB; /* Soft Sunny Beeswax Cream */
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Branding styles */
+    .brand-container {
+      width: 100%;
+      max-width: 1000px;
+      padding: 10px 20px 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .brand-logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #E65100;
+      background-color: #FFE082;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      letter-spacing: 0.5px;
+    }
+    .brand-logo img {
+        width: 140px;
+        height: auto;
+        object-fit: contain;
+    }
+
+    .game-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0;
+      color: #D84315;
+      text-shadow: 1px 1px 0px #fff;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      margin: 2px 0 10px 0;
+      color: #E65100;
+      font-weight: 600;
+    }
+
+    /* Layout Wrapper */
+    .game-container {
+      width: 100%;
+      max-width: 1000px;
+      padding: 0 15px 15px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Level Progression Bar */
+    .level-bar {
+      background: var(--white);
+      border-radius: var(--border-radius);
+      padding: 12px;
+      box-shadow: 0 6px 16px rgba(255, 179, 0, 0.15);
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      border: 3px solid #FFE082;
+    }
+
+    /* Hide scrollbars but keep functionality */
+    .level-bar::-webkit-scrollbar {
+      height: 6px;
+    }
+    .level-bar::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 10px;
+    }
+
+    .level-node {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 65px;
+      height: 65px;
+      background: #FFFDE7;
+      border: 2px solid #FFF176;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .level-node:hover {
+      transform: translateY(-2px);
+      background: #FFF9C4;
+      border-color: #FFD54F;
+    }
+
+    .level-node.active {
+      background: var(--primary);
+      border-color: var(--primary-dark);
+      box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+      transform: scale(1.05);
+    }
+
+    .level-node.active .level-num {
+      color: var(--white);
+    }
+
+    .level-node.active .level-stars {
+      color: var(--white);
+    }
+
+    .level-num {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #E65100;
+    }
+
+    .level-stars {
+      font-size: 0.7rem;
+      color: #FFB300;
+      margin-top: 2px;
+    }
+
+    /* Main Dashboard Arena */
+    .arena-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr 200px;
+      gap: 15px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .arena-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Side Stats Panel */
+    .stats-panel {
+      background: var(--white);
+      border-radius: var(--border-radius);
+      padding: 15px;
+      border: 3px solid #FFE082;
+      box-shadow: 0 6px 16px rgba(255, 179, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #FFFDF4;
+      border: 2px solid #FFF9C4;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .stat-icon {
+      font-size: 1.6rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--white);
+      border-radius: 50%;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-info label {
+      font-size: 0.75rem;
+      color: #8D6E63;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-info span {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Theme Card Header inside Stats Panel */
+    .theme-banner {
+      background: linear-gradient(135deg, #FFF9C4, #FFF176);
+      border: 2px solid #FBC02D;
+      border-radius: 10px;
+      padding: 8px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #D84315;
+      margin-bottom: 5px;
+    }
+
+    /* Play Field Grid Container */
+    .grid-container {
+      background: var(--white);
+      border-radius: var(--border-radius);
+      border: 3px solid #FFE082;
+      box-shadow: 0 6px 16px rgba(255, 179, 0, 0.15);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .garden-grid {
+      position: relative;
+      display: grid;
+      width: 100%;
+      max-width: min(440px, 80vw);
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #C2EDA6;
+      border: 4px solid #FFA726;
+    }
+
+    .garden-cell {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      user-select: none;
+    }
+
+    /* Grassy Checkered Patterns */
+    .cell-grass-light {
+      background-color: var(--grass-light);
+    }
+
+    .cell-grass-dark {
+      background-color: var(--grass-dark);
+    }
+
+    /* Visual Hint sparkles overlays */
+    .garden-cell.path-hint::after {
+      content: '✨';
+      position: absolute;
+      font-size: 1.2rem;
+      color: #FFD54F;
+      animation: hintBlink 0.6s infinite alternate;
+      z-index: 5;
+    }
+
+    @keyframes hintBlink {
+      0% { transform: scale(0.8); opacity: 0.5; }
+      100% { transform: scale(1.2); opacity: 1; }
+    }
+
+    /* Static cell item elements styled nicely */
+    .cell-item {
+      font-size: clamp(1.4rem, 4vw, 2.2rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: transform 0.2s ease;
+    }
+
+    /* Animate special collectables */
+    .cell-item-G {
+      animation: goldenPulse 1.2s infinite ease-in-out;
+    }
+    .cell-item-B {
+      animation: butterflyFlap 0.8s infinite ease-in-out;
+    }
+    .cell-item-P {
+      animation: potHover 1.4s infinite ease-in-out;
+    }
+
+    @keyframes goldenPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px gold); }
+      50% { transform: scale(1.15); filter: drop-shadow(0 0 8px gold); }
+    }
+
+    @keyframes butterflyFlap {
+      0%, 100% { transform: scaleX(1) translateY(0); }
+      50% { transform: scaleX(0.7) translateY(-3px); }
+    }
+
+    @keyframes potHover {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* Absolute Overlay Bee Sprite */
+    .bee-sprite {
+      position: absolute;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
+      transition: left 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                  top 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                  transform 0.15s ease;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+      animation: beeHover 0.6s infinite ease-in-out alternate;
+    }
+
+    @keyframes beeHover {
+      0% { margin-top: 0px; }
+      100% { margin-top: -4px; }
+    }
+
+    /* Controller Panel Column */
+    .controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Tactile D-Pad */
+    .d-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      width: 100%;
+      max-width: 170px;
+      aspect-ratio: 1;
+      margin: 0 auto;
+      gap: 6px;
+      background: #FFF8E1;
+      border: 3px solid #FFE082;
+      border-radius: 50%;
+      padding: 10px;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .d-btn {
+      background-color: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 50%;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 0 var(--primary-dark);
+      user-select: none;
+      transition: all 0.1s ease;
+    }
+
+    .d-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 var(--primary-dark);
+    }
+
+    .d-pad-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      user-select: none;
+    }
+
+    /* Actions Bar */
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .restart-btn {
+      background-color: #42A5F5;
+      box-shadow: 0 4px 0 #1E88E5;
+    }
+    .restart-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #1E88E5;
+    }
+
+    .hint-btn {
+      background-color: #AB47BC;
+      box-shadow: 0 4px 0 #8E24AA;
+    }
+    .hint-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #8E24AA;
+    }
+
+    .sound-btn {
+      background-color: #26A69A;
+      box-shadow: 0 4px 0 #00897B;
+    }
+    .sound-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #00897B;
+    }
+
+    /* Universal Modal Overlays */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--white);
+      border-radius: 24px;
+      width: 90%;
+      max-width: 480px;
+      max-height: 85vh; /* Set constraints to prevent overflow on shorter viewports */
+      overflow-y: auto;  /* Enable vertical scroll inside modal card */
+      padding: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+      border: 6px solid var(--primary-light);
+      text-align: center;
+      transform: scale(0.85);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Custom Scrollbar styled for modal-card */
+    .modal-card::-webkit-scrollbar {
+      width: 8px;
+    }
+    .modal-card::-webkit-scrollbar-track {
+      background: #FFFDF4;
+      border-radius: 10px;
+    }
+    .modal-card::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 10px;
+    }
+    .modal-card::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      margin-top: 5px;
+      margin-bottom: 12px;
+      color: #E65100;
+    }
+
+    .modal-content {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.5;
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .modal-btn {
+      background-color: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 5px 0 var(--primary-dark);
+      transition: all 0.1s ease;
+    }
+
+    .modal-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 var(--primary-dark);
+    }
+
+    /* Special Info list inside instructions modal */
+    .info-list {
+      padding-left: 15px;
+      margin: 10px 0;
+    }
+
+    .info-list li {
+      margin-bottom: 6px;
+    }
+
+    /* Interactive Reward Tables */
+    .rewards-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 0.85rem;
+    }
+
+    .rewards-table th, .rewards-table td {
+      border: 1px solid #E0E0E0;
+      padding: 6px;
+      text-align: center;
+    }
+
+    .rewards-table th {
+      background-color: var(--accent);
+      color: var(--text);
+    }
+
+    .promo-line {
+      background-color: #FFFDE7;
+      border: 2px dashed #FDD835;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #E65100;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* Success Screen Features */
+    .dancing-bee {
+      font-size: 3.5rem;
+      display: inline-block;
+      animation: happyDance 1.6s infinite linear;
+    }
+
+    @keyframes happyDance {
+      0%, 100% { transform: scale(1.1) translate(0, 0) rotate(0deg); }
+      25% { transform: scale(1.2) translate(-8px, -15px) rotate(-12deg); }
+      50% { transform: scale(1.1) translate(8px, 0) rotate(12deg); }
+      75% { transform: scale(1.2) translate(-4px, -15px) rotate(-8deg); }
+    }
+
+    .sad-bee {
+      font-size: 3.5rem;
+      display: inline-block;
+      animation: sadWobble 2s infinite ease-in-out;
+    }
+
+    @keyframes sadWobble {
+      0%, 100% { transform: rotate(-8deg) translateY(0); }
+      50% { transform: rotate(8deg) translateY(4px); }
+    }
+
+    /* Custom CSS Honey Jar Filling */
+    .honey-jar-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 15px 0;
+    }
+
+    .honey-jar {
+      width: 70px;
+      height: 85px;
+      border: 4px solid #EF6C00;
+      border-radius: 12px 12px 24px 24px;
+      position: relative;
+      overflow: hidden;
+      background-color: rgba(255, 152, 0, 0.1);
+    }
+
+    .honey-fill {
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(0deg, #FF8F00, #FFC107);
+      position: absolute;
+      bottom: 0;
+      transition: height 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .jar-rim {
+      width: 52px;
+      height: 10px;
+      background-color: #FFA726;
+      border: 3px solid #EF6C00;
+      border-radius: 5px;
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .jar-label {
+      background-color: #FFF9C4;
+      border: 2px solid #FBC02D;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #E65100;
+      margin-top: 4px;
+    }
+
+    /* Dynamic Star Performance Indicator */
+    .star-display {
+      font-size: 2rem;
+      margin: 8px 0;
+    }
+
+    .star-display span {
+      display: inline-block;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .star-display .inactive {
+      filter: grayscale(1) opacity(0.3);
+    }
+
+    /* Floating Toast Effects on grid */
+    .floating-toast {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      color: #D84315;
+      font-weight: 700;
+      font-size: 1.1rem;
+      pointer-events: none;
+      z-index: 20;
+      animation: floatUpFade 1.1s forwards ease-out;
+      text-shadow: 2px 2px 0 #FFF, -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF;
+    }
+
+    @keyframes floatUpFade {
+      0% { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+      100% { opacity: 0; transform: translate(-50%, -50%) translateY(-40px); }
+    }
+
+    /* Fullscreen canvas for confetti effects */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fullscreen Confetti Layer -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="brand-container">
+    <div class="brand-logo">
+      <img src="/assets/logo.png" alt="BeCre8v Logo">
+    </div>
+    <h1 class="game-title">🐝 Help the Bee: Collect the Nectar</h1>
+    <div class="tagline">Explore beautiful gardens, solve paths, and return home safe!</div>
+  </div>
+
+  <div class="game-container">
+    <!-- Clickable Level Tracker Header -->
+    <div class="level-bar" id="level-bar"></div>
+
+    <div class="arena-layout">
+      <!-- Side Dashboard stats panel -->
+      <div class="stats-panel">
+        <div class="theme-banner" id="theme-banner">🌼 Sunny Garden</div>
+        
+        <!-- Target Move Notification Badge -->
+        <div id="target-moves-badge" style="text-align: center; font-weight: bold; font-size: 0.95rem; color: #E65100; margin-bottom: 10px; background: #FFFDE7; border: 2px solid #FFE082; border-radius: 8px; padding: 6px;">
+          🎯 Target Moves: <span id="target-moves-val">14</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-icon">🪙</span>
+          <div class="stat-info">
+            <label>Coins</label>
+            <span id="stat-coins">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-icon">🌸</span>
+          <div class="stat-info">
+            <label>Nectar</label>
+            <span id="stat-nectar">0 / 0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-icon">👣</span>
+          <div class="stat-info">
+            <label>Moves</label>
+            <span id="stat-moves">0 / 14</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-icon">🏆</span>
+          <div class="stat-info">
+            <label>Best Moves</label>
+            <span id="stat-best">--</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-icon">💡</span>
+          <div class="stat-info">
+            <label>Hints Left</label>
+            <span id="stat-hints">1</span>
+          </div>
+        </div>
+
+        <div class="stat-card" id="timer-card" style="display: none;">
+          <span class="stat-icon">⏳</span>
+          <div class="stat-info">
+            <label>Timer</label>
+            <span id="stat-timer">90s</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Play Field (Garden Grid) -->
+      <div class="grid-container">
+        <div class="garden-grid" id="garden-grid"></div>
+      </div>
+
+      <!-- Controller / Command Center -->
+      <div class="controls-panel">
+        <div class="d-pad">
+          <div></div>
+          <button class="d-btn" onclick="triggerDpadMove(-1, 0)">▲</button>
+          <div></div>
+          <button class="d-btn" onclick="triggerDpadMove(0, -1)">◀</button>
+          <div class="d-pad-center">🌸</div>
+          <button class="d-btn" onclick="triggerDpadMove(0, 1)">▶</button>
+          <div></div>
+          <button class="d-btn" onclick="triggerDpadMove(1, 0)">▼</button>
+          <div></div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="action-btn restart-btn" onclick="restartLevel()">🔄 Restart</button>
+          <button class="action-btn hint-btn" onclick="useHint()">💡 Hint</button>
+          <button class="action-btn sound-btn" id="sound-btn" onclick="toggleSound()">🔊 Sound On</button>
+          <button class="action-btn" style="background-color: #607D8B; box-shadow:0 4px 0 #455A64;" onclick="openInstructions()">❓ How to Play</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO PLAY MODAL -->
+  <div class="modal-overlay" id="modal-instructions">
+    <div class="modal-card">
+      <h2 class="modal-title">🐝 How to Play</h2>
+      <div class="modal-content">
+        <ol class="info-list">
+          <li>Visit all flowers (🌸, 🌹, 🌻, 🌼) to collect nectar.</li>
+          <li>Avoid unnecessary moves to keep your rating high.</li>
+          <li>Reach the Hive (🏠) after collecting all nectar.</li>
+          <li><strong>Obstacles:</strong> Leaves (🍃/🍂), Water/Ocean (🌊), Trees (🌳), Cactus (🌵), and Rocks (🪨) cannot be crossed. The bee cannot pass through these obstacles.</li>
+          <li>⏳ <strong>Timer:</strong> Advanced levels (11–15) have a countdown timer (averaging 70 seconds) - help the bee reach home before time runs out!</li>
+          <li>Use hints wisely when you get stuck.</li>
+          <li>Complete levels in fewer moves to earn more coins.</li>
+        </ol>
+
+        <h4 style="margin: 15px 0 5px 0; color: #E65100;">✨ Special Items:</h4>
+        <ul class="info-list" style="margin-top: 5px; list-style-type: none; padding-left: 5px;">
+          <li style="margin-bottom: 8px;">🦋 <strong>Butterfly:</strong> Gives you an extra hint!</li>
+          <li style="margin-bottom: 8px;">🍯 <strong>Honey Pot:</strong> Gives you +15 Coins!</li>
+          <li style="margin-bottom: 8px;">🌟 <strong>Golden Blinking Flower:</strong> Gives you +10 Coins! (Note: It must still be visited and collected as part of the level!)</li>
+        </ul>
+
+        <h4 style="margin: 15px 0 5px 0;">Coin Rewards:</h4>
+        <table class="rewards-table">
+          <thead>
+            <tr>
+              <th>Levels</th>
+              <th>Perfect Move Target</th>
+              <th>Above Target Moves</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🌼 1 - 5</td>
+              <td>+30 Coins</td>
+              <td>+20 Coins</td>
+            </tr>
+            <tr>
+              <td>🌻 6 - 10</td>
+              <td>+45 Coins</td>
+              <td>+35 Coins</td>
+            </tr>
+            <tr>
+              <td>👑 11 - 15</td>
+              <td>+60 Coins</td>
+              <td>+50 Coins</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="promo-line">
+          🪙 Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius and Infinity Mirror.
+        </div>
+      </div>
+      <button class="modal-btn" onclick="closeInstructions()">Let's Fly! 🌸</button>
+    </div>
+  </div>
+
+  <!-- LEVEL COMPLETE MODAL -->
+  <div class="modal-overlay" id="modal-win">
+    <div class="modal-card">
+      <div class="dancing-bee">🐝</div>
+      <h2 class="modal-title" id="win-title">Level Completed!</h2>
+      
+      <div class="star-display" id="win-stars">
+        <span>⭐</span><span>⭐</span><span>⭐</span>
+      </div>
+
+      <div class="honey-jar-container">
+        <div class="honey-jar">
+          <div class="honey-fill" id="honey-fill-level"></div>
+          <div class="jar-rim"></div>
+        </div>
+        <div class="jar-label">HONEY JAR</div>
+      </div>
+
+      <div style="font-size: 1.05rem; margin: 15px 0; font-weight: 600;" id="win-details">
+        Level completed in 17 moves! (Target: 17)
+      </div>
+
+      <div style="color: #E65100; font-weight: bold; margin-bottom: 20px;" id="win-coin-gain">
+        +30 Coins Earned!
+      </div>
+
+      <button class="modal-btn" id="win-action-btn" onclick="nextLevelAction()">Next Level 🌻</button>
+    </div>
+  </div>
+
+  <!-- LEVEL FAILED MODAL -->
+  <div class="modal-overlay" id="modal-fail">
+    <div class="modal-card">
+      <div class="sad-bee">😢</div>
+      <h2 class="modal-title" style="color: #D32F2F;">Oh No!</h2>
+      
+      <p style="font-size: 1.1rem; font-weight: 600; margin: 15px 0;" id="fail-reason">
+        You didn't collect all nectar before visiting the Hive!
+      </p>
+
+      <button class="modal-btn" style="background-color: #E53935; box-shadow: 0 5px 0 #C62828;" onclick="restartLevelAndCloseFail()">Try Again 🔄</button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // --- WEBAUDIO RETRO SYNTH GENERATOR ---
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'move') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(260, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.1);
+        } else if (type === 'collect') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.setValueAtTime(554, ctx.currentTime + 0.08);
+          osc.frequency.setValueAtTime(659, ctx.currentTime + 0.16);
+          osc.frequency.setValueAtTime(880, ctx.currentTime + 0.24);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.4);
+        } else if (type === 'win') {
+          const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+          notes.forEach((freq, i) => {
+            const oscSub = ctx.createOscillator();
+            const gainSub = ctx.createGain();
+            oscSub.type = 'sine';
+            oscSub.connect(gainSub);
+            gainSub.connect(ctx.destination);
+            oscSub.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.07);
+            gainSub.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.07);
+            gainSub.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.07 + 0.25);
+            oscSub.start(ctx.currentTime + i * 0.07);
+            oscSub.stop(ctx.currentTime + i * 0.07 + 0.25);
+          });
+        } else if (type === 'fail') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(320, ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.45);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.45);
+        } else if (type === 'bonus') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(1300, ctx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.22);
+        }
+      } catch (err) {
+        console.warn("Audio Context launch blocked / disabled", err);
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('sound-btn');
+      if (soundEnabled) {
+        btn.innerText = "🔊 Sound On";
+        btn.style.backgroundColor = "#26A69A";
+        btn.style.boxShadow = "0 4px 0 #00897B";
+        playSound('move');
+      } else {
+        btn.innerText = "🔇 Sound Off";
+        btn.style.backgroundColor = "#9E9E9E";
+        btn.style.boxShadow = "0 4px 0 #757575";
+      }
+    }
+
+    // --- LEVEL DEFINITIONS ---
+    // Targets adjusted with +2 move buffer to make levels satisfying and achievable (as per user's request)
+    const levels = [
+      {
+        id: 1,
+        name: "Sunny Garden",
+        theme: "🌼 Sunny Garden",
+        cols: 5, rows: 5,
+        targetMoves: 14, // Math Min: 12 + 2 moves buffer
+        timeLimit: 0,
+        hintsAllowed: 1,
+        map: [
+          ['S', '.', '.', '.', 'F'],
+          ['.', 'R', '.', '.', '.'],
+          ['.', '.', '.', 'R', '.'],
+          ['.', '.', 'F', '.', '.'],
+          ['.', '.', '.', '.', 'H']
+        ]
+      },
+      {
+        id: 2,
+        name: "Rose Garden",
+        theme: "🌹 Rose Garden",
+        cols: 5, rows: 5,
+        targetMoves: 17, // Math Min: 15 + 2 moves buffer (Achievable in 17 moves as shown by user)
+        timeLimit: 0,
+        hintsAllowed: 1,
+        map: [
+          ['S', '.', 'R', '.', 'F'],
+          ['.', '.', '.', '.', '.'],
+          ['F', 'R', '.', 'R', '.'],
+          ['.', '.', '.', 'F', '.'],
+          ['.', 'H', '.', '.', '.']
+        ]
+      },
+      {
+        id: 3,
+        name: "Sunflower Field",
+        theme: "🌻 Sunflower Field",
+        cols: 5, rows: 5,
+        targetMoves: 18, // Math Min: 16 + 2 moves buffer
+        timeLimit: 0,
+        hintsAllowed: 1,
+        map: [
+          ['S', 'F', '.', '.', '.'],
+          ['W', 'W', '.', 'R', 'F'],
+          ['.', '.', 'P', '.', '.'],
+          ['.', 'R', '.', 'W', '.'],
+          ['F', '.', '.', '.', 'H']
+        ]
+      },
+      {
+        id: 4,
+        name: "Cherry Blossom Garden",
+        theme: "🌸 Cherry Blossom Garden",
+        cols: 5, rows: 5,
+        targetMoves: 20, // Math Min: 18 + 2 moves buffer
+        timeLimit: 0,
+        hintsAllowed: 1,
+        map: [
+          ['S', '.', '.', 'T', 'G'],
+          ['.', 'T', '.', '.', '.'],
+          ['F', '.', '.', 'T', 'F'],
+          ['.', '.', 'T', '.', '.'],
+          ['H', '.', 'F', '.', '.']
+        ]
+      },
+      {
+        id: 5,
+        name: "Magic Meadow",
+        theme: "🍀 Magic Meadow",
+        cols: 5, rows: 5,
+        targetMoves: 18, // Math Min: 16 + 2 moves buffer
+        timeLimit: 0,
+        hintsAllowed: 1,
+        map: [
+          ['S', '.', 'F', '.', 'B'],
+          ['L', 'L', '.', 'L', '.'],
+          ['F', '.', '.', '.', 'F'],
+          ['.', 'L', 'L', '.', '.'],
+          ['.', '.', 'F', '.', 'H']
+        ]
+      },
+      {
+        id: 6,
+        name: "Tropical Garden",
+        theme: "🌺 Tropical Garden",
+        cols: 6, rows: 6,
+        targetMoves: 19, // Math Min: 17 + 2 moves buffer
+        timeLimit: 0,
+        hintsAllowed: 2,
+        map: [
+          ['S', '.', 'W', '.', 'F', '.'],
+          ['.', '.', 'W', '.', '.', 'F'],
+          ['F', '.', '.', '.', 'W', '.'],
+          ['.', 'W', 'W', '.', '.', '.'],
+          ['.', 'P', '.', '.', 'F', '.'],
+          ['.', '.', '.', 'F', '.', 'H']
+        ]
+      },
+      {
+        id: 7,
+        name: "Forest Garden",
+        theme: "🍃 Forest Garden",
+        cols: 6, rows: 6,
+        targetMoves: 24, // Updated targetMoves = 24
+        timeLimit: 0,
+        hintsAllowed: 2,
+        map: [
+          ['S', '.', 'T', '.', 'F', '.'],
+          ['.', 'F', 'T', '.', '.', 'F'],
+          ['.', '.', '.', 'F', 'T', '.'],
+          ['T', 'T', '.', '.', '.', '.'],
+          ['F', '.', '.', 'T', 'G', '.'],
+          ['.', '.', '.', '.', '.', 'H']
+        ]
+      },
+      {
+        id: 8,
+        name: "Tulip Valley",
+        theme: "🌷 Tulip Valley",
+        cols: 6, rows: 6,
+        targetMoves: 25, // Math Min: 23 + 2 moves buffer
+        timeLimit: 0,
+        hintsAllowed: 2,
+        map: [
+          ['S', '.', '.', 'C', 'F', '.'],
+          ['C', 'C', '.', '.', '.', '.'],
+          ['F', '.', '.', 'C', 'C', 'F'],
+          ['.', 'C', 'B', '.', '.', '.'],
+          ['.', 'F', '.', 'C', 'F', '.'],
+          ['H', '.', '.', '.', '.', '.']
+        ]
+      },
+      {
+        id: 9,
+        name: "Daisy Park",
+        theme: "🌼 Daisy Park",
+        cols: 6, rows: 6,
+        targetMoves: 24, // Math Min: 22 + 2 moves buffer
+        timeLimit: 0,
+        hintsAllowed: 2,
+        map: [
+          ['S', 'F', '.', '.', '.', 'F'],
+          ['.', 'R', 'R', '.', 'R', '.'],
+          ['F', '.', 'P', '.', 'R', '.'],
+          ['.', 'R', 'R', 'F', '.', '.'],
+          ['.', '.', '.', '.', 'R', 'F'],
+          ['H', '.', 'F', '.', '.', '.']
+        ]
+      },
+      {
+        id: 10,
+        name: "Rainbow Garden",
+        theme: "🌈 Rainbow Garden",
+        cols: 6, rows: 6,
+        targetMoves: 27, // Updated targetMoves = 27
+        timeLimit: 0,
+        hintsAllowed: 2,
+        map: [
+          ['S', '.', '.', 'L', 'F', 'G'],
+          ['L', 'L', '.', 'L', '.', '.'],
+          ['F', '.', '.', '.', '.', 'F'],
+          ['.', '.', 'L', 'L', 'L', '.'],
+          ['F', 'L', 'F', '.', '.', 'F'],
+          ['.', '.', '.', '.', 'H', '.']
+        ]
+      },
+      {
+        id: 11,
+        name: "Royal Honey Garden",
+        theme: "👑 Royal Honey Garden",
+        cols: 7, rows: 7,
+        targetMoves: 30, // Math Min: 28 + 2 moves buffer
+        timeLimit: 90,
+        hintsAllowed: 3,
+        map: [
+          ['S', '.', 'W', 'F', '.', '.', 'F'],
+          ['.', 'W', 'W', '.', 'W', 'W', '.'],
+          ['F', '.', '.', '.', '.', '.', '.'],
+          ['.', 'W', 'P', 'W', 'W', 'F', '.'],
+          ['.', '.', '.', 'F', '.', '.', '.'],
+          ['W', 'W', 'F', '.', 'W', 'F', '.'],
+          ['H', '.', '.', '.', '.', '.', 'B']
+        ]
+      },
+      {
+        id: 12,
+        name: "Secret Sanctuary",
+        theme: "🔒 Secret Sanctuary",
+        cols: 7, rows: 7,
+        targetMoves: 33, // Math Min: 31 + 2 moves buffer
+        timeLimit: 80,
+        hintsAllowed: 3,
+        map: [
+          ['S', 'F', '.', 'T', 'F', '.', 'G'],
+          ['T', '.', 'T', '.', '.', 'T', '.'],
+          ['F', '.', '.', '.', 'T', '.', '.'],
+          ['.', 'T', 'T', 'F', '.', '.', 'F'],
+          ['.', '.', 'F', '.', 'T', 'T', '.'],
+          ['T', 'F', '.', '.', '.', '.', '.'],
+          ['H', '.', '.', 'T', 'F', '.', '.']
+        ]
+      },
+      {
+        id: 13,
+        name: "Whispering Woods",
+        theme: "🌳 Whispering Woods",
+        cols: 7, rows: 7,
+        targetMoves: 36, // Math Min: 34 + 2 moves buffer
+        timeLimit: 75,
+        hintsAllowed: 3,
+        map: [
+          ['S', '.', '.', 'L', 'F', '.', 'F'],
+          ['L', 'L', '.', 'L', '.', 'L', '.'],
+          ['F', '.', 'P', '.', '.', 'L', '.'],
+          ['.', 'L', 'L', 'L', 'F', '.', 'F'],
+          ['F', '.', '.', 'L', '.', 'L', '.'],
+          ['.', 'L', '.', '.', '.', 'F', '.'],
+          ['F', '.', '.', 'L', 'F', '.', 'H']
+        ]
+      },
+      {
+        id: 14,
+        name: "Crystal Cavern",
+        theme: "💎 Crystal Cavern",
+        cols: 7, rows: 7,
+        targetMoves: 36, // Math Min: 34 + 2 moves buffer
+        timeLimit: 70,
+        hintsAllowed: 3,
+        map: [
+          ['S', 'F', '.', 'R', '.', '.', 'F'],
+          ['R', '.', 'R', 'R', '.', 'R', '.'],
+          ['F', '.', '.', 'R', 'G', 'R', '.'],
+          ['R', 'R', '.', 'R', '.', 'R', 'F'],
+          ['F', '.', '.', '.', '.', '.', '.'],
+          ['.', 'R', 'R', 'R', 'R', 'F', '.'],
+          ['H', '.', 'F', '.', 'F', '.', '.']
+        ]
+      },
+      {
+        id: 15,
+        name: "Honey Queen's Castle",
+        theme: "🏰 Honey Queen's Castle",
+        cols: 8, rows: 8,
+        targetMoves: 43, // Math Min: 41 + 2 moves buffer
+        timeLimit: 60,
+        hintsAllowed: 3,
+        map: [
+          ['S', '.', 'W', 'F', '.', '.', 'F', 'G'],
+          ['.', 'W', 'W', '.', 'W', 'W', '.', 'W'],
+          ['F', '.', '.', '.', '.', 'B', '.', 'F'],
+          ['.', 'W', 'P', 'W', 'W', 'F', '.', '.'],
+          ['.', 'W', '.', 'F', '.', '.', 'W', '.'],
+          ['W', 'W', 'F', '.', 'W', 'F', 'W', 'F'],
+          ['.', '.', '.', '.', 'W', '.', 'W', '.'],
+          ['H', 'F', 'W', '.', '.', '.', 'F', '.']
+        ]
+      }
+    ];
+
+    // --- GAME ENGINE STATE ---
+    let currentLevelIndex = 0;
+    let totalCoins = 0;
+    let gameStateGrid = [];
+    let beeRow = 0;
+    let beeCol = 0;
+    let movesCount = 0;
+    let totalRequiredFlowers = 0;
+    let collectedRequiredFlowers = 0;
+    let hintsLeft = 0;
+    let timerInterval = null;
+    let timeLeft = 0;
+    let activeHintTimeout = null;
+    let levelBestMoves = {};
+    let levelStars = {};
+const BEE_GAME_ID = "help_the_bee";
+    // Map item symbols to visual content/emojis
+    const itemVisuals = {
+      'R': { emoji: '🪨', class: 'cell-item-R' },
+      'W': { emoji: '🌊', class: 'cell-item-W' },
+      'T': { emoji: '🌳', class: 'cell-item-T' },
+      'C': { emoji: '🌵', class: 'cell-item-C' },
+      'L': { emoji: '🍂', class: 'cell-item-L' },
+      'H': { emoji: '🏠', class: 'cell-item-H' },
+      'G': { emoji: '🌼', class: 'cell-item-G' }, // Golden Flower
+      'B': { emoji: '🦋', class: 'cell-item-B' }, // Butterfly
+      'P': { emoji: '🍯', class: 'cell-item-P' }  // Honey Pot
+    };
+
+    // Get theme specific flower
+    function getThemeFlower(theme) {
+      if (theme.includes("Rose")) return "🌹";
+      if (theme.includes("Sunflower")) return "🌻";
+      if (theme.includes("Cherry") || theme.includes("Sanctuary") || theme.includes("Cavern")) return "🌸";
+      if (theme.includes("Magic")) return "🍀";
+      if (theme.includes("Tropical")) return "🌺";
+      if (theme.includes("Forest")) return "💮";
+      if (theme.includes("Tulip")) return "🌷";
+      if (theme.includes("Daisy") || theme.includes("Sunny")) return "🌼";
+      return "🌸";
+    }
+
+    // Initialize Save Data
+    function initSaveData() {
+      try {
+        const savedCoins = localStorage.getItem('becre8v_bee_coins');
+        if (savedCoins !== null) totalCoins = parseInt(savedCoins, 10);
+
+        const savedBest = localStorage.getItem('becre8v_bee_best_moves');
+        if (savedBest) levelBestMoves = JSON.parse(savedBest);
+
+        const savedStars = localStorage.getItem('becre8v_bee_stars');
+        if (savedStars) levelStars = JSON.parse(savedStars);
+      } catch (e) {
+        console.warn("Storage reading error", e);
+      }
+    }
+
+    function saveGameProgress() {
+      
+      try {
+        localStorage.setItem('becre8v_bee_coins', totalCoins.toString());
+        localStorage.setItem('becre8v_bee_best_moves', JSON.stringify(levelBestMoves));
+        localStorage.setItem('becre8v_bee_stars', JSON.stringify(levelStars));
+      } catch (e) {
+        console.warn("Storage writing error", e);
+      }
+    }
+function syncBeeProgress() {
+      const completedCount = Object.keys(levelStars).length;
+      const progress = Math.round((completedCount / levels.length) * 100);
+
+      localStorage.setItem("beeCompleted", String(completedCount));
+      localStorage.setItem("beeProgress", String(progress));
+
+      window.parent.postMessage({
+        type: "GAME_PROGRESS_UPDATE",
+        game: BEE_GAME_ID,
+        progress,
+        completed: completedCount,
+        coins: totalCoins,
+        level: currentLevelIndex + 1,
+        score: movesCount,
+      }, "*");
+    }
+
+    async function syncBeeWalletBalance() {
+      const saved =
+        Number(localStorage.getItem("walletCoins")) ||
+        Number(localStorage.getItem("becre8v_bee_coins")) ||
+        0;
+
+      totalCoins = saved;
+      updateUIStats();
+
+      try {
+        if (window.gameSDK) {
+          const balance = await window.gameSDK.getBalance();
+          if (balance !== undefined && balance !== null) {
+            totalCoins = Number(balance);
+            localStorage.setItem("walletCoins", String(totalCoins));
+            localStorage.setItem("becre8v_bee_coins", String(totalCoins));
+            updateUIStats();
+          }
+        }
+      } catch (err) {
+        console.warn("Bee wallet sync failed:", err);
+      }
+    }
+
+    async function creditBeeCoins(amount, description) {
+      let finalBalance =
+        Number(localStorage.getItem("walletCoins")) || Number(totalCoins) || 0;
+
+      try {
+        const rewardResult = await window.gameSDK.rewardCoins({
+          amount,
+          description,
+          game: BEE_GAME_ID,
+          level: currentLevelIndex + 1,
+          score: movesCount,
+        });
+
+        if (rewardResult && rewardResult.balance !== undefined) {
+          finalBalance = Number(rewardResult.balance);
+        } else {
+          const freshBalance = await window.gameSDK.getBalance();
+          if (freshBalance !== undefined && freshBalance !== null) {
+            finalBalance = Number(freshBalance);
+          }
+        }
+      } catch (err) {
+        console.error("Bee reward error:", err);
+        finalBalance += amount;
+      }
+
+      totalCoins = finalBalance;
+      localStorage.setItem("walletCoins", String(totalCoins));
+      localStorage.setItem("becre8v_bee_coins", String(totalCoins));
+      saveGameProgress();
+      updateUIStats();
+    }
+
+    window.addEventListener("walletUpdated", (e) => {
+      const balance = e.detail?.balance;
+      if (balance !== undefined) {
+        totalCoins = Number(balance);
+        localStorage.setItem("becre8v_bee_coins", String(totalCoins));
+        updateUIStats();
+      }
+    });
+    // --- GAME LAUNCH ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (window.gameSDK) {
+        await window.gameSDK.init();
+      }
+      initSaveData();
+      await syncBeeWalletBalance();
+      renderLevelBar();
+      loadLevel(0);
+      syncBeeProgress();
+
+      // Auto-open Instructions unconditionally on page load so it is always present
+      openInstructions();
+    });
+
+    // Keyboard events
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].includes(e.key)) {
+        // Prevent default screen scrolling
+        e.preventDefault();
+      }
+      
+      let dr = 0;
+      let dc = 0;
+      
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          dr = -1; break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          dr = 1; break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          dc = -1; break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          dc = 1; break;
+        default:
+          return;
+      }
+      moveBee(dr, dc);
+    });
+
+    // --- ENGINE CORE LOGIC ---
+    function renderLevelBar() {
+      const levelBar = document.getElementById('level-bar');
+      levelBar.innerHTML = '';
+      levels.forEach((lvl, index) => {
+        const node = document.createElement('div');
+        node.className = `level-node ${index === currentLevelIndex ? 'active' : ''}`;
+        node.onclick = () => selectLevel(index);
+
+        const numText = document.createElement('div');
+        numText.className = 'level-num';
+        numText.innerText = lvl.id;
+
+        const starsDiv = document.createElement('div');
+        starsDiv.className = 'level-stars';
+        const recordedStars = levelStars[lvl.id] || 0;
+        starsDiv.innerText = '⭐'.repeat(recordedStars) || '☆☆☆';
+
+        node.appendChild(numText);
+        node.appendChild(starsDiv);
+        levelBar.appendChild(node);
+      });
+      
+      // Auto-scroll level bar to center current active node
+      const activeNode = levelBar.querySelector('.level-node.active');
+      if (activeNode) {
+        levelBar.scrollLeft = activeNode.offsetLeft - levelBar.offsetWidth / 2 + activeNode.offsetWidth / 2;
+      }
+    }
+
+    function selectLevel(index) {
+      if (activeHintTimeout) {
+        clearTimeout(activeHintTimeout);
+      }
+      currentLevelIndex = index;
+      renderLevelBar();
+      loadLevel(index);
+    }
+
+    function loadLevel(index) {
+      const lvl = levels[index];
+      
+      // Prepare state
+      gameStateGrid = lvl.map.map(row => [...row]);
+      movesCount = 0;
+      collectedRequiredFlowers = 0;
+      hintsLeft = lvl.hintsAllowed;
+      timeLeft = lvl.timeLimit;
+      
+      // Count flowers
+      totalRequiredFlowers = 0;
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          const val = gameStateGrid[r][c];
+          if (val === 'S') {
+            beeRow = r;
+            beeCol = c;
+            gameStateGrid[r][c] = '.'; // Clear start, make it grass
+          }
+          if (val === 'F' || val === 'G') {
+            totalRequiredFlowers++;
+          }
+        }
+      }
+
+      // Handle Timer Setting
+      clearInterval(timerInterval);
+      const timerCard = document.getElementById('timer-card');
+      if (lvl.timeLimit > 0) {
+        timerCard.style.display = 'flex';
+        document.getElementById('stat-timer').innerText = `${timeLeft}s`;
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          document.getElementById('stat-timer').innerText = `${timeLeft}s`;
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            triggerFailure("You ran out of time! ⏰");
+          }
+        }, 1000);
+      } else {
+        timerCard.style.display = 'none';
+      }
+
+      // Build visual grid
+      buildVisualGrid();
+      updateUIStats();
+    }
+
+    function buildVisualGrid() {
+      const lvl = levels[currentLevelIndex];
+      const grid = document.getElementById('garden-grid');
+      
+      grid.style.gridTemplateColumns = `repeat(${lvl.cols}, 1fr)`;
+      grid.style.gridTemplateRows = `repeat(${lvl.rows}, 1fr)`;
+      grid.innerHTML = '';
+
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          const cell = document.createElement('div');
+          cell.className = `garden-cell ${(r + c) % 2 === 0 ? 'cell-grass-light' : 'cell-grass-dark'}`;
+          cell.id = `cell-${r}-${c}`;
+
+          const val = gameStateGrid[r][c];
+          if (val !== '.' && val !== 'S') {
+            const item = document.createElement('div');
+            item.className = 'cell-item';
+            
+            if (val === 'F') {
+              item.innerText = getThemeFlower(lvl.theme);
+              item.classList.add('cell-item-F');
+            } else if (itemVisuals[val]) {
+              item.innerText = itemVisuals[val].emoji;
+              item.classList.add(itemVisuals[val].class);
+            }
+            cell.appendChild(item);
+          }
+          grid.appendChild(cell);
+        }
+      }
+
+      // Setup absolute overlay bee element
+      const bee = document.createElement('div');
+      bee.id = 'bee-sprite';
+      bee.className = 'bee-sprite';
+      bee.innerText = '🐝';
+      grid.appendChild(bee);
+      repositionBeeVisual(false);
+    }
+
+    function repositionBeeVisual(animateRotation = true) {
+      const lvl = levels[currentLevelIndex];
+      const bee = document.getElementById('bee-sprite');
+      if (!bee) return;
+
+      const cellWidth = 100 / lvl.cols;
+      const cellHeight = 100 / lvl.rows;
+
+      bee.style.width = `${cellWidth}%`;
+      bee.style.height = `${cellHeight}%`;
+      bee.style.left = `${beeCol * cellWidth}%`;
+      bee.style.top = `${beeRow * cellHeight}%`;
+    }
+
+    // Update Statistics Badge text to fit the theme elements perfectly
+    function updateUIStats() {
+      const lvl = levels[currentLevelIndex];
+      document.getElementById('theme-banner').innerText = lvl.theme;
+      
+      // Explicitly print target moves on each level
+      document.getElementById('target-moves-val').innerText = lvl.targetMoves;
+
+      document.getElementById('stat-coins').innerText = totalCoins;
+      document.getElementById('stat-nectar').innerText = `${collectedRequiredFlowers} / ${totalRequiredFlowers}`;
+      document.getElementById('stat-moves').innerText = `${movesCount} / ${lvl.targetMoves}`;
+      
+      const best = levelBestMoves[lvl.id];
+      document.getElementById('stat-best').innerText = best ? `${best} moves` : '--';
+      document.getElementById('stat-hints').innerText = hintsLeft;
+    }
+
+    function triggerDpadMove(dr, dc) {
+      moveBee(dr, dc);
+    }
+
+    function moveBee(dr, dc) {
+      // Don't allow action if modal screens are active
+      if (document.querySelector('.modal-overlay.active')) return;
+
+      const lvl = levels[currentLevelIndex];
+      const targetRow = beeRow + dr;
+      const targetCol = beeCol + dc;
+
+      // Check boundaries
+      if (targetRow < 0 || targetRow >= lvl.rows || targetCol < 0 || targetCol >= lvl.cols) {
+        wiggleBee();
+        return;
+      }
+
+      // Check obstacles
+      const targetTile = gameStateGrid[targetRow][targetCol];
+      const isObstacle = ['R', 'W', 'T', 'C', 'L'].includes(targetTile);
+      if (isObstacle) {
+        wiggleBee();
+        return;
+      }
+
+      // Execute Move
+      beeRow = targetRow;
+      beeCol = targetCol;
+      movesCount++;
+      playSound('move');
+
+      // Adjust bee sprite direction facing left / right
+      const bee = document.getElementById('bee-sprite');
+      if (bee) {
+        if (dc === -1) {
+          bee.style.transform = 'scaleX(-1)';
+        } else if (dc === 1) {
+          bee.style.transform = 'scaleX(1)';
+        }
+      }
+
+      repositionBeeVisual();
+      checkForCollections();
+      updateUIStats();
+
+      // Check Target Hive
+      if (targetTile === 'H') {
+        if (collectedRequiredFlowers === totalRequiredFlowers) {
+          triggerSuccess();
+        } else {
+          showFloatingNotification("Collect all nectar first! 🌸", beeRow, beeCol);
+        }
+      }
+    }
+
+    function wiggleBee() {
+      const bee = document.getElementById('bee-sprite');
+      if (!bee) return;
+      bee.style.transform += ' scale(1.1)';
+      setTimeout(() => {
+        bee.style.transform = bee.style.transform.replace(' scale(1.1)', '');
+      }, 150);
+    }
+
+    async function checkForCollections() {
+      const tile = gameStateGrid[beeRow][beeCol];
+      if (tile === 'F') {
+        collectedRequiredFlowers++;
+        gameStateGrid[beeRow][beeCol] = '.';
+        removeVisualItemFromCell(beeRow, beeCol);
+        playSound('collect');
+        showFloatingNotification("Nectar +1! 🌸", beeRow, beeCol);
+      } else if (tile === 'G') {
+        // Golden Flower reward
+        collectedRequiredFlowers++;
+        gameStateGrid[beeRow][beeCol] = '.';
+        removeVisualItemFromCell(beeRow, beeCol);
+        playSound('bonus');
+        showFloatingNotification("Gold! +10 Coins 🪙", beeRow, beeCol);
+        await creditBeeCoins(10, "Golden Flower Bonus");
+      } else if (tile === 'B') {
+        // Butterfly Friend reward
+        hintsLeft++;
+        gameStateGrid[beeRow][beeCol] = '.';
+        removeVisualItemFromCell(beeRow, beeCol);
+        playSound('bonus');
+        showFloatingNotification("Butterfly +1 Hint! 🦋", beeRow, beeCol);
+      } else if (tile === 'P') {
+        // Honey pot reward
+        gameStateGrid[beeRow][beeCol] = '.';
+        removeVisualItemFromCell(beeRow, beeCol);
+        playSound('bonus');
+        showFloatingNotification("Honey Pot +15 Coins! 🍯", beeRow, beeCol);
+        await creditBeeCoins(15, "Honey Pot Bonus");
+      }
+    }
+
+    function removeVisualItemFromCell(r, c) {
+      const cell = document.getElementById(`cell-${r}-${c}`);
+      if (cell) {
+        const item = cell.querySelector('.cell-item');
+        if (item) {
+          // Sparkle explosion effect before removal
+          item.style.transform = 'scale(0)';
+          setTimeout(() => item.remove(), 200);
+        }
+      }
+    }
+
+    function showFloatingNotification(text, row, col) {
+      const grid = document.getElementById('garden-grid');
+      const cell = document.getElementById(`cell-${row}-${col}`);
+      if (!cell) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'floating-toast';
+      toast.innerText = text;
+
+      // Position toast centered over the cell
+      const cellRect = cell.getBoundingClientRect();
+      const gridRect = grid.getBoundingClientRect();
+      
+      const leftOffset = cellRect.left - gridRect.left + cellRect.width / 2;
+      const topOffset = cellRect.top - gridRect.top + cellRect.height / 2;
+
+      toast.style.left = `${leftOffset}px`;
+      toast.style.top = `${topOffset}px`;
+
+      grid.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 1100);
+    }
+
+    // --- BREADTH FIRST SEARCH PATHFINDER FOR SMART HINTS ---
+    function useHint() {
+      if (document.querySelector('.modal-overlay.active')) return;
+
+      if (hintsLeft <= 0) {
+        showFloatingNotification("No hints left! ❌", beeRow, beeCol);
+        playSound('fail');
+        return;
+      }
+
+      // Clear any active hint
+      if (activeHintTimeout) {
+        clearTimeout(activeHintTimeout);
+        clearAllHintSparkles();
+      }
+
+      const path = findShortestPath();
+      if (!path || path.length <= 1) {
+        showFloatingNotification("Can't find a path! 🪨", beeRow, beeCol);
+        return;
+      }
+
+      // Decrement Hint count
+      hintsLeft--;
+      updateUIStats();
+      playSound('bonus');
+
+      // Highlight the first 4 nodes of the path to guide the player
+      const maxHighlight = Math.min(path.length, 5);
+      for (let i = 1; i < maxHighlight; i++) {
+        const node = path[i];
+        const cell = document.getElementById(`cell-${node.r}-${node.c}`);
+        if (cell) {
+          cell.classList.add('path-hint');
+        }
+      }
+
+      // Clear sparkles after 2.5 seconds
+      activeHintTimeout = setTimeout(() => {
+        clearAllHintSparkles();
+      }, 2500);
+    }
+
+    function clearAllHintSparkles() {
+      document.querySelectorAll('.garden-cell').forEach(cell => {
+        cell.classList.remove('path-hint');
+      });
+    }
+
+    function findShortestPath() {
+      const lvl = levels[currentLevelIndex];
+      const start = { r: beeRow, c: beeCol };
+      const queue = [ [start] ];
+      const visited = new Set();
+      visited.add(`${beeRow},${beeCol}`);
+
+      // Locate target nodes
+      const targetNodes = [];
+      for (let r = 0; r < lvl.rows; r++) {
+        for (let c = 0; c < lvl.cols; c++) {
+          const val = gameStateGrid[r][c];
+          if (val === 'F' || val === 'G') {
+            targetNodes.push({ r, c });
+          }
+        }
+      }
+
+      // If all flowers collected, the destination target is the Hive
+      if (targetNodes.length === 0) {
+        for (let r = 0; r < lvl.rows; r++) {
+          for (let c = 0; c < lvl.cols; c++) {
+            if (gameStateGrid[r][c] === 'H') {
+              targetNodes.push({ r, c });
+            }
+          }
+        }
+      }
+
+      if (targetNodes.length === 0) return null;
+
+      while (queue.length > 0) {
+        const path = queue.shift();
+        const curr = path[path.length - 1];
+
+        // Did we arrive?
+        const reachedTarget = targetNodes.some(target => target.r === curr.r && target.c === curr.c);
+        if (reachedTarget) {
+          return path;
+        }
+
+        const directions = [
+          { r: -1, c: 0 }, // Up
+          { r: 1, c: 0 },  // Down
+          { r: 0, c: -1 }, // Left
+          { r: 0, c: 1 }   // Right
+        ];
+
+        for (const dir of directions) {
+          const nr = curr.r + dir.r;
+          const nc = curr.c + dir.c;
+          const key = `${nr},${nc}`;
+
+          if (nr >= 0 && nr < lvl.rows && nc >= 0 && nc < lvl.cols) {
+            const tile = gameStateGrid[nr][nc];
+            const isObstacle = ['R', 'W', 'T', 'C', 'L'].includes(tile);
+            
+            if (!isObstacle && !visited.has(key)) {
+              visited.add(key);
+              queue.push([...path, { r: nr, c: nc }]);
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    // --- RESTART LEVEL ACTION ---
+    function restartLevel() {
+      if (activeHintTimeout) {
+        clearTimeout(activeHintTimeout);
+      }
+      loadLevel(currentLevelIndex);
+    }
+
+    // --- MODAL TRIGGERS ---
+    function openInstructions() {
+      document.getElementById('modal-instructions').classList.add('active');
+    }
+
+    function closeInstructions() {
+      document.getElementById('modal-instructions').classList.remove('active');
+    }
+
+    // Prevent failure screen scroll locks
+    function restartLevelAndCloseFail() {
+      document.getElementById('modal-fail').classList.remove('active');
+      restartLevel();
+    }
+
+    function triggerFailure(reason) {
+      clearInterval(timerInterval);
+      playSound('fail');
+      document.getElementById('fail-reason').innerText = reason;
+      document.getElementById('modal-fail').classList.add('active');
+    }
+
+    async function triggerSuccess() {
+      clearInterval(timerInterval);
+      playSound('win');
+      triggerConfetti();
+
+      const lvl = levels[currentLevelIndex];
+      let stars = 1;
+
+      if (movesCount <= lvl.targetMoves) {
+        stars = 3;
+      } else if (movesCount <= lvl.targetMoves + 5) {
+        stars = 2;
+      }
+
+      // Calculate level rewards
+      let coinReward = 0;
+      let isPerfect = movesCount <= lvl.targetMoves;
+
+      if (lvl.id <= 5) {
+        coinReward = isPerfect ? 30 : 20;
+      } else if (lvl.id <= 10) {
+        coinReward = isPerfect ? 45 : 35;
+      } else {
+        coinReward = isPerfect ? 60 : 50;
+      }
+
+      // Check if this is a replay of already completed level
+      const alreadyCompleted = levelStars[lvl.id] !== undefined;
+      let displayRewardText = "";
+      
+      if (alreadyCompleted) {
+        const replayBonus = 10;
+        await creditBeeCoins(replayBonus, `Replay Bonus - Level ${lvl.id}`);
+        displayRewardText = `Replay Bonus: +${replayBonus} Coins 🪙`;
+      } else {
+        await creditBeeCoins(coinReward, `Level ${lvl.id} Complete (${lvl.name})`);
+        displayRewardText = `First Completion: +${coinReward} Coins 🪙`;
+      }
+
+      // Update Highscores
+      const prevBest = levelBestMoves[lvl.id];
+      if (!prevBest || movesCount < prevBest) {
+        levelBestMoves[lvl.id] = movesCount;
+      }
+
+      const prevStars = levelStars[lvl.id] || 0;
+      if (stars > prevStars) {
+        levelStars[lvl.id] = stars;
+      }
+
+      saveGameProgress();
+      renderLevelBar();
+      syncBeeProgress();
+
+      // Configure Modal Interface
+      document.getElementById('win-title').innerText = isPerfect ? "Perfect! 🏆" : "Great Job! ⭐";
+      document.getElementById('win-details').innerText = `Completed in ${movesCount} moves! (Target: ${lvl.targetMoves})`;
+      document.getElementById('win-coin-gain').innerText = displayRewardText;
+
+      // Render star visual
+      const starsContainer = document.getElementById('win-stars');
+      starsContainer.innerHTML = '';
+      for (let s = 1; s <= 3; s++) {
+        const star = document.createElement('span');
+        star.innerText = '⭐';
+        if (s > stars) {
+          star.className = 'inactive';
+        }
+        starsContainer.appendChild(star);
+      }
+
+      // Handle next level actions logic
+      const nextBtn = document.getElementById('win-action-btn');
+      if (currentLevelIndex < levels.length - 1) {
+        nextBtn.innerText = "Next Level 🌻";
+      } else {
+        nextBtn.innerText = "Complete Game! 👑";
+      }
+
+      // Animate Honey Jar Filling up based on move performance!
+      const honeyFill = document.getElementById('honey-fill-level');
+      honeyFill.style.height = '0%';
+      
+      document.getElementById('modal-win').classList.add('active');
+      
+      setTimeout(() => {
+        const fillPercent = isPerfect ? 95 : (stars === 2 ? 70 : 40);
+        honeyFill.style.height = `${fillPercent}%`;
+      }, 200);
+    }
+
+    function nextLevelAction() {
+      document.getElementById('modal-win').classList.remove('active');
+      if (currentLevelIndex < levels.length - 1) {
+        selectLevel(currentLevelIndex + 1);
+      } else {
+        // Game Completed Completely!
+        alert("🎉 Congratulations! You completed all the gardens, earned immense treasure, and became the Honey Queen's Best Helper! 👑🐝");
+        selectLevel(0);
+      }
+    }
+
+    // --- PURE CANVAS RETRO CONFETTI ANIMATION SYSTEM ---
+    let confettiActive = false;
+    function triggerConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      let particles = [];
+      const colors = ['#FFC107', '#FF5722', '#8BC34A', '#2196F3', '#E91E63', '#9C27B0'];
+
+      for (let i = 0; i < 90; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * canvas.height,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          tilt: Math.random() * 10 - 5,
+          tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+          tiltAngle: 0
+        });
+      }
+
+      confettiActive = true;
+      let frames = 0;
+
+      function drawConfetti() {
+        if (!confettiActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let continuing = false;
+
+        particles.forEach((p, idx) => {
+          p.tiltAngle += p.tiltAngleIncremental;
+          p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+          p.x += Math.sin(p.tiltAngle);
+          p.tilt = Math.sin(p.tiltAngle - idx / 3) * 15;
+
+          if (p.y < canvas.height) {
+            continuing = true;
+          }
+
+          ctx.beginPath();
+          ctx.lineWidth = p.r;
+          ctx.strokeStyle = p.color;
+          ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+          ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+          ctx.stroke();
+        });
+
+        frames++;
+        if (continuing && frames < 220) {
+          requestAnimationFrame(drawConfetti);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          confettiActive = false;
+        }
+      }
+
+      drawConfetti();
+    }
+
+    // Rescale Canvas on layout change
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confetti-canvas');
+      if (canvas && confettiActive) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+  </script>
+</body>
+</html>

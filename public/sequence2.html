@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sequence Builder: Arrange the Steps!</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+:root {
+--sky1: #87CEEB;
+--sky2: #B0E0FF;
+--card-bg: #fff;
+--slot-empty: #ddf3ff;
+--slot-border: #7ec8e3;
+--accent: #FF6B6B;
+--green: #4CAF50;
+--yellow: #FFD700;
+--purple: #9B59B6;
+--orange: #FF8C42;
+--pink: #FF69B4;
+--teal: #20B2AA;
+}
+*{ box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: 'Nunito', sans-serif;
+background: linear-gradient(160deg, #87CEEB 0%, #B0E0FF 40%, #E0F7FA 100%);
+min-height: 100vh;
+overflow-x: hidden;
+position: relative;
+}
+.cloud {
+position: fixed;
+background: white;
+border-radius: 50px;
+opacity: 0.75;
+pointer-events: none;
+z-index: 0;
+}
+.cloud::before, .cloud::after {
+content: '';
+position: absolute;
+background: white;
+border-radius: 50%;
+}
+.cloud-1 { width: 120px; height: 40px; top: 8%; left: -130px; animation: drift 22s linear infinite; }
+.cloud-1::before { width: 60px; height: 60px; top: -30px; left: 20px; }
+.cloud-1::after { width: 40px; height: 40px; top: -20px; left: 55px; }
+.cloud-2 { width: 90px; height: 30px; top: 20%; left: -100px; animation: drift 30s linear infinite 8s; opacity: 0.6; }
+.cloud-2::before { width: 45px; height: 45px; top: -22px; left: 15px; }
+.cloud-2::after { width: 30px; height: 30px; top: -15px; left: 42px; }
+.cloud-3 { width: 150px; height: 50px; top: 5%; left: -160px; animation: drift 18s linear infinite 4s; }
+.cloud-3::before { width: 70px; height: 70px; top: -35px; left: 25px; }
+.cloud-3::after { width: 50px; height: 50px; top: -25px; left: 75px; }
+@keyframes drift { to { left: 110vw; } }
+.tree { position: fixed; bottom: 0; pointer-events: none; z-index: 0; }
+.tree-trunk { width: 18px; height: 45px; background: #8B6914; margin: 0 auto; border-radius: 3px; }
+.tree-top { width: 0; height: 0; border-left: 35px solid transparent; border-right: 35px solid transparent; border-bottom: 60px solid #2E8B57; margin: 0 auto; position: relative; top: -5px; }
+.tree-top2 { width: 0; height: 0; border-left: 28px solid transparent; border-right: 28px solid transparent; border-bottom: 50px solid #3CB371; margin: 0 auto; position: relative; top: -40px; }
+.tree-1 { left: 20px; }
+.tree-2 { left: 70px; transform: scale(0.75); }
+.tree-3 { right: 20px; }
+.tree-4 { right: 70px; transform: scale(0.8); }
+#game-wrapper {
+position: relative;
+z-index: 1;
+max-width: 900px;
+margin: 0 auto;
+padding: 15px 15px 80px;
+}
+#top-nav {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 14px;
+gap: 15px;
+}
+.logo-wrap {
+display: flex;
+align-items: center;
+}
+.logo-img {
+max-height: 50px;
+width: auto;
+object-fit: contain;
+}
+.btn-how {
+font-family: 'Fredoka One', cursive;
+font-size: 1rem;
+background: linear-gradient(135deg, #9B59B6, #8E44AD);
+color: white;
+border: none;
+border-radius: 30px;
+padding: 10px 20px;
+cursor: pointer;
+box-shadow: 0 4px 10px rgba(155,89,182,0.3);
+transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-how:hover {
+transform: translateY(-2px);
+box-shadow: 0 6px 15px rgba(155,89,182,0.4);
+}
+.btn-how:active {
+transform: scale(0.97);
+}
+@media (max-width: 480px) {
+#top-nav {
+flex-direction: column-reverse;
+align-items: center;
+gap: 10px;
+}
+}
+#level-bar-container {
+background: rgba(255, 255, 255, 0.85);
+border-radius: 20px;
+padding: 12px;
+margin-bottom: 14px;
+box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+text-align: center;
+}
+.level-bar-title {
+font-family: 'Fredoka One', cursive;
+font-size: 0.95rem;
+color: #555;
+margin-bottom: 8px;
+}
+.level-buttons {
+display: flex;
+flex-wrap: wrap;
+gap: 6px;
+justify-content: center;
+}
+.lvl-btn {
+font-family: 'Fredoka One', cursive;
+font-size: 0.9rem;
+width: 35px;
+height: 35px;
+border: 2px solid var(--slot-border);
+border-radius: 50%;
+background: #fff;
+color: #555;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+transition: all 0.15s ease;
+}
+.lvl-btn:hover {
+transform: scale(1.1);
+background: var(--sky2);
+}
+.lvl-btn.completed {
+background: #E8F5E9;
+border-color: #4CAF50;
+color: #2E7D32;
+}
+.lvl-btn.completed:hover {
+background: #c8e6c9;
+}
+.lvl-btn.active {
+background: linear-gradient(135deg, #FF8C42, #FF6B6B);
+color: white;
+box-shadow: 0 3px 8px rgba(255,107,107,0.4);
+transform: scale(1.15);
+border-color: #fff;
+}
+#header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: linear-gradient(135deg, #FF8C42, #FF6B6B);
+border-radius: 20px;
+padding: 12px 20px;
+margin-bottom: 14px;
+box-shadow: 0 6px 20px rgba(255,107,107,0.35);
+flex-wrap: wrap;
+gap: 8px;
+}
+#header h1 {
+font-family: 'Fredoka One', cursive;
+color: white;
+font-size: 1.5rem;
+text-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+letter-spacing: 1px;
+}
+.hud {
+display: flex;
+gap: 10px;
+align-items: center;
+flex-wrap: wrap;
+}
+.hud-pill {
+background: rgba(255,255,255,0.25);
+border: 2px solid rgba(255,255,255,0.5);
+border-radius: 30px;
+padding: 5px 14px;
+color: white;
+font-weight: 800;
+font-size: 0.95rem;
+}
+.hud-pill span { font-size: 1.1rem; }
+#guide-area {
+display: flex;
+align-items: center;
+gap: 14px;
+background: white;
+border-radius: 20px;
+padding: 12px 18px;
+margin-bottom: 14px;
+box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+animation: bounceIn 0.5s ease;
+}
+#guide-char {
+font-size: 2.8rem;
+animation: charBounce 2s ease-in-out infinite;
+flex-shrink: 0;
+}
+@keyframes charBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+#guide-bubble {
+background: linear-gradient(135deg, #E8F5E9, #E3F2FD);
+border-radius: 15px;
+padding: 10px 16px;
+font-size: 1rem;
+font-weight: 700;
+color: #333;
+border: 2px solid #A5D6A7;
+position: relative;
+flex: 1;
+}
+#guide-bubble::before {
+content: '';
+position: absolute;
+left: -10px;
+top: 50%;
+transform: translateY(-50%);
+border-top: 8px solid transparent;
+border-bottom: 8px solid transparent;
+border-right: 10px solid #A5D6A7;
+}
+#topic-badge {
+background: linear-gradient(135deg, #9B59B6, #8E44AD);
+color: white;
+border-radius: 30px;
+padding: 4px 14px;
+font-size: 0.8rem;
+font-weight: 800;
+letter-spacing: 0.5px;
+margin-left: 8px;
+display: inline-block;
+}
+#game-area {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 14px;
+margin-bottom: 14px;
+}
+@media(max-width: 600px) {
+#game-area { grid-template-columns: 1fr; }
+}
+.panel {
+background: rgba(255,255,255,0.85);
+border-radius: 20px;
+padding: 14px;
+box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.panel-title {
+font-family: 'Fredoka One', cursive;
+font-size: 1rem;
+color: #555;
+margin-bottom: 10px;
+text-align: center;
+letter-spacing: 0.5px;
+}
+.step-card {
+background: white;
+border-radius: 14px;
+padding: 10px 14px;
+margin-bottom: 8px;
+cursor: grab;
+font-size: 0.88rem;
+font-weight: 700;
+color: #333;
+border: 2.5px solid transparent;
+box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+user-select: none;
+display: flex;
+align-items: center;
+gap: 8px;
+position: relative;
+}
+.step-card:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+.step-card.dragging { opacity: 0.4; transform: scale(0.97); cursor: grabbing; }
+.step-card.drag-over { border-color: #FF6B6B !important; background: #fff5f5; }
+.step-card .card-num {
+background: linear-gradient(135deg, #FF8C42, #FF6B6B);
+color: white;
+border-radius: 50%;
+width: 24px;
+height: 24px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 0.75rem;
+font-weight: 900;
+flex-shrink: 0;
+}
+.step-card .card-emoji { font-size: 1.2rem; flex-shrink: 0; }
+.card-v0 { border-color: #FFD700; background: linear-gradient(135deg, #fffde7, #fff); }
+.card-v1 { border-color: #FF8C42; background: linear-gradient(135deg, #fff3e0, #fff); }
+.card-v2 { border-color: #4CAF50; background: linear-gradient(135deg, #e8f5e9, #fff); }
+.card-v3 { border-color: #2196F3; background: linear-gradient(135deg, #e3f2fd, #fff); }
+.card-v4 { border-color: #9B59B6; background: linear-gradient(135deg, #f3e5f5, #fff); }
+.card-v5 { border-color: #FF69B4; background: linear-gradient(135deg, #fce4ec, #fff); }
+.card-v6 { border-color: #20B2AA; background: linear-gradient(135deg, #e0f2f1, #fff); }
+.card-v7 { border-color: #FF6B6B; background: linear-gradient(135deg, #ffebee, #fff); }
+.slot {
+background: var(--slot-empty);
+border: 2.5px dashed var(--slot-border);
+border-radius: 14px;
+padding: 10px 14px;
+margin-bottom: 8px;
+min-height: 50px;
+display: flex;
+align-items: center;
+transition: background 0.2s, border-color 0.2s;
+position: relative;
+}
+.slot.drag-over-slot { background: #E8F5E9; border-color: #4CAF50; border-style: solid; }
+.slot.filled { background: #fff; border-style: solid; }
+.slot-label {
+font-size: 0.75rem;
+font-weight: 800;
+color: #aaa;
+position: absolute;
+top: 5px;
+left: 10px;
+pointer-events: none;
+transition: opacity 0.2s;
+}
+.slot.filled .slot-label { opacity: 0; }
+#btn-area {
+display: flex;
+gap: 10px;
+justify-content: center;
+flex-wrap: wrap;
+margin-bottom: 14px;
+}
+.btn {
+font-family: 'Nunito', sans-serif;
+font-weight: 800;
+font-size: 1rem;
+border: none;
+border-radius: 40px;
+padding: 12px 28px;
+cursor: pointer;
+transition: transform 0.15s, box-shadow 0.15s;
+box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+letter-spacing: 0.5px;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+.btn:active { transform: scale(0.97); }
+.btn-check {
+background: linear-gradient(135deg, #4CAF50, #2E7D32);
+color: white;
+text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+}
+.btn-restart {
+background: linear-gradient(135deg, #FF8C42, #E65100);
+color: white;
+}
+.btn-hint {
+background: linear-gradient(135deg, #9B59B6, #6C3483);
+color: white;
+}
+#feedback {
+text-align: center;
+font-family: 'Fredoka One', cursive;
+font-size: 1.4rem;
+min-height: 36px;
+transition: all 0.3s;
+color: #333;
+letter-spacing: 1px;
+}
+#start-screen, #congrats-screen {
+position: fixed;
+inset: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 100;
+background: linear-gradient(160deg, rgba(135,206,235,0.97) 0%, rgba(176,224,255,0.97) 100%);
+}
+.screen-card {
+background: white;
+border-radius: 30px;
+padding: 40px 36px;
+text-align: center;
+max-width: 480px;
+width: 90%;
+box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes bounceIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.screen-title {
+font-family: 'Fredoka One', cursive;
+font-size: 2.2rem;
+color: #FF6B6B;
+margin-bottom: 10px;
+text-shadow: 2px 2px 0 rgba(255,107,107,0.2);
+}
+.screen-emoji { font-size: 4rem; margin-bottom: 10px; animation: charBounce 1.5s ease-in-out infinite; display: block; }
+.screen-text { font-size: 1.05rem; font-weight: 600; color: #555; margin-bottom: 20px; line-height: 1.5; }
+.btn-big {
+font-family: 'Fredoka One', cursive;
+font-size: 1.3rem;
+background: linear-gradient(135deg, #FF8C42, #FF6B6B);
+color: white;
+border: none;
+border-radius: 50px;
+padding: 14px 40px;
+cursor: pointer;
+box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+transition: transform 0.15s, box-shadow 0.15s;
+letter-spacing: 1px;
+margin-top: 6px;
+}
+.btn-big:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(255,107,107,0.5); }
+#progress-wrap {
+background: rgba(255,255,255,0.6);
+border-radius: 30px;
+height: 14px;
+margin-bottom: 14px;
+overflow: hidden;
+box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+}
+#progress-bar {
+height: 100%;
+background: linear-gradient(90deg, #FF8C42, #FF6B6B, #FF69B4);
+border-radius: 30px;
+transition: width 0.5s ease;
+position: relative;
+overflow: hidden;
+}
+#progress-bar::after {
+content: '';
+position: absolute;
+top: 0; left: -100%;
+width: 100%; height: 100%;
+background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+animation: shimmer 2s infinite;
+}
+@keyframes shimmer { to { left: 200%; } }
+.confetti-piece {
+position: fixed;
+width: 10px;
+height: 10px;
+border-radius: 2px;
+pointer-events: none;
+z-index: 200;
+animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+@keyframes shake {
+0%,100% { transform: translateX(0); }
+20% { transform: translateX(-8px); }
+40% { transform: translateX(8px); }
+60% { transform: translateX(-6px); }
+80% { transform: translateX(6px); }
+}
+.shake { animation: shake 0.5s ease; }
+.success-glow .slot { background: #E8F5E9 !important; border-color: #4CAF50 !important; border-style: solid !important; box-shadow: 0 0 12px rgba(76,175,80,0.4); }
+.success-glow .step-card { border-color: #4CAF50 !important; }
+#hint-box {
+background: linear-gradient(135deg, #FFF9C4, #FFFDE7);
+border: 2px solid #FFD700;
+border-radius: 14px;
+padding: 10px 16px;
+font-size: 0.88rem;
+font-weight: 700;
+color: #555;
+margin-bottom: 10px;
+display: none;
+animation: bounceIn 0.3s ease;
+}
+#level-complete {
+position: fixed;
+inset: 0;
+display: none;
+align-items: center;
+justify-content: center;
+z-index: 150;
+background: rgba(0,0,0,0.35);
+}
+#level-complete.show { display: flex; }
+#level-complete .lc-card {
+background: white;
+border-radius: 30px;
+padding: 36px;
+text-align: center;
+max-width: 380px;
+width: 90%;
+animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.lc-emoji { font-size: 4rem; display: block; margin-bottom: 8px; animation: charBounce 1s ease infinite; }
+.lc-title { font-family: 'Fredoka One', cursive; font-size: 2rem; color: #4CAF50; margin-bottom: 6px; }
+.lc-pts { font-size: 1.1rem; font-weight: 800; color: #FF8C42; margin-bottom: 16px; }
+#drag-ghost {
+position: fixed;
+pointer-events: none;
+z-index: 1000;
+opacity: 0.85;
+display: none;
+transform: translate(-50%, -50%) rotate(3deg) scale(1.05);
+min-width: 180px;
+background: white;
+border-radius: 14px;
+padding: 10px 14px;
+font-size: 0.88rem;
+font-weight: 700;
+color: #333;
+box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+border: 2.5px solid #FF8C42;
+}
+#slots-panel { min-height: 200px; }
+.popup-overlay {
+position: fixed;
+inset: 0;
+background: rgba(0, 0, 0, 0.4);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 300;
+animation: fadeIn 0.3s ease;
+}
+.popup-card {
+background: white;
+border-radius: 30px;
+padding: 25px 30px;
+max-width: 480px;
+width: 90%;
+box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+position: relative;
+text-align: center;
+animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.popup-close {
+position: absolute;
+top: 15px;
+right: 20px;
+font-size: 1.8rem;
+font-weight: bold;
+color: #aaa;
+cursor: pointer;
+transition: color 0.15s;
+}
+.popup-close:hover {
+color: #333;
+}
+.popup-title {
+font-family: 'Fredoka One', cursive;
+font-size: 1.6rem;
+color: #FF6B6B;
+margin-bottom: 12px;
+text-shadow: 1px 1px 0 rgba(255,107,107,0.15);
+}
+.popup-section {
+text-align: left;
+background: #f9f9f9;
+border-radius: 15px;
+padding: 12px 18px;
+margin-bottom: 10px;
+border: 1.5px dashed #B0E0FF;
+}
+.popup-section ul {
+list-style-type: '🌟 ';
+padding-left: 15px;
+}
+.popup-section li {
+font-size: 0.95rem;
+font-weight: 700;
+color: #444;
+margin-bottom: 6px;
+line-height: 1.4;
+}
+.rewards-table {
+width: 100%;
+font-size: 0.95rem;
+font-weight: 700;
+color: #444;
+}
+.rewards-table td {
+padding: 4px 0;
+}
+.popup-footer {
+font-size: 0.9rem;
+font-weight: 800;
+color: #6C3483;
+line-height: 1.4;
+margin-top: 12px;
+padding: 8px;
+background: #f3e5f5;
+border-radius: 12px;
+}
+@keyframes fadeIn {
+from { opacity: 0; }
+to { opacity: 1; }
+}
+</style>
+</head>
+<body>
+<div class="cloud cloud-1"></div>
+<div class="cloud cloud-2"></div>
+<div class="cloud cloud-3"></div>
+<div class="tree tree-1"><div class="tree-top2"></div><div class="tree-top"></div><div class="tree-trunk"></div></div>
+<div class="tree tree-2"><div class="tree-top2"></div><div class="tree-top"></div><div class="tree-trunk"></div></div>
+<div class="tree tree-3"><div class="tree-top2"></div><div class="tree-top"></div><div class="tree-trunk"></div></div>
+<div class="tree tree-4"><div class="tree-top2"></div><div class="tree-top"></div><div class="tree-trunk"></div></div>
+<div id="drag-ghost"></div>
+<div id="start-screen">
+<div class="screen-card">
+<span class="screen-emoji">🤖</span>
+<div class="screen-title">Sequence Builder!</div>
+<p class="screen-text">Oops! My steps got all mixed up! 😅<br>Can you drag them into the <strong>correct order</strong>?<br><br>30 fun levels of brain-boosting puzzles await!</p>
+<button class="btn-big" onclick="startGame()">▶ Let's Go!</button>
+</div>
+</div>
+<div id="congrats-screen" style="display:none;">
+<div class="screen-card">
+<span class="screen-emoji">🏆</span>
+<div class="screen-title">You Did It!!!</div>
+<p class="screen-text">WOW! You completed all <strong>30 levels!</strong> 🎉<br>You're a Sequence Master!<br><br><span id="final-score-text"></span></p>
+<button class="btn-big" onclick="restartGame()">🔄 Play Again!</button>
+</div>
+</div>
+<div id="level-complete">
+<div class="lc-card">
+<span class="lc-emoji" id="lc-emoji">🎉</span>
+<div class="lc-title" id="lc-title">Excellent!</div>
+<div class="lc-pts" id="lc-pts">+10 Points!</div>
+<button class="btn-big" id="lc-next-btn" onclick="nextLevel()" style="font-size:1.1rem; padding:12px 32px;">Next Level →</button>
+</div>
+</div>
+<div id="instructions-popup" class="popup-overlay" style="display:none;">
+<div class="popup-card">
+<span class="popup-close" onclick="closeInstructions()">&times;</span>
+<div class="popup-title">🎮 How to Play</div>
+<div class="popup-section">
+<ul>
+<li>Drag the mixed-up steps.</li>
+<li>Arrange them in the correct order.</li>
+<li>Complete the sequence correctly.</li>
+<li>Finish the level to earn coins.</li>
+<li>Wrong order will not complete the level.</li>
+</ul>
+</div>
+<div class="popup-title" style="margin-top:15px;">🪙 Coin Rewards</div>
+<div class="popup-section">
+<table class="rewards-table">
+<tr><td>Levels 1–5</td><td>→</td><td><strong>+20 Coins</strong></td></tr>
+<tr><td>Levels 6–10</td><td>→</td><td><strong>+25 Coins</strong></td></tr>
+<tr><td>Levels 11–15</td><td>→</td><td><strong>+35 Coins</strong></td></tr>
+<tr><td>Levels 16–20</td><td>→</td><td><strong>+50 Coins</strong></td></tr>
+<tr><td>Levels 21–30</td><td>→</td><td><strong>+65 Coins</strong></td></tr>
+</table>
+</div>
+<p class="popup-footer">
+Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius and Infinity Mirror.
+</p>
+<button class="btn-big" onclick="closeInstructions()" style="margin-top: 15px; font-size: 1.1rem; padding: 10px 30px;">Let's Play! 🚀</button>
+</div>
+</div>
+<div id="game-wrapper">
+<div id="top-nav">
+<button class="btn-how" onclick="openInstructions()">❓ How to Play</button>
+<div class="logo-wrap">
+<img src="/assets/logo.png" alt="BeCre8v Logo" class="logo-img">
+</div>
+</div>
+<div id="header">
+<h1>🧩 Sequence Builder</h1>
+<div class="hud">
+<div class="hud-pill">Level <span id="hud-level">1</span>/30</div>
+<div class="hud-pill">⭐ <span id="hud-score">0</span></div>
+<div class="hud-pill">🪙 <span id="hud-coins">0</span></div>
+</div>
+</div>
+<div id="level-bar-container">
+<div class="level-bar-title">🎯 Quick Jump to Level</div>
+<div id="level-buttons" class="level-buttons"></div>
+</div>
+<div id="progress-wrap"><div id="progress-bar" style="width:0%"></div></div>
+<div id="guide-area">
+<div id="guide-char">🤖</div>
+<div id="guide-bubble">
+Oops! My steps got mixed up! Can you put them in the correct order?
+<span id="topic-badge">Topic</span>
+</div>
+</div>
+<div id="hint-box">💡 <span id="hint-text"></span></div>
+<div id="game-area">
+<div class="panel" id="cards-panel">
+<div class="panel-title">🃏 Mixed Up Steps — Drag from here!</div>
+<div id="cards-container"></div>
+</div>
+<div class="panel" id="slots-panel">
+<div class="panel-title">📋 Put them in order here!</div>
+<div id="slots-container"></div>
+</div>
+</div>
+<div id="btn-area">
+<button class="btn btn-check" onclick="checkAnswer()">✅ Check Answer</button>
+<button class="btn btn-hint" onclick="showHint()">💡 Hint</button>
+<button class="btn btn-restart" onclick="restartGame()">🔄 Restart</button>
+</div>
+<div id="feedback"></div>
+</div>
+<script>
+const LEVELS = [
+{
+topic: "🌱 Plant a Seed",
+guide: "How does a plant grow from a seed? Put the steps in order!",
+hint: "Think about what happens underground first...",
+steps: [
+{ text: "Dig a small hole in the soil", emoji: "⛏️" },
+{ text: "Place the seed in the hole", emoji: "🌰" },
+{ text: "Cover the seed with soil", emoji: "🟫" },
+{ text: "Water the seed gently", emoji: "💧" },
+{ text: "Watch the seedling sprout!", emoji: "🌱" },
+]
+},
+{
+topic: "🥪 Make a Sandwich",
+guide: "Yummy! Help me make a sandwich in the right order!",
+hint: "You need bread before anything else...",
+steps: [
+{ text: "Get two slices of bread", emoji: "🍞" },
+{ text: "Spread butter on one slice", emoji: "🧈" },
+{ text: "Add your filling (cheese/veggies)", emoji: "🧀" },
+{ text: "Place the second slice on top", emoji: "🥪" },
+{ text: "Cut the sandwich in half", emoji: "🔪" },
+]
+},
+{
+topic: "🔄 Water Cycle",
+guide: "How does water move from Earth to the sky and back? Order the process!",
+hint: "The hot sun triggers the first phase...",
+steps: [
+{ text: "The sun heats the water in oceans and lakes", emoji: "☀️" },
+{ text: "Water turns into vapor and rises (Evaporation)", emoji: "💨" },
+{ text: "Water vapor cools and forms clouds (Condensation)", emoji: "☁️" },
+{ text: "Clouds become heavy and rain falls (Precipitation)", emoji: "🌧️" },
+{ text: "Rainwater flows back into rivers and oceans", emoji: "🌊" },
+]
+},
+{
+topic: "💻 Start a Computer",
+guide: "Ready to explore the digital world? Order the startup steps!",
+hint: "Always check the power supply first...",
+steps: [
+{ text: "Plug in the power cable", emoji: "🔌" },
+{ text: "Press the power button on the computer", emoji: "🔘" },
+{ text: "Wait for the operating system to load", emoji: "⏳" },
+{ text: "Type your password to log in", emoji: "⌨️" },
+{ text: "Open your favorite web browser", emoji: "🌐" },
+]
+},
+{
+topic: "🌸 Butterfly Life Cycle",
+guide: "Amazing transformations! Order the butterfly's life stages!",
+hint: "Everything begins with a tiny egg...",
+steps: [
+{ text: "A tiny egg is laid on a green leaf", emoji: "🥚" },
+{ text: "A hungry caterpillar hatches from the egg", emoji: "🐛" },
+{ text: "The caterpillar eats leaves and grows big", emoji: "🌿" },
+{ text: "It forms a hard protective chrysalis", emoji: "🫘" },
+{ text: "A beautiful colorful butterfly emerges", emoji: "🦋" },
+]
+},
+{
+topic: "🎨 Paint a Masterpiece",
+guide: "Let's create beautiful art! Arrange the steps in order!",
+hint: "We must set up our workspace and outline before painting...",
+steps: [
+{ text: "Set up your easel and canvas", emoji: "🖼️" },
+{ text: "Draw a light sketch with a pencil", emoji: "✏️" },
+{ text: "Squeeze acrylic paints onto a palette", emoji: "🎨" },
+{ text: "Paint the background colors first", emoji: "🖌️" },
+{ text: "Add fine details with a smaller brush", emoji: "✨" },
+]
+},
+{
+topic: "♻️ Recycle Waste",
+guide: "Save our beautiful planet! Order the recycling steps correctly!",
+hint: "Collect and prepare the materials before sorting...",
+steps: [
+{ text: "Collect empty plastic bottles and cans", emoji: "🥤" },
+{ text: "Rinse them with water to remove residue", emoji: "💧" },
+{ text: "Separate plastics from paper and glass", emoji: "📦" },
+{ text: "Toss them into the blue recycling bin", emoji: "🗑️" },
+{ text: "The recycling truck collects the bins", emoji: "🚛" },
+{ text: "The factory melts them to make new products", emoji: "🏭" },
+]
+},
+{
+topic: "🎵 Play the Drums",
+guide: "Let's create a cool rhythm! Order the drumming steps!",
+hint: "Make sure you sit correctly before holding the sticks...",
+steps: [
+{ text: "Sit comfortably on the drum throne", emoji: "🪑" },
+{ text: "Hold the drumsticks with a loose grip", emoji: "🥢" },
+{ text: "Tap the bass drum pedal with your foot", emoji: "🥁" },
+{ text: "Hit the snare drum on the second beat", emoji: "🎵" },
+{ text: "Add the high-hat cymbal to complete the rhythm", emoji: "🎶" },
+]
+},
+{
+topic: "🏃 Prepare for a Race",
+guide: "Ready, set, go! Put the track preparation steps in order!",
+hint: "Put on your gear and stretch before stepping up...",
+steps: [
+{ text: "Put on comfortable running shoes", emoji: "👟" },
+{ text: "Stretch your leg and arm muscles", emoji: "🧘" },
+{ text: "Walk or jog slowly to warm up", emoji: "🚶" },
+{ text: "Stand at the starting line", emoji: "🏁" },
+{ text: "Sprint forward when the whistle blows!", emoji: "🏃" },
+]
+},
+{
+topic: "➕ Logical Numbers",
+guide: "Solve this mathematical sequence from smallest to largest results!",
+hint: "Follow the math operators step-by-step...",
+steps: [
+{ text: "Start with the single digit number 2", emoji: "2️⃣" },
+{ text: "Double it to get the number 4", emoji: "4️⃣" },
+{ text: "Add two more to get the number 6", emoji: "6️⃣" },
+{ text: "Double it again to reach 12", emoji: "🔟" },
+{ text: "Subtract three to finish at 9", emoji: "9️⃣" },
+]
+},
+{
+topic: "✉️ Send an Email",
+guide: "Connect online! Order the steps to send a digital letter!",
+hint: "You have to open the app and start writing before sending...",
+steps: [
+{ text: "Open your email application", emoji: "💻" },
+{ text: "Click on the 'Compose New Email' button", emoji: "➕" },
+{ text: "Type the recipient's email address", emoji: "📧" },
+{ text: "Add a clear subject line", emoji: "✏️" },
+{ text: "Write your polite message in the body", emoji: "📝" },
+{ text: "Double check for spelling and hit Send!", emoji: "🚀" },
+]
+},
+{
+topic: "🍎 Simple Food Chain",
+guide: "Who eats whom? Arrange the ecological food chain steps!",
+hint: "Plants use sunlight directly before herbivores eat them...",
+steps: [
+{ text: "Green grass captures energy from the sun", emoji: "☀️" },
+{ text: "A grasshopper eats the green grass", emoji: "🦗" },
+{ text: "A frog catches and eats the grasshopper", emoji: "🐸" },
+{ text: "A snake hunts and swallows the frog", emoji: "🐍" },
+{ text: "An eagle swoops down to eat the snake", emoji: "🦅" },
+{ text: "Decomposers break down materials back to soil", emoji: "🍄" },
+]
+},
+{
+topic: "📏 Measure a Table",
+guide: "Let's find the exact length! Order the measuring steps!",
+hint: "Get your tool and hook the starting edge first...",
+steps: [
+{ text: "Get a long retractable measuring tape", emoji: "📏" },
+{ text: "Place the metal hook at one edge of the table", emoji: "⚓" },
+{ text: "Pull the tape straight across to the other end", emoji: "↔️" },
+{ text: "Read the number where the table edge aligns", emoji: "👁️" },
+{ text: "Write down the length in centimeters", emoji: "📝" },
+{ text: "Lock the tape and let it retract safely", emoji: "🔒" },
+]
+},
+{
+topic: "💡 Saving Electricity",
+guide: "Be a green hero! Order the steps to conserve power!",
+hint: "Recognize energy waste first before turning things off...",
+steps: [
+{ text: "Notice that a room is empty but lights are on", emoji: "💡" },
+{ text: "Walk over to the wall light switch", emoji: "🚶" },
+{ text: "Flip the switch down to turn off the lights", emoji: "🔌" },
+{ text: "Unplug phone chargers that are not in use", emoji: "📱" },
+{ text: "Use natural sunlight during the day instead", emoji: "☀️" },
+{ text: "Watch your monthly energy usage decrease", emoji: "📉" },
+]
+},
+{
+topic: "🏺 Make a Clay Pot",
+guide: "Art with earth! Arrange the steps of creating pottery!",
+hint: "The clay must be shaped on the wheel before it is baked...",
+steps: [
+{ text: "Place a lump of wet clay on the pottery wheel", emoji: "🧱" },
+{ text: "Spin the wheel and wet your hands with water", emoji: "🌀" },
+{ text: "Press your thumbs into the center to make a hole", emoji: "👍" },
+{ text: "Pull the outer walls up to shape the pot", emoji: "🏺" },
+{ text: "Cut the finished pot off the wheel with wire", emoji: "✂️" },
+{ text: "Bake the dry clay pot in a hot kiln oven", emoji: "🔥" },
+]
+},
+{
+topic: "🚀 Build a Robot",
+guide: "Let's invent! Arrange the steps to program and run a robot!",
+hint: "Design and build the physical parts before uploading code...",
+steps: [
+{ text: "Design the robot's shape on a computer", emoji: "📐" },
+{ text: "Gather the metal chassis, motors, and wheels", emoji: "⚙️" },
+{ text: "Assemble the mechanical body parts together", emoji: "🔧" },
+{ text: "Connect the electric wires to the micro-controller", emoji: "🔌" },
+{ text: "Write the computer code to control the motors", emoji: "💻" },
+{ text: "Upload the program to the robot's brain", emoji: "📥" },
+{ text: "Turn on the power switch and watch it move!", emoji: "🤖" },
+]
+},
+{
+topic: "❄️ States of Matter",
+guide: "How does water transform? Put the phase changes in order!",
+hint: "Start with solid ice and apply heat...",
+steps: [
+{ text: "Take solid ice cubes out of the freezer", emoji: "🧊" },
+{ text: "Place the ice cubes in a glass beaker", emoji: "🥛" },
+{ text: "Apply heat from a burner to melt the ice", emoji: "🔥" },
+{ text: "Watch the ice turn into liquid water", emoji: "💧" },
+{ text: "Keep heating until the liquid starts to boil", emoji: "🫧" },
+{ text: "Observe the liquid water turn into gas vapor", emoji: "💨" },
+{ text: "Trap the hot steam on a cold lid to turn it back to water", emoji: "🌨️" },
+]
+},
+{
+topic: "🔭 Discover a Planet",
+guide: "Scan the cosmos! Order the process of space discovery!",
+hint: "You must point your telescope and gather data before publishing...",
+steps: [
+{ text: "Point a powerful space telescope at the night sky", emoji: "🔭" },
+{ text: "Take digital pictures of the deep space field", emoji: "📸" },
+{ text: "Analyze pictures to find moving stars or dots", emoji: "💻" },
+{ text: "Calculate the orbital path of the moving dot", emoji: "📐" },
+{ text: "Confirm the dot is a newly discovered planet", emoji: "🪐" },
+{ text: "Publish your scientific findings to the public", emoji: "📰" },
+{ text: "Get the honor of choosing a name for the planet", emoji: "✨" },
+]
+},
+{
+topic: "🏕️ Prepare for Camping",
+guide: "An outdoor adventure awaits! Order the camping prep steps!",
+hint: "Choose a campsite and pack gear before pitching your tent...",
+steps: [
+{ text: "Reserve a campsite spot in the state park", emoji: "🗺️" },
+{ text: "Pack a tent, sleeping bags, and flashlights", emoji: "🎒" },
+{ text: "Drive safely to the campground location", emoji: "🚗" },
+{ text: "Clear a flat area of sticks and stones", emoji: "🧹" },
+{ text: "Pitch the tent and secure it with metal pegs", emoji: "⛺" },
+{ text: "Gather dry wood to build a safe campfire", emoji: "🪵" },
+{ text: "Roast marshmallows and look up at the stars", emoji: "🌌" },
+]
+},
+{
+topic: "🗺️ Plan a Treasure Hunt",
+guide: "X marks the spot! Order the steps to make a fun game!",
+hint: "Pick a spot and hide the prize before drawing the map...",
+steps: [
+{ text: "Select a safe area like a backyard or park", emoji: "🌳" },
+{ text: "Hide a small chest filled with toy coins", emoji: "🪙" },
+{ text: "Write down 5 clever riddles or clues", emoji: "✍️" },
+{ text: "Draw a detailed map of the entire hunt area", emoji: "🗺️" },
+{ text: "Place clues in envelopes at marked locations", emoji: "✉️" },
+{ text: "Give the map and the first clue to players", emoji: "🧭" },
+{ text: "Celebrate when players solve the final riddle", emoji: "🎉" },
+]
+},
+{
+topic: "💻 Coding a Simple Game",
+guide: "Write your first game! Arrange the full development lifecycle!",
+hint: "Define rules and set up your workspace before testing code...",
+steps: [
+{ text: "Write down the basic rules of your game", emoji: "📝" },
+{ text: "Set up your code development environment", emoji: "💻" },
+{ text: "Create variables to keep track of the score", emoji: "🔢" },
+{ text: "Code a function to move characters with keys", emoji: "🕹️" },
+{ text: "Add collision logic for when elements touch", emoji: "💥" },
+{ text: "Design the visual sprites and background images", emoji: "🎨" },
+{ text: "Test the game yourself and fix logical bugs", emoji: "🛠️" },
+{ text: "Share the final game link with your friends", emoji: "🌐" },
+]
+},
+{
+topic: "🌦️ Weather Formation",
+guide: "Why does it rain? Order the atmospheric processes!",
+hint: "The sun warms the land, which forces warm air to rise up...",
+steps: [
+{ text: "Warm solar rays heat up the Earth's surface", emoji: "☀️" },
+{ text: "Warm air expands, gets lighter, and rises up", emoji: "🎈" },
+{ text: "Rising air cools down as it reaches high altitudes", emoji: "❄️" },
+{ text: "Moisture condenses into millions of water droplets", emoji: "💧" },
+{ text: "Droplets group together to form massive clouds", emoji: "☁️" },
+{ text: "Air pressure changes, causing winds to blow", emoji: "💨" },
+{ text: "Saturated droplets fall as heavy rain or snow", emoji: "🌧️" },
+{ text: "The weather system moves across land and sea", emoji: "🌍" },
+]
+},
+{
+topic: "🎼 Compose a Song",
+guide: "Create a musical track! Order the music production process!",
+hint: "Get a basic vocal demo before importing and mixing multiple instruments...",
+steps: [
+{ text: "Hum an interesting melody that comes to mind", emoji: "🎶" },
+{ text: "Write down matching lyrics on a notepad", emoji: "✍️" },
+{ text: "Find piano chords that support the melody", emoji: "🎹" },
+{ text: "Record a basic vocal and piano demo track", emoji: "🎙️" },
+{ text: "Import the demo into audio editing software", emoji: "💻" },
+{ text: "Add bass, drums, and violin accompaniment", emoji: "🎻" },
+{ text: "Mix and balance the volume of all instruments", emoji: "🎛️" },
+{ text: "Export the master audio file to share online", emoji: "📤" },
+]
+},
+{
+topic: "📐 Geometry Proof",
+guide: "Prove that a math theory is true! Order the logical steps!",
+hint: "State what you want to prove before writing down geometric postulates...",
+steps: [
+{ text: "State the mathematical theorem you want to prove", emoji: "📋" },
+{ text: "Draw a geometric figure matching the statement", emoji: "📐" },
+{ text: "Label all the vertices, angles, and sides", emoji: "🏷️" },
+{ text: "List all given facts and assumptions clearly", emoji: "📝" },
+{ text: "Apply geometric postulates step by step", emoji: "🧠" },
+{ text: "Deduce new properties of angles and triangles", emoji: "🔍" },
+{ text: "Reach the target conclusion through logic", emoji: "🎯" },
+{ text: "Write 'Q.E.D.' to mark the completed proof", emoji: "✍️" },
+]
+},
+{
+topic: "🗺️ Create a 2D Animation",
+guide: "Bring a drawing to life! Put the animation steps in order!",
+hint: "Scripting and key poses must be complete before draw in-between frames...",
+steps: [
+{ text: "Draft a script and sketch the storyboard panels", emoji: "📋" },
+{ text: "Design the key poses of your main character", emoji: "👤" },
+{ text: "Draw the first frame of a simple jump sequence", emoji: "🎨" },
+{ text: "Create the extreme pose frames of the jump", emoji: "🤸" },
+{ text: "Draw the in-between frames for smooth movement", emoji: "✍️" },
+{ text: "Digitize and paint color onto all frames", emoji: "💻" },
+{ text: "Sync the cartoon actions with sound effects", emoji: "🔊" },
+{ text: "Render the frames into a high-quality video", emoji: "🎬" },
+]
+},
+{
+topic: "🩺 Human Blood Flow",
+guide: "Trace a red blood cell through the circulatory system!",
+hint: "Blood goes to the right side of the heart, then to the lungs to get oxygen...",
+steps: [
+{ text: "Oxygen-poor blood enters the right side of the heart", emoji: "🫀" },
+{ text: "The heart pumps this blood into the lungs", emoji: "🫁" },
+{ text: "Blood releases carbon dioxide and takes in oxygen", emoji: "🌬️" },
+{ text: "Fresh oxygenated blood returns to the left side of the heart", emoji: "🩸" },
+{ text: "The strong left ventricle pumps blood into the aorta", emoji: "💪" },
+{ text: "Arteries carry the oxygen-rich blood to the entire body", emoji: "🛣️" },
+{ text: "Body tissues absorb the oxygen and nutrients", emoji: "⚡" },
+{ text: "Veins collect the oxygen-poor blood to return to the heart", emoji: "🔄" },
+]
+},
+{
+topic: "☄️ Solar System Exploration",
+guide: "Launch an interstellar mission! Arrange the steps of exploration!",
+hint: "Build and launch the rocket before traveling deep through space...",
+steps: [
+{ text: "Engineers design an unmanned space probe", emoji: "📐" },
+{ text: "Launch the probe using a heavy-lift rocket", emoji: "🚀" },
+{ text: "Use Earth's gravity to sling-shot towards outer space", emoji: "🪐" },
+{ text: "Travel through the cold solar system for years", emoji: "🌌" },
+{ text: "Enter the orbit of a distant gas giant planet", emoji: "🛰️" },
+{ text: "Deploy a small lander to descend into the clouds", emoji: "🪂" },
+{ text: "Transmit HD photos and soil data back to Earth", emoji: "📡" },
+{ text: "Analyze the data to look for traces of water", emoji: "🧪" },
+]
+},
+{
+topic: "🌳 Build a Community Park",
+guide: "Let's build a park for everyone! Order the construction stages!",
+hint: "Ask neighbors for input and design plans before laying pavement...",
+steps: [
+{ text: "Survey the neighborhood residents for ideas", emoji: "📋" },
+{ text: "Present the park blueprint to city council", emoji: "🏛️" },
+{ text: "Secure funding and permits for the project", emoji: "💵" },
+{ text: "Clear trash and level the ground surface", emoji: "🚜" },
+{ text: "Pave the walking paths and install safety fences", emoji: "🚧" },
+{ text: "Plant native trees, flower beds, and green grass", emoji: "🌳" },
+{ text: "Install swings, slides, benches, and trash bins", emoji: "🛝" },
+{ text: "Hold a grand opening ribbon-cutting ceremony", emoji: "✂️" },
+]
+},
+{
+topic: "🎂 Host a School Festival",
+guide: "Let's set up a festival! Put the organization steps in order!",
+hint: "Assemble a planning committee before printing tickets or booking field...",
+steps: [
+{ text: "Form a planning committee of students and teachers", emoji: "👥" },
+{ text: "Select a date and book the school sports field", emoji: "📅" },
+{ text: "Designate zones for food, games, and art stalls", emoji: "🎪" },
+{ text: "Print tickets and hang posters around town", emoji: "🎟️" },
+{ text: "Rent game booths and buy ingredients for snacks", emoji: "🍿" },
+{ text: "Set up the sound system and stage for performances", emoji: "🔊" },
+{ text: "Open the gates and welcome the excited visitors", emoji: "🚪" },
+{ text: "Clean up the school field and count the funds raised", emoji: "🧹" },
+]
+},
+{
+topic: "🔋 Solar Power Generation",
+guide: "Let's capture green energy! Order the clean solar power process!",
+hint: "Sunlight hits roof-installed cells, generating DC current before it is converted to AC...",
+steps: [
+{ text: "Install photovoltaic solar panels on a sunny roof", emoji: "🏠" },
+{ text: "Sunlight hits the solar cells to free up electrons", emoji: "☀️" },
+{ text: "Silicon cells channel electrons into direct current (DC)", emoji: "⚡" },
+{ text: "The solar inverter converts DC into alternating current (AC)", emoji: "🔄" },
+{ text: "AC electricity flows to your home electrical panel", emoji: "🔌" },
+{ text: "Power is distributed to your refrigerator and lamps", emoji: "💡" },
+{ text: "Excess clean energy is fed back into the public grid", emoji: "🛜" },
+{ text: "Your home electricity bill drops to near zero!", emoji: "📉" },
+]
+},
+];
+
+let currentLevel = 0;
+let score = 0;
+let coins = Number(localStorage.getItem("walletCoins")) || 0;
+let guideChar = "🤖";
+const guideChars = ["🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉","🤖","🐰","🦉"];
+let shuffledSteps = [];
+let slotContents = [];
+let dragSource = null;
+let hintShown = false;
+let answered = false;
+let completedLevels = JSON.parse(localStorage.getItem("seqCompletedLevels") || "[]");
+
+function openInstructions() {
+document.getElementById('instructions-popup').style.display = 'flex';
+}
+
+function closeInstructions() {
+document.getElementById('instructions-popup').style.display = 'none';
+}
+
+function jumpToLevel(lvlIdx) {
+document.getElementById('level-complete').classList.remove('show');
+document.getElementById('congrats-screen').style.display = 'none';
+document.getElementById('start-screen').style.display = 'none';
+currentLevel = lvlIdx;
+loadLevel();
+}
+
+function getCoinReward(lvlIdx) {
+if (lvlIdx >= 0 && lvlIdx <= 4) return 20;
+if (lvlIdx >= 5 && lvlIdx <= 9) return 25;
+if (lvlIdx >= 10 && lvlIdx <= 14) return 35;
+if (lvlIdx >= 15 && lvlIdx <= 19) return 50;
+if (lvlIdx >= 20 && lvlIdx <= 29) return 65;
+return 0;
+}
+
+function startGame() {
+document.getElementById('start-screen').style.display = 'none';
+currentLevel = 0;
+score = 0;
+coins = 0;
+localStorage.removeItem("seqCompletedLevels");
+localStorage.setItem("seqCompleted", "0");
+localStorage.setItem("seqProgress", "0");
+completedLevels = [];
+updateHUD();
+loadLevel();
+}
+
+function restartGame() {
+document.getElementById('start-screen').style.display = 'none';
+document.getElementById('congrats-screen').style.display = 'none';
+document.getElementById('level-complete').classList.remove('show');
+currentLevel = 0;
+score = 0;
+coins = 0;
+localStorage.removeItem("seqCompletedLevels");
+localStorage.setItem("seqCompleted", "0");
+localStorage.setItem("seqProgress", "0");
+completedLevels = [];
+updateHUD();
+loadLevel();
+}
+
+function nextLevel() {
+document.getElementById('level-complete').classList.remove('show');
+currentLevel++;
+if (currentLevel >= LEVELS.length) {
+showCongrats();
+} else {
+loadLevel();
+}
+}
+
+function loadLevel() {
+answered = false;
+hintShown = false;
+document.getElementById('hint-box').style.display = 'none';
+document.getElementById('feedback').textContent = '';
+
+const lvl = LEVELS[currentLevel];
+guideChar = guideChars[currentLevel % 3 === 0 ? 0 : currentLevel % 3 === 1 ? 1 : 2];
+document.getElementById('guide-char').textContent = guideChars[currentLevel];
+document.getElementById('guide-bubble').innerHTML = `${lvl.guide} <span id="topic-badge">${lvl.topic}</span>`;
+document.getElementById('hint-text').textContent = lvl.hint;
+
+shuffledSteps = shuffle([...Array(lvl.steps.length).keys()]);
+slotContents = new Array(lvl.steps.length).fill(null);
+
+renderCards();
+renderSlots();
+updateProgress();
+updateHUD();
+updateLevelBar();
+}
+
+function updateLevelBar() {
+const btnsContainer = document.getElementById('level-buttons');
+btnsContainer.innerHTML = '';
+for (let i = 0; i < LEVELS.length; i++) {
+const btn = document.createElement('button');
+btn.className = `lvl-btn ${i === currentLevel ? 'active' : ''} ${completedLevels.includes(i) ? 'completed' : ''}`;
+btn.textContent = i + 1;
+btn.onclick = () => jumpToLevel(i);
+btnsContainer.appendChild(btn);
+}
+}
+
+function renderCards() {
+const container = document.getElementById('cards-container');
+container.innerHTML = '';
+const lvl = LEVELS[currentLevel];
+shuffledSteps.forEach((stepIdx, pos) => {
+if (stepIdx === null) return;
+const step = lvl.steps[stepIdx];
+const card = createCard(stepIdx, step, pos);
+container.appendChild(card);
+});
+}
+
+function renderSlots() {
+const container = document.getElementById('slots-container');
+container.innerHTML = '';
+const lvl = LEVELS[currentLevel];
+for (let i = 0; i < lvl.steps.length; i++) {
+const slot = document.createElement('div');
+slot.className = 'slot';
+slot.dataset.slotIndex = i;
+const label = document.createElement('div');
+label.className = 'slot-label';
+label.textContent = `Step ${i+1}`;
+slot.appendChild(label);
+if (slotContents[i] !== null) {
+slot.classList.add('filled');
+const stepIdx = slotContents[i];
+const step = lvl.steps[stepIdx];
+const card = createCard(stepIdx, step, null, true);
+slot.appendChild(card);
+}
+slot.addEventListener('dragover', onSlotDragOver);
+slot.addEventListener('dragleave', onSlotDragLeave);
+slot.addEventListener('drop', onSlotDrop);
+slot.addEventListener('touchmove', onTouchMove, { passive: false });
+slot.addEventListener('touchend', onTouchEnd);
+container.appendChild(slot);
+}
+}
+
+function createCard(stepIdx, step, shuffledPos, inSlot = false) {
+const card = document.createElement('div');
+const colorClass = `card-v${stepIdx % 8}`;
+card.className = `step-card ${colorClass}`;
+card.dataset.stepIndex = stepIdx;
+card.dataset.inSlot = inSlot ? '1' : '0';
+card.draggable = true;
+
+const numEl = document.createElement('div');
+numEl.className = 'card-num';
+numEl.textContent = shuffledPos !== null ? shuffledPos + 1 : '↕';
+card.appendChild(numEl);
+
+const emojiEl = document.createElement('div');
+emojiEl.className = 'card-emoji';
+emojiEl.textContent = step.emoji;
+card.appendChild(emojiEl);
+
+const textEl = document.createElement('span');
+textEl.textContent = step.text;
+card.appendChild(textEl);
+
+card.addEventListener('dragstart', onCardDragStart);
+card.addEventListener('dragend', onCardDragEnd);
+card.addEventListener('touchstart', onTouchStart, { passive: false });
+
+return card;
+}
+
+let draggingCard = null;
+
+function onCardDragStart(e) {
+draggingCard = e.currentTarget;
+draggingCard.classList.add('dragging');
+e.dataTransfer.effectAllowed = 'move';
+e.dataTransfer.setData('text/plain', draggingCard.dataset.stepIndex);
+const ghost = document.createElement('div');
+ghost.style.opacity = '0';
+document.body.appendChild(ghost);
+e.dataTransfer.setDragImage(ghost, 0, 0);
+setTimeout(() => document.body.removeChild(ghost), 0);
+}
+
+function onCardDragEnd(e) {
+if (draggingCard) draggingCard.classList.remove('dragging');
+draggingCard = null;
+document.querySelectorAll('.slot').forEach(s => s.classList.remove('drag-over-slot'));
+document.querySelectorAll('.step-card').forEach(c => c.classList.remove('drag-over'));
+document.getElementById('drag-ghost').style.display = 'none';
+}
+
+function onSlotDragOver(e) {
+e.preventDefault();
+e.dataTransfer.dropEffect = 'move';
+e.currentTarget.classList.add('drag-over-slot');
+}
+function onSlotDragLeave(e) {
+e.currentTarget.classList.remove('drag-over-slot');
+}
+
+function onSlotDrop(e) {
+e.preventDefault();
+const slot = e.currentTarget;
+slot.classList.remove('drag-over-slot');
+if (!draggingCard) return;
+const stepIdx = parseInt(draggingCard.dataset.stepIndex);
+const slotIdx = parseInt(slot.dataset.slotIndex);
+const wasInSlot = draggingCard.dataset.inSlot === '1';
+
+let sourceSlotIdx = null;
+if (wasInSlot) {
+for (let i = 0; i < slotContents.length; i++) {
+if (slotContents[i] === stepIdx) { sourceSlotIdx = i; break; }
+}
+}
+
+const existingStep = slotContents[slotIdx];
+if (existingStep !== null) {
+if (sourceSlotIdx !== null) {
+slotContents[sourceSlotIdx] = existingStep;
+} else {
+const idx = shuffledSteps.indexOf(null);
+if (idx !== -1) shuffledSteps[idx] = existingStep;
+else shuffledSteps.push(existingStep);
+}
+} else {
+if (sourceSlotIdx !== null) {
+slotContents[sourceSlotIdx] = null;
+}
+}
+
+slotContents[slotIdx] = stepIdx;
+
+if (!wasInSlot) {
+const idx = shuffledSteps.indexOf(stepIdx);
+if (idx !== -1) shuffledSteps[idx] = null;
+}
+
+renderCards();
+renderSlots();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+openInstructions();
+try {
+  if (window.gameSDK) await window.gameSDK.init();
+  const walletBalance = await syncSeqWalletBalance();
+  coins = walletBalance;
+  document.getElementById("hud-coins").textContent = walletBalance;
+} catch(e) {
+  console.warn("Seq wallet init failed:", e);
+}
+syncSeqProgressToParent();
+
+const cardsPanel = document.getElementById('cards-container');
+cardsPanel.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+cardsPanel.addEventListener('drop', e => {
+e.preventDefault();
+if (!draggingCard) return;
+const stepIdx = parseInt(draggingCard.dataset.stepIndex);
+const wasInSlot = draggingCard.dataset.inSlot === '1';
+if (!wasInSlot) return;
+for (let i = 0; i < slotContents.length; i++) {
+if (slotContents[i] === stepIdx) { slotContents[i] = null; break; }
+}
+const ni = shuffledSteps.indexOf(null);
+if (ni !== -1) shuffledSteps[ni] = stepIdx;
+else shuffledSteps.push(stepIdx);
+renderCards();
+renderSlots();
+});
+});
+
+let touchCard = null;
+let touchOffsetX = 0, touchOffsetY = 0;
+const ghost = () => document.getElementById('drag-ghost');
+
+function onTouchStart(e) {
+const card = e.currentTarget;
+touchCard = card;
+const rect = card.getBoundingClientRect();
+const t = e.touches[0];
+touchOffsetX = t.clientX - rect.left;
+touchOffsetY = t.clientY - rect.top;
+const g = ghost();
+g.innerHTML = card.innerHTML;
+g.style.display = 'block';
+g.style.left = t.clientX + 'px';
+g.style.top = t.clientY + 'px';
+e.preventDefault();
+}
+
+function onTouchMove(e) {
+if (!touchCard) return;
+const t = e.touches[0];
+const g = ghost();
+g.style.left = t.clientX + 'px';
+g.style.top = t.clientY + 'px';
+e.preventDefault();
+}
+
+function onTouchEnd(e) {
+if (!touchCard) return;
+ghost().style.display = 'none';
+const t = e.changedTouches[0];
+const el = document.elementFromPoint(t.clientX, t.clientY);
+if (!el) { touchCard = null; return; }
+
+const slot = el.closest('.slot');
+const cardsPnl = el.closest('#cards-container');
+
+const stepIdx = parseInt(touchCard.dataset.stepIndex);
+const wasInSlot = touchCard.dataset.inSlot === '1';
+
+if (slot) {
+const slotIdx = parseInt(slot.dataset.slotIndex);
+let sourceSlotIdx = null;
+if (wasInSlot) {
+for (let i = 0; i < slotContents.length; i++) {
+if (slotContents[i] === stepIdx) { sourceSlotIdx = i; break; }
+}
+}
+const existingStep = slotContents[slotIdx];
+if (existingStep !== null) {
+if (sourceSlotIdx !== null) {
+slotContents[sourceSlotIdx] = existingStep;
+} else {
+const idx = shuffledSteps.indexOf(null);
+if (idx !== -1) shuffledSteps[idx] = existingStep;
+else shuffledSteps.push(existingStep);
+}
+} else {
+if (sourceSlotIdx !== null) slotContents[sourceSlotIdx] = null;
+}
+slotContents[slotIdx] = stepIdx;
+if (!wasInSlot) {
+const idx = shuffledSteps.indexOf(stepIdx);
+if (idx !== -1) shuffledSteps[idx] = null;
+}
+renderCards();
+renderSlots();
+} else if (cardsPnl && wasInSlot) {
+for (let i = 0; i < slotContents.length; i++) {
+if (slotContents[i] === stepIdx) { slotContents[i] = null; break; }
+}
+const ni = shuffledSteps.indexOf(null);
+if (ni !== -1) shuffledSteps[ni] = stepIdx;
+else shuffledSteps.push(stepIdx);
+renderCards();
+renderSlots();
+}
+touchCard = null;
+}
+
+function checkAnswer() {
+if (answered) return;
+const lvl = LEVELS[currentLevel];
+const n = lvl.steps.length;
+
+if (slotContents.includes(null)) {
+setFeedback("⚠️ Fill all the slots first!", "#FF8C42");
+return;
+}
+
+let correct = true;
+for (let i = 0; i < n; i++) {
+if (slotContents[i] !== i) { correct = false; break; }
+}
+
+if (correct) {
+answered = true;
+score += 10;
+const reward = getCoinReward(currentLevel);
+if (!completedLevels.includes(currentLevel)) {
+  completedLevels.push(currentLevel);
+}
+creditSeqCoins(reward); // async call — coins + localStorage + postMessage sab handle karega
+updateHUD();
+updateLevelBar();
+document.getElementById('slots-container').parentElement.classList.add('success-glow');
+launchConfetti();
+playSound('success');
+setTimeout(() => {
+document.getElementById('slots-container').parentElement.classList.remove('success-glow');
+showLevelComplete(reward);
+}, 1200);
+} else {
+const slotsEl = document.getElementById('slots-container');
+slotsEl.classList.add('shake');
+playSound('fail');
+setTimeout(() => slotsEl.classList.remove('shake'), 600);
+setFeedback("❌ Not quite! Check the order again...", "#FF6B6B");
+if (!hintShown) {
+document.getElementById('hint-box').style.display = 'block';
+hintShown = true;
+}
+}
+}
+
+function showHint() {
+document.getElementById('hint-box').style.display = 'block';
+hintShown = true;
+}
+
+function showLevelComplete(reward) {
+const emojis = ["🎉","🌟","🏆","🎊","🥳","✨","🚀","🌈","💫","🎯"];
+const msgs = ["Excellent!","Amazing!","Brilliant!","Superstar!","Perfect!","Fantastic!","Outstanding!","Genius!"];
+document.getElementById('lc-emoji').textContent = emojis[currentLevel % emojis.length];
+document.getElementById('lc-title').textContent = msgs[currentLevel % msgs.length];
+document.getElementById('lc-pts').innerHTML = `+10 Points! & +${reward} Coins!<br>Total: ${score} ⭐ | ${coins} 🪙`;
+document.getElementById('level-complete').classList.add('show');
+setFeedback(`🎉 Excellent! Well done! +${reward} Coins!`, "#4CAF50");
+}
+
+function showCongrats() {
+document.getElementById('final-score-text').textContent = `Final Score: ${score} ⭐ | 🪙 ${coins} Coins`;
+document.getElementById('congrats-screen').style.display = 'flex';
+}
+
+function updateHUD() {
+document.getElementById('hud-level').textContent = currentLevel + 1;
+document.getElementById('hud-score').textContent = score;
+document.getElementById('hud-coins').textContent = coins;
+}
+
+function updateProgress() {
+const pct = (currentLevel / LEVELS.length) * 100;
+document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function setFeedback(msg, color) {
+const el = document.getElementById('feedback');
+el.textContent = msg;
+el.style.color = color;
+}
+
+function launchConfetti() {
+const colors = ['#FF6B6B','#FFD700','#4CAF50','#2196F3','#FF69B4','#FF8C42','#9B59B6','#20B2AA'];
+for (let i = 0; i < 70; i++) {
+const c = document.createElement('div');
+c.className = 'confetti-piece';
+c.style.left = Math.random() * 100 + 'vw';
+c.style.background = colors[Math.floor(Math.random() * colors.length)];
+c.style.width = (8 + Math.random() * 8) + 'px';
+c.style.height = (8 + Math.random() * 8) + 'px';
+c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+c.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+c.style.animationDelay = (Math.random() * 0.5) + 's';
+document.body.appendChild(c);
+setTimeout(() => c.remove(), 3500);
+}
+}
+
+let audioCtx = null;
+function getAudioCtx() {
+if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+return audioCtx;
+}
+
+function playSound(type) {
+try {
+const ctx = getAudioCtx();
+const osc = ctx.createOscillator();
+const gain = ctx.createGain();
+osc.connect(gain);
+gain.connect(ctx.destination);
+if (type === 'success') {
+osc.type = 'sine';
+osc.frequency.setValueAtTime(523, ctx.currentTime);
+osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+gain.gain.setValueAtTime(0.18, ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+osc.start(ctx.currentTime);
+osc.stop(ctx.currentTime + 0.5);
+} else {
+osc.type = 'sawtooth';
+osc.frequency.setValueAtTime(180, ctx.currentTime);
+osc.frequency.setValueAtTime(120, ctx.currentTime + 0.1);
+gain.gain.setValueAtTime(0.1, ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+osc.start(ctx.currentTime);
+osc.stop(ctx.currentTime + 0.3);
+}
+} catch(e) {}
+}
+// ── Wallet Sync ──────────────────────────────────────────
+async function syncSeqWalletBalance() {
+  const saved = Number(localStorage.getItem("walletCoins")) || 0;
+  document.getElementById("hud-coins").textContent = saved;
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+      if (balance !== undefined && balance !== null) {
+        localStorage.setItem("walletCoins", String(balance));
+        coins = Number(balance);
+        document.getElementById("hud-coins").textContent = balance;
+        return Number(balance);
+      }
+    }
+  } catch (err) {
+    console.warn("Seq wallet sync failed:", err);
+  }
+  return saved;
+}
+
+async function creditSeqCoins(amount) {
+  let finalBalance = Number(localStorage.getItem("walletCoins")) || coins;
+  try {
+    const rewardResult = await window.gameSDK.rewardCoins({
+      amount,
+      description: `Sequence Game Level ${currentLevel + 1} Complete`,
+      game: "sequence_game",
+      level: currentLevel + 1,
+      score: amount,
+    });
+    if (rewardResult && rewardResult.balance !== undefined) {
+      finalBalance = Number(rewardResult.balance);
+    } else if (window.gameSDK) {
+      const freshBalance = await window.gameSDK.getBalance();
+      if (freshBalance !== undefined && freshBalance !== null) {
+        finalBalance = Number(freshBalance);
+      }
+    }
+  } catch (err) {
+    console.error("Seq reward error:", err);
+    finalBalance = finalBalance + amount;
+  }
+  coins = finalBalance;
+  localStorage.setItem("walletCoins", String(finalBalance));
+  document.getElementById("hud-coins").textContent = finalBalance;
+  syncSeqProgressToParent();
+  return finalBalance;
+}
+
+function syncSeqProgressToParent() {
+  const completed = completedLevels.length;
+  const progress = Math.min(Math.round((completed / LEVELS.length) * 100), 100);
+  localStorage.setItem("seqCompleted", String(completed));
+  localStorage.setItem("seqProgress", String(progress));
+  localStorage.setItem("seqCompletedLevels", JSON.stringify(completedLevels));
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "sequence_game",
+    progress,
+    completed,
+    coins: Number(localStorage.getItem("walletCoins")) || 0,
+    time: 0,
+  }, "*");
+}
+
+window.addEventListener("walletUpdated", (e) => {
+  const balance = e.detail?.balance;
+  if (balance !== undefined) {
+    localStorage.setItem("walletCoins", String(balance));
+    coins = Number(balance);
+    document.getElementById("hud-coins").textContent = balance;
+  }
+});
+// ─────────────────────────────────────────────────────────
+function shuffle(arr) {
+for (let i = arr.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+[arr[i], arr[j]] = [arr[j], arr[i]];
+}
+return arr;
+}
+</script>
+</body>
+</html>
