@@ -699,7 +699,20 @@ let redoStacks = [[]];
 // Coin Rules Tracking
 let welcomeBonusGiven = false;
 
+function getTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function canGiveWelcomeBonusToday() {
+  return localStorage.getItem("stopMotionWelcomeBonusDate") !== getTodayKey();
+}
+
+function markWelcomeBonusGivenToday() {
+  localStorage.setItem("stopMotionWelcomeBonusDate", getTodayKey());
+}
+
 let projectsCompleted = 0;        // 10 frame projects
+let thirtyFrameBonusGiven = false;
 let exportsToday = 0;
 let lastExportDate = '';
 
@@ -995,33 +1008,10 @@ function loadFrame(idx) {
 
 function addFrame() {
   saveCurrentFrame();
+
   const f = initFrame();
-  frames.splice(currentFrame+1,0,f);
-  // Reward when project reaches 10 frames
-if(frames.length >= 10 && projectsCompleted < 3){
-    addCoinsToWallet(
-        20,
-        `Project reached 10 frames (#${projectsCompleted+1})`
-    );
+  frames.splice(currentFrame + 1, 0, f);
 
-    projectsCompleted++;
-}
-if(frames.length >= 10 && exportsToday < 5){
-
-    addCoinsToWallet(
-        50,
-        `Animation Export (${frames.length} frames)`
-    );
-
-    exportsToday++;
-}
-if(frames.length >= 30){
-
-    addCoinsToWallet(
-        100,
-        `30+ Frame Bonus (${frames.length} frames)`
-    );
-}
   undoStacks.splice(currentFrame+1,0,[]);
   redoStacks.splice(currentFrame+1,0,[]);
   renderFilmstrip();
@@ -1357,6 +1347,16 @@ if(lastExportDate !== today){
 }
   if(frames.length < 1){ alert('Nothing to export!'); return; }
 
+  if(frames.length >= 10 && exportsToday < 5){
+
+    addCoinsToWallet(
+        50,
+        `Animation Export (${frames.length} frames)`
+    );
+
+    exportsToday++;
+}
+
   // We'll create a simple animated PNG-like using a data URL collection
   // Since true GIF requires a library, we'll export as individual frames in a zip-like approach
   // Or better: offer frame download as PNG sheet
@@ -1454,6 +1454,28 @@ async function addCoinsToWallet(amount, label) {
 function saveAnimation() {
   saveCurrentFrame();
   const count = frames.length;
+  // Reward only after saving animation
+
+if(count >= 10 && projectsCompleted < 3){
+
+    addCoinsToWallet(
+        20,
+        `Project saved with 10+ frames (#${projectsCompleted+1})`
+    );
+
+    projectsCompleted++;
+}
+
+if(count >= 30 && !thirtyFrameBonusGiven){
+
+    addCoinsToWallet(
+        100,
+        `30+ Frame Bonus (${count} frames)`
+    );
+
+    thirtyFrameBonusGiven = true;
+}
+
   const popup = document.getElementById('save-popup');
   const icon = document.getElementById('save-popup-icon');
   const title = document.getElementById('save-popup-title');
@@ -1656,10 +1678,10 @@ fetchWalletBalance().then(balance => {
    walletCoins = balance || 0;
    updateWalletDisplay();
 });
-// Welcome bonus
-if(!welcomeBonusGiven){
-    addCoinsToWallet(10,"Welcome Bonus");
-    welcomeBonusGiven = true;
+// Welcome bonus - only once per day
+if (canGiveWelcomeBonusToday()) {
+  addCoinsToWallet(10, "Welcome Bonus");
+  markWelcomeBonusGivenToday();
 }
 window.addEventListener("walletUpdated", (event) => {
 
