@@ -2181,7 +2181,7 @@ if (game.title === "Help The Bee") {
 }
 
 if (game.title === "Sequence Builder") {
-  window.open("/sequence_builder.html", "_blank");
+  window.open("/sequence2.html", "_blank");
 }
   }}
 
