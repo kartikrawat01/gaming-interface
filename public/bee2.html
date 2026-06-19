@@ -1355,15 +1355,18 @@ const BEE_GAME_ID = "help_the_bee";
       localStorage.setItem("beeCompleted", String(completedCount));
       localStorage.setItem("beeProgress", String(progress));
 
-      window.parent.postMessage({
-        type: "GAME_PROGRESS_UPDATE",
-        game: BEE_GAME_ID,
-        progress,
-        completed: completedCount,
-        coins: totalCoins,
-        level: currentLevelIndex + 1,
-        score: movesCount,
-      }, "*");
+      const payload = {
+  type: "GAME_PROGRESS_UPDATE",
+  game: BEE_GAME_ID,
+  progress,
+  completed: completedCount,
+  coins: totalCoins,
+  level: currentLevelIndex + 1,
+  score: movesCount,
+};
+
+window.parent?.postMessage(payload, "*");
+window.opener?.postMessage(payload, "*");
     }
 
     async function syncBeeWalletBalance() {

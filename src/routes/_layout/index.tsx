@@ -488,6 +488,13 @@ const [bubbleMathStats, setBubbleMathStats] = useState({
   time: "0 min",
 });
 
+const [beeStats, setBeeStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
 const [colorSortStats, setColorSortStats] = useState({
   progress: 0,
   coins: 0,
@@ -1491,6 +1498,50 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  const loadBeeProgress = () => {
+    const completed =
+      Number(localStorage.getItem("beeCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("beeProgress")) ||
+      Math.round((completed / 15) * 100) ||
+      0;
+
+    setBeeStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+    }));
+  };
+
+  loadBeeProgress();
+
+  const handleBeeMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "help_the_bee"
+    ) {
+      setBeeStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadBeeProgress);
+  window.addEventListener("storage", loadBeeProgress);
+  window.addEventListener("message", handleBeeMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadBeeProgress);
+    window.removeEventListener("storage", loadBeeProgress);
+    window.removeEventListener("message", handleBeeMessage);
+  };
+}, []);
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -1568,6 +1619,7 @@ useEffect(() => {
   sortStats={sortStats}
   motorBoatStats={motorBoatStats}
   bubbleMathStats={bubbleMathStats}
+  beeStats={beeStats}
   sequenceBuilderStats={sequenceBuilderStats}
   colorSortStats={colorSortStats}
   trafficStats={trafficStats}
@@ -1969,6 +2021,7 @@ const GamesSection = memo(function GamesSection({
   sortStats,
   motorBoatStats,
   bubbleMathStats,
+  beeStats,
   sequenceBuilderStats,
   colorSortStats,
   trafficStats,
@@ -2070,6 +2123,13 @@ const filteredGames = games.filter((g) =>
     progress: bubbleMathStats.progress,
     xp: bubbleMathStats.coins,
     time: bubbleMathStats.time,
+  }
+  : g.title === "Help The Bee"
+? {
+    ...g,
+    progress: beeStats.progress,
+    xp: beeStats.coins,
+    time: beeStats.time,
   }
   : g.title === "Sequence Builder"
 ? {
