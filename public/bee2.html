@@ -1340,7 +1340,7 @@ const BEE_GAME_ID = "help_the_bee";
     }
 
     function saveGameProgress() {
-      
+
       try {
         localStorage.setItem('becre8v_bee_coins', totalCoins.toString());
         localStorage.setItem('becre8v_bee_best_moves', JSON.stringify(levelBestMoves));
@@ -1348,8 +1348,7 @@ const BEE_GAME_ID = "help_the_bee";
       } catch (e) {
         console.warn("Storage writing error", e);
       }
-    }
-function syncBeeProgress() {
+
       const completedCount = Object.keys(levelStars).length;
       const progress = Math.round((completedCount / levels.length) * 100);
 
@@ -1383,6 +1382,7 @@ function syncBeeProgress() {
             totalCoins = Number(balance);
             localStorage.setItem("walletCoins", String(totalCoins));
             localStorage.setItem("becre8v_bee_coins", String(totalCoins));
+            saveGameProgress();
             updateUIStats();
           }
         }
@@ -1429,6 +1429,7 @@ function syncBeeProgress() {
       if (balance !== undefined) {
         totalCoins = Number(balance);
         localStorage.setItem("becre8v_bee_coins", String(totalCoins));
+        saveGameProgress();
         updateUIStats();
       }
     });
@@ -1441,7 +1442,7 @@ function syncBeeProgress() {
       await syncBeeWalletBalance();
       renderLevelBar();
       loadLevel(0);
-      syncBeeProgress();
+      saveGameProgress();
 
       // Auto-open Instructions unconditionally on page load so it is always present
       openInstructions();
@@ -1973,7 +1974,6 @@ function syncBeeProgress() {
 
       saveGameProgress();
       renderLevelBar();
-      syncBeeProgress();
 
       // Configure Modal Interface
       document.getElementById('win-title').innerText = isPerfect ? "Perfect! 🏆" : "Great Job! ⭐";
