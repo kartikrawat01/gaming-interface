@@ -170,6 +170,7 @@ function Dashboard() {
   const [active, setActive] = useState("dashboard");
   const [user, setUser] = useState<any>(null);
 const [showAuth, setShowAuth] = useState(false);
+const [currentStreak, setCurrentStreak] = useState(0);
   // ADD THIS
 const sessionTimerRef = useRef<any>(null);
 
@@ -218,6 +219,7 @@ const handleUnload = async () => {
 
   setUser(null);
   setWalletCoins(0);
+  setCurrentStreak(0);
 
   localStorage.removeItem("platformSessionId");
   localStorage.removeItem("sessionRewardGiven");
@@ -267,6 +269,7 @@ const handleUnload = async () => {
             "Daily login reward:",
             rewardData
           );
+          await fetchLoginStreak();
 
         } catch (err) {
 
@@ -709,6 +712,32 @@ const fetchWallet = async () => {
     );
   }
 };
+
+const fetchLoginStreak = async () => {
+  try {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+
+    if (!token) return;
+
+    const res = await fetch(
+      "https://wallet-api-backend-production.up.railway.app/wallet/login-streak",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    setCurrentStreak(Number(data.currentStreak) || 0);
+
+  } catch (err) {
+    console.error("Fetch streak failed:", err);
+  }
+};
+
 /*
   useEffect(() => {
   const loadStats = () => {
@@ -830,8 +859,10 @@ useEffect(() => {
   if (!user) return;
 
   fetchWallet();
+  fetchLoginStreak();
 
 }, [user]);
+
 useEffect(() => {
   const loadLogicMazeProgress = () => {
     const completed =
@@ -1604,6 +1635,7 @@ useEffect(() => {
   user={user}
   setShowAuth={setShowAuth}
   sessionTimer={sessionTimerRef.current}
+  currentStreak={currentStreak}
 />
             <Hero />
             <div className="grid grid-cols-1 gap-8">
@@ -1753,6 +1785,7 @@ const Header = memo(function Header({
   user,
   setShowAuth,
   sessionTimer,
+  currentStreak,
 }: any) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCoinInfo, setShowCoinInfo] = useState(false);
@@ -1787,7 +1820,9 @@ const Header = memo(function Header({
 
         <div className="flex items-center gap-1.5 h-10 px-3 rounded-lg bg-card border border-border shadow-soft">
           <Flame className="h-4 w-4 text-orange-400" />
-          <span className="text-sm font-semibold">7</span>
+          <span className="text-sm font-semibold">
+  {currentStreak}
+</span>
           <span className="hidden sm:inline text-xs text-muted-foreground">day streak</span>
         </div>
         <div className="flex items-center gap-2 h-10 px-4 rounded-lg bg-yellow-400/20 border border-yellow-400/30">
