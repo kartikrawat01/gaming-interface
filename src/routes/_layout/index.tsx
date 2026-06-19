@@ -277,6 +277,8 @@ const handleUnload = async () => {
 if (rewardData?.streakBonus) {
   setStreakBonusPopup(rewardData.streakBonus);
 
+  await fetchWallet();
+
   setTimeout(() => {
     setStreakBonusPopup(null);
   }, 5000);
