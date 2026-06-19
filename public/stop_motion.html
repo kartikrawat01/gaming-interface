@@ -711,13 +711,49 @@ function markWelcomeBonusGivenToday() {
   localStorage.setItem("stopMotionWelcomeBonusDate", getTodayKey());
 }
 
-let projectsCompleted = 0;        // 10 frame projects
-let lastTenFrameRewardAt = 0;
-let thirtyFrameBonusGiven = false;
-let exportsToday = 0;
-let lastExportDate = '';
+function getWeekKey() {
+  const d = new Date();
+  const firstDay = new Date(d.getFullYear(), 0, 1);
+  const days = Math.floor((d - firstDay) / 86400000);
+  const week = Math.ceil((days + firstDay.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${week}`;
+}
 
-let galleryShares = 0;
+let rewardWeekKey = localStorage.getItem("stopMotionRewardWeekKey") || getWeekKey();
+
+let projectsCompleted = Number(localStorage.getItem("stopMotionProjectsCompleted")) || 0;
+let lastTenFrameRewardAt = Number(localStorage.getItem("stopMotionLastTenFrameRewardAt")) || 0;
+let thirtyFrameBonusGiven = localStorage.getItem("stopMotionThirtyFrameBonusGiven") === "true";
+let exportsToday = Number(localStorage.getItem("stopMotionExportsThisWeek")) || 0;
+let galleryShares = Number(localStorage.getItem("stopMotionGalleryShares")) || 0;
+let featuredFilmGiven = localStorage.getItem("stopMotionFeaturedFilmGiven") === "true";
+
+function resetWeeklyRewardsIfNeeded() {
+  const currentWeek = getWeekKey();
+
+  if (rewardWeekKey !== currentWeek) {
+    rewardWeekKey = currentWeek;
+
+    projectsCompleted = 0;
+    lastTenFrameRewardAt = 0;
+    thirtyFrameBonusGiven = false;
+    exportsToday = 0;
+    galleryShares = 0;
+    featuredFilmGiven = false;
+
+    saveWeeklyRewardState();
+  }
+}
+
+function saveWeeklyRewardState() {
+  localStorage.setItem("stopMotionRewardWeekKey", rewardWeekKey);
+  localStorage.setItem("stopMotionProjectsCompleted", projectsCompleted);
+  localStorage.setItem("stopMotionLastTenFrameRewardAt", lastTenFrameRewardAt);
+  localStorage.setItem("stopMotionThirtyFrameBonusGiven", thirtyFrameBonusGiven);
+  localStorage.setItem("stopMotionExportsThisWeek", exportsToday);
+  localStorage.setItem("stopMotionGalleryShares", galleryShares);
+  localStorage.setItem("stopMotionFeaturedFilmGiven", featuredFilmGiven);
+}
 
 const CW = 480, CH = 320;
 
@@ -1340,12 +1376,7 @@ function runPreview() {
 // ---- GIF Export (canvas-based, simplified frame recorder) ----
 function exportGIF() {
   saveCurrentFrame();
-  const today = new Date().toDateString();
-
-if(lastExportDate !== today){
-    exportsToday = 0;
-    lastExportDate = today;
-}
+  resetWeeklyRewardsIfNeeded();
   if(frames.length < 1){ alert('Nothing to export!'); return; }
 
   if(frames.length >= 10 && exportsToday < 5){
@@ -1356,6 +1387,7 @@ if(lastExportDate !== today){
     );
 
     exportsToday++;
+    saveWeeklyRewardState();
 }
 
   // We'll create a simple animated PNG-like using a data URL collection
@@ -1453,6 +1485,8 @@ async function addCoinsToWallet(amount, label) {
 
 // ---- Save Animation ----
 function saveAnimation() {
+  resetWeeklyRewardsIfNeeded();
+
   saveCurrentFrame();
   const count = frames.length;
   // Reward only after saving animation
@@ -1467,6 +1501,7 @@ if(newFramesSinceLastReward >= 10 && projectsCompleted < 3){
     );
 
     projectsCompleted++;
+    saveWeeklyRewardState();
     lastTenFrameRewardAt = count;
 }
 
@@ -1478,6 +1513,7 @@ if(count >= 30 && !thirtyFrameBonusGiven){
     );
 
     thirtyFrameBonusGiven = true;
+    saveWeeklyRewardState();
 }
 
   const popup = document.getElementById('save-popup');
@@ -1608,6 +1644,7 @@ ctx.drawImage(
 }
 // ---- Upload Creation ----
 function uploadCreation() {
+    resetWeeklyRewardsIfNeeded();
   if(galleryShares < 1){
 
     addCoinsToWallet(
@@ -1616,6 +1653,7 @@ function uploadCreation() {
     );
 
     galleryShares++;
+    saveWeeklyRewardState();
 }
   saveCurrentFrame();
   if(frames.length < 1){ alert('Nothing to upload!'); return; }
@@ -1647,12 +1685,21 @@ function uploadCreation() {
     }
   }, 'image/png');
 }
-function rewardFeaturedFilm(){
 
-    addCoinsToWallet(
-        1000,
-        "Featured Film Of The Week"
-    );
+function rewardFeaturedFilm(){
+  resetWeeklyRewardsIfNeeded();
+
+  if (featuredFilmGiven) {
+    return;
+  }
+
+  addCoinsToWallet(
+    1000,
+    "Featured Film Of The Week"
+  );
+
+  featuredFilmGiven = true;
+  saveWeeklyRewardState();
 }
 
 function fallbackUploadDownload(exportCanvas) {
@@ -1663,6 +1710,7 @@ function fallbackUploadDownload(exportCanvas) {
 }
 
 // ---- Init ----
+resetWeeklyRewardsIfNeeded();
 frames.push(initFrame());
 
 undoStacks = [[]];
