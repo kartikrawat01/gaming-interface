@@ -56,10 +56,10 @@ interface CategoryLeaderboard {
 // DATA
 // ============================================================
 const getDivision = (coinsPerHour: number): Division => {
-  if (coinsPerHour >= 12000) return "Legend";
-  if (coinsPerHour >= 9000) return "Mastermind";
-  if (coinsPerHour >= 6000) return "Challenger";
-  if (coinsPerHour >= 3000) return "Explorer";
+  if (coinsPerHour >= 80) return "Legend";
+  if (coinsPerHour >= 50) return "Mastermind";
+  if (coinsPerHour >= 25) return "Challenger";
+  if (coinsPerHour >= 10) return "Explorer";
   return "Rookie";
 };
 
@@ -125,11 +125,11 @@ const CATEGORIES: CategoryLeaderboard[] = [
 ];
 
 const DIVISION_CONFIG: Record<Division, { color: string; glow: string; badge: string; label: string; bg: string }> = {
-  Legend: { color: "#fbbf24", glow: "#f59e0b40", badge: "🏆", label: "Legend (12000+ XP)", bg: "rgba(251,191,36,0.08)" },
-  Mastermind: { color: "#a855f7", glow: "#a855f740", badge: "⭐", label: "Mastermind (9000 – 11999 XP)", bg: "rgba(168,85,247,0.08)" },
-  Challenger: { color: "#3b82f6", glow: "#3b82f640", badge: "🔷", label: "Challenger (6000 – 8999 XP)", bg: "rgba(59,130,246,0.08)" },
-  Explorer: { color: "#22c55e", glow: "#22c55e40", badge: "⭐", label: "Explorer (3000 – 5999 XP)", bg: "rgba(34,197,94,0.08)" },
-  Rookie: { color: "#94a3b8", glow: "#94a3b840", badge: "🔰", label: "Rookie (0 – 2999 XP)", bg: "rgba(148,163,184,0.08)" },
+  Legend:     { color: "#fbbf24", glow: "#f59e0b40", badge: "🏆", label: "Legend (80+ coins/hr)",       bg: "rgba(251,191,36,0.08)" },
+  Mastermind: { color: "#a855f7", glow: "#a855f740", badge: "⭐", label: "Mastermind (50 – 79 coins/hr)", bg: "rgba(168,85,247,0.08)" },
+  Challenger: { color: "#3b82f6", glow: "#3b82f640", badge: "🔷", label: "Challenger (25 – 49 coins/hr)", bg: "rgba(59,130,246,0.08)" },
+  Explorer:   { color: "#22c55e", glow: "#22c55e40", badge: "⭐", label: "Explorer (10 – 24 coins/hr)",    bg: "rgba(34,197,94,0.08)" },
+  Rookie:     { color: "#94a3b8", glow: "#94a3b840", badge: "🔰", label: "Rookie (0 – 9 coins/hr)",       bg: "rgba(148,163,184,0.08)" },
 };
 
 // ============================================================
@@ -708,7 +708,7 @@ style={{
 display:"grid",
 gridTemplateColumns:"1fr 320px",
 gap:"24px",
-marginTop:"20px",
+marginTop:"8px",
 alignItems:"start"
 }}>
             {/* Left: Title + tabs */}
@@ -778,28 +778,11 @@ alignItems:"start"
           {/* ── STATS ROW ── */}
 <div style={{
   display:"grid",
-  gridTemplateColumns:"repeat(3,1fr)",
+  gridTemplateColumns:"repeat(2,1fr)",
   gap:"18px",
   marginTop:24,
   marginBottom:24
 }}>
-            {/* Levels Completed */}
-            <div className="stat-card level-card">
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{
-                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-                  background: "#e9f5ff",
-backdropFilter: "blur(10px)",
-border: "1px solid rgba(255,255,255,0.5)", display: "flex",
-                  alignItems: "center", justifyContent: "center", fontSize: 26,
-                }}>🚩</div>
-                <div>
-                  <div style={{ fontSize: 15, color: "#084387", fontWeight: 700 }}>Levels Completed</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>1,245</div>
-                  <div style={{ fontSize: 13, color: "#4ade80", fontWeight: 700, marginTop: 2 }}>↑ 32 this week</div>
-                </div>
-              </div>
-            </div>
 
             {/* Games Played */}
             <div className="stat-card games-card">
