@@ -175,6 +175,8 @@ function EduPlayLeaderboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [gamesPlayed, setGamesPlayed] = useState(0);
+const [gamesThisWeek, setGamesThisWeek] = useState(0);
 const [user, setUser] = useState<any>(null);
 
 const {
@@ -233,6 +235,31 @@ const fetchLoginStreak = async () => {
   }
 };
 
+const fetchStats = async () => {
+  try {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+
+    if (!token) return;
+
+    const res = await fetch(
+      "https://wallet-api-backend-production.up.railway.app/wallet/stats",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    setGamesPlayed(Number(data.totalGamesPlayed) || 0);
+    setGamesThisWeek(Number(data.gamesThisWeek) || 0);
+  } catch (err) {
+    console.error("Fetch stats failed:", err);
+  }
+};
+
 useEffect(() => {
   supabase.auth.getUser().then(({ data }) => {
     setUser(data.user || null);
@@ -260,6 +287,7 @@ useEffect(() => {
   connectWalletSocket(user.id);
   fetchWallet();
   fetchLoginStreak();
+  fetchStats();
 }, [user?.id]);
 
 useEffect(() => {
@@ -751,8 +779,8 @@ style={{
                     }}>🎮</div>
                     <div>
                       <div style={{ fontSize: 15, color: "#0b4520", fontWeight: 700 }}>Games Played</div>
-                      <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>2,890</div>
-                      <div style={{ fontSize: 13, color: "#4ade80", fontWeight: 700, marginTop: 2 }}>↑ 85 this week</div>
+                      <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>{gamesPlayed.toLocaleString()}</div>
+<div style={{ fontSize: 13, color: "#4ade80", fontWeight: 700, marginTop: 2 }}>↑ {gamesThisWeek} this week</div>
                     </div>
                   </div>
                 </div>
