@@ -148,6 +148,8 @@ const DIVISION_CONFIG: Record<Division, { color: string; glow: string; badge: st
   Rookie:     { color: "#94a3b8", glow: "#94a3b840", badge: "🔰", label: "Rookie (0 – 9 coins/hr)",       bg: "rgba(148,163,184,0.08)" },
 };
 
+const DIVISION_ORDER: Division[] = ["Rookie", "Explorer", "Challenger", "Mastermind", "Legend"];
+
 // ============================================================
 // HELPERS
 // ============================================================
@@ -203,6 +205,8 @@ const {
   const [players, setPlayers] = useState<Player[]>([]);
 const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
 const [searchTerm, setSearchTerm] = useState("");
+const [weeklyPlayers, setWeeklyPlayers] = useState<Player[]>([]);
+const [loadingWeekly, setLoadingWeekly] = useState(false);
 const fetchWallet = async () => {
   try {
     const session = await supabase.auth.getSession();
@@ -352,17 +356,61 @@ useEffect(() => {
   fetchLeaderboard();
 }, [user?.id]);
 
+useEffect(() => {
+  if (activeTab !== "Weekly" || !user?.id) return;
+
+  const fetchWeeklyLeaderboard = async () => {
+    try {
+      setLoadingWeekly(true);
+
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      if (!token) {
+        setLoadingWeekly(false);
+        return;
+      }
+
+      const res = await fetch(
+        "https://wallet-api-backend-production.up.railway.app/wallet/leaderboard/weekly",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      const formattedWeekly = data.map((p: any, index: number) => ({
+        rank: index + 1,
+        name: p.name || "Player",
+        totalCoinsEarned: Number(p.totalCoinsEarned) || 0,
+        totalHoursPlayed: Number(p.totalHoursPlayed) || 0,
+        coinsPerHour: Number(p.coinsPerHour) || 0,
+        avatar: "🧑",
+        division: getDivision(Number(p.coinsPerHour) || 0),
+        isCurrentUser: p.userId === user?.id,
+      }));
+
+      setWeeklyPlayers(formattedWeekly);
+    } catch (err) {
+      console.error("Weekly leaderboard fetch failed:", err);
+    } finally {
+      setLoadingWeekly(false);
+    }
+  };
+
+  fetchWeeklyLeaderboard();
+}, [activeTab, user?.id]);
+
   /* 👇 YE LINE MISSING HAI */
   const [showRankUpPopup, setShowRankUpPopup] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowRankUpPopup(true);
-    }, 2000);
+  const [newDivision, setNewDivision] = useState<Division | null>(null);
 
-    return () => clearTimeout(timer);
-  }, []);
   const getPlayers = (): Player[] => {
+  if (activeTab === "Weekly") return weeklyPlayers;
   return players;
 };
 
@@ -391,6 +439,24 @@ useEffect(() => {
 
   const currentUser = players.find(p => p.isCurrentUser);
 const rankProgress = currentUser ? getDivisionProgress(currentUser.coinsPerHour) : null;
+useEffect(() => {
+  if (!currentUser || !user?.id) return;
+
+  const storageKey = `lastDivision_${user.id}`;
+  const lastDivision = localStorage.getItem(storageKey) as Division | null;
+
+  if (lastDivision && lastDivision !== currentUser.division) {
+    const oldIndex = DIVISION_ORDER.indexOf(lastDivision);
+    const newIndex = DIVISION_ORDER.indexOf(currentUser.division);
+
+    if (newIndex > oldIndex) {
+      setNewDivision(currentUser.division);
+      setShowRankUpPopup(true);
+    }
+  }
+
+  localStorage.setItem(storageKey, currentUser.division);
+}, [currentUser?.division, user?.id]);
 
   return (
     <div
@@ -1040,7 +1106,7 @@ style={{
 
               {/* Rows */}
               <div style={{ padding: "8px 10px" }}>
-                {loadingLeaderboard && (
+{(activeTab === "Weekly" ? loadingWeekly : loadingLeaderboard) && (
   <div style={{ padding: 20, textAlign: "center", color: "var(--muted)", fontWeight: 700 }}>
     Loading leaderboard...
   </div>
@@ -1161,7 +1227,7 @@ style={{
         <div style={{
           position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
           display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
-        }} onClick={() => setShowRankUpPopup(false)}>
+        }} onClick={() => {setShowRankUpPopup(false); setNewDivision(null);}}>
           <div className="popup-in glass-card" style={{
             padding: 40, textAlign: "center", maxWidth: 360,
             border: "1px solid rgba(139,92,246,0.5)",
@@ -1169,7 +1235,7 @@ style={{
           }}>
             <div style={{ fontSize: 60, marginBottom: 12 }}>🎉</div>
             <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>Rank Up!</div>
-            <div style={{ color: "#a78bfa", fontWeight: 700 }}>You reached Mastermind!</div>
+            <div style={{ color: "#a78bfa", fontWeight: 700 }}>You reached {newDivision}!</div>
           </div>
         </div>
       )}
