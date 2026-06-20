@@ -940,7 +940,7 @@ style={{
 </div>
 <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 600 }}>
   {currentUser
-    ? `${currentUser.coinsPerHour} / ${rankProgress?.max} coins/hr`
+    ? `${currentUser.coinsPerHour} coins/hr`
     : "Play 1+ hour to get ranked"}
 </div>
 </div>
