@@ -220,6 +220,16 @@ const games: Game[] = [
   accent: "from-green-400/30 to-emerald-500/20",
 },
 
+{
+  title: "Emoji Decoder",
+  icon: "😀",
+  image: "/images/emoji.webp",
+  category: "Logic & Puzzles",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-pink-400/30 to-yellow-500/20",
+},
+
 ];
 
 const difficultyStyles = {
@@ -248,6 +258,7 @@ const [gameProgress, setGameProgress] = useState<Record<string, number>>({
 "Water Color Sort Puzzle": 0,
 "Help The Bee": 0,
 "Sequencer Builder": 0,
+"Emoji Decoder": 0,
 });
 useEffect(() => {
   const loadAllGameProgress = () => {
@@ -548,6 +559,9 @@ if (game.title === "Help The Bee") {
 if (game.title === "Sequencer Builder") {
   window.open("/sequence2.html", "_blank");
 }
+if (game.title === "Emoji Decoder") {
+  window.open("/emoji.html", "_blank");
+}
 }}
               >
                 {/* Top */}
@@ -661,6 +675,10 @@ if (game.title === "Help The Bee") {
 
 if (game.title === "Sequencer Builder") {
   window.open("/sequence2.html", "_blank");
+}
+
+if (game.title === "Emoji Decoder") {
+  window.open("/emoji.html", "_blank");
 }
 
 }}

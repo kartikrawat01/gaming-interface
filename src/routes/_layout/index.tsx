@@ -147,6 +147,16 @@ const games: Game[] = [
   time: "10 min",
   accent: "from-orange-500/20 to-pink-500/5"
 },
+{
+  title: "Emoji Decoder",
+  icon: "😀",
+  image: "/images/emoji.webp",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 160,
+  time: "10 min",
+  accent: "from-pink-500/20 to-yellow-500/5"
+},
 ];
 
 // const sidebarItems = [
@@ -527,6 +537,13 @@ const [trafficStats, setTrafficStats] = useState({
 });
 
 const [sequenceBuilderStats, setSequenceBuilderStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
+const [emojiDecoderStats, setEmojiDecoderStats] = useState({
   progress: 0,
   coins: 0,
   completed: 0,
@@ -1587,6 +1604,51 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  const loadEmojiDecoderProgress = () => {
+    const completed =
+      Number(localStorage.getItem("emojiDecoderCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("emojiDecoderProgress")) ||
+      Math.round((completed / 20) * 100) ||
+      0;
+
+    setEmojiDecoderStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+      coins: Number(localStorage.getItem("emojiDecoderCoins")) || prev.coins,
+    }));
+  };
+
+  loadEmojiDecoderProgress();
+
+  const handleEmojiMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "emoji_decoder"
+    ) {
+      setEmojiDecoderStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadEmojiDecoderProgress);
+  window.addEventListener("storage", loadEmojiDecoderProgress);
+  window.addEventListener("message", handleEmojiMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadEmojiDecoderProgress);
+    window.removeEventListener("storage", loadEmojiDecoderProgress);
+    window.removeEventListener("message", handleEmojiMessage);
+  };
+}, []);
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
@@ -1699,6 +1761,7 @@ useEffect(() => {
   bubbleMathStats={bubbleMathStats}
   beeStats={beeStats}
   sequenceBuilderStats={sequenceBuilderStats}
+  emojiDecoderStats={emojiDecoderStats}
   colorSortStats={colorSortStats}
   trafficStats={trafficStats}
   searchTerm={searchTerm}
@@ -2104,6 +2167,7 @@ const GamesSection = memo(function GamesSection({
   bubbleMathStats,
   beeStats,
   sequenceBuilderStats,
+  emojiDecoderStats,
   colorSortStats,
   trafficStats,
   searchTerm,
@@ -2219,6 +2283,13 @@ const filteredGames = games.filter((g) =>
     xp: sequenceBuilderStats.coins,
     time: sequenceBuilderStats.time,
   }
+  : g.title === "Emoji Decoder"
+? {
+    ...g,
+    progress: emojiDecoderStats.progress,
+    xp: emojiDecoderStats.coins,
+    time: emojiDecoderStats.time,
+  }
   : g.title === "Water Color Sort Puzzle"
 ? {
     ...g,
@@ -2324,6 +2395,11 @@ if (game.title === "Help The Bee") {
 if (game.title === "Sequence Builder") {
   window.open("/sequence2.html", "_blank");
 }
+
+if (game.title === "Emoji Decoder") {
+  window.open("/emoji.html", "_blank");
+}
+
   }}
 
       className={`group relative flex flex-col h-full rounded-2xl border border-border bg-card overflow-hidden shadow-card transition-colors ${
