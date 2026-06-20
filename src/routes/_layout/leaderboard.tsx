@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_layout/leaderboard")({
 // TYPES
 // ============================================================
 type Division = "Legend" | "Mastermind" | "Challenger" | "Explorer" | "Rookie";
-type Tab = "Global" | "Weekly" | "Friends" | "Category";
+type Tab = "Global" | "Weekly" | "Friends";
 type DivisionFilter = "All Divisions" | Division;
 
 interface Player {
@@ -664,11 +664,11 @@ alignItems:"start"
 
               {/* Tabs */}
               <div style={{ display: "flex", gap: 10 }}>
-                {(["Global", "Weekly", "Friends", "Category"] as Tab[]).map(tab => (
+                {/* {(["Global", "Weekly", "Friends", "Category"] as Tab[]).map(tab => ( */}
+                {(["Global", "Weekly", "Friends"] as Tab[]).map(tab => (
                   <button key={tab} className={`tab-btn ${activeTab === tab ? "active" : "inactive"}`}
                     onClick={() => setActiveTab(tab)}>
                     {tab === "Friends" && "👥 "}
-                    {tab === "Category" && "🎯 "}
                     {tab}
                   </button>
                 ))}
@@ -774,7 +774,8 @@ border: "1px solid rgba(255,255,255,0.5)", display: "flex",
           </div>
 
           {/* ── CATEGORY VIEW ── */}
-          {activeTab === "Category" ? (
+          {/* {activeTab === "Category" ? ( */}
+          {false ? (
             <div className="glass-card" style={{ padding: 28 }}>
               <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
                 🎯 <span>Category Leaderboards</span>
@@ -964,7 +965,8 @@ border: "1px solid rgba(255,255,255,0.5)", display: "flex",
           )}
 
           {/* ── CATEGORY LEADERBOARDS ── */}
-          {activeTab !== "Category" && (
+          {/* {activeTab !== "Category" && ( */}
+          {/* {false && (
             <div style={{ marginTop: 24 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                 <div style={{ fontWeight: 800, fontSize: 18 }}>Category Leaderboards</div>
@@ -1022,7 +1024,7 @@ border: "1px solid rgba(255,255,255,0.5)", display: "flex",
                 ))}
               </div>
             </div>
-          )}
+          )} */}
 
           {/* ── TIP BAR ── */}
           <div className="tip-bar">
