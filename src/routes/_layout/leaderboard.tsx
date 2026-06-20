@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "../../supabaseClient";
+import { useWallet } from "../../context/WalletContext";
 import {
   LayoutDashboard,
   Gamepad2,
@@ -175,26 +177,93 @@ function EduPlayLeaderboard() {
   const [divisionFilter, setDivisionFilter] = useState<DivisionFilter>("All Divisions");
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
-  const [walletCoins, setWalletCoins] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(0);
+const [user, setUser] = useState<any>(null);
+
+const {
+  coins: walletCoins,
+  setCoins: setWalletCoins,
+  connectWalletSocket,
+} = useWallet();
   const [players, setPlayers] = useState<Player[]>([]);
 const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
 const [searchTerm, setSearchTerm] = useState("");
+const fetchWallet = async () => {
+  try {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+
+    if (!token) return;
+
+    const res = await fetch(
+      "https://wallet-api-backend-production.up.railway.app/wallet/balance",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    setWalletCoins(Number(data.balance) || 0);
+  } catch (err) {
+    console.error("Fetch wallet failed:", err);
+  }
+};
+
+const fetchLoginStreak = async () => {
+  try {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+
+    if (!token) return;
+
+    const res = await fetch(
+      "https://wallet-api-backend-production.up.railway.app/wallet/login-streak",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    setCurrentStreak(Number(data.currentStreak) || 0);
+  } catch (err) {
+    console.error("Fetch streak failed:", err);
+  }
+};
+
 useEffect(() => {
-  const syncCoins = () => {
-    const savedCoins = localStorage.getItem("logicMazeCoins");
-    setWalletCoins(savedCoins ? Number(savedCoins) : 0);
-  };
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data.user || null);
+  });
 
-  syncCoins();
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setUser(session?.user || null);
 
-  window.addEventListener("storage", syncCoins);
-  window.addEventListener("walletUpdated", syncCoins);
+      if (_event === "SIGNED_OUT") {
+        setWalletCoins(0);
+        setCurrentStreak(0);
+      }
+    }
+  );
 
   return () => {
-    window.removeEventListener("storage", syncCoins);
-    window.removeEventListener("walletUpdated", syncCoins);
+    listener.subscription.unsubscribe();
   };
 }, []);
+
+useEffect(() => {
+  if (!user?.id) return;
+
+  connectWalletSocket(user.id);
+  fetchWallet();
+  fetchLoginStreak();
+}, [user?.id]);
 
 useEffect(() => {
   const fetchLeaderboard = async () => {
@@ -633,6 +702,7 @@ style={{
  walletCoins={walletCoins}
  searchTerm={searchTerm}
  setSearchTerm={setSearchTerm}
+ currentStreak={currentStreak}
 />
 
 
@@ -1120,7 +1190,7 @@ function PlayerRow({ player }: { player: Player }) {
   );
 }
 
-function Header({ walletCoins, searchTerm, setSearchTerm }: any) {
+function Header({ walletCoins, searchTerm, setSearchTerm, currentStreak }: any) {
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
@@ -1149,7 +1219,7 @@ function Header({ walletCoins, searchTerm, setSearchTerm }: any) {
 
         <div className="flex items-center gap-1.5 h-10 px-3 rounded-lg bg-card border border-border shadow-soft">
           <Flame className="h-4 w-4 text-orange-400" />
-          <span className="text-sm font-semibold">7</span>
+          <span className="text-sm font-semibold">{currentStreak}</span>
           <span className="hidden sm:inline text-xs text-muted-foreground">day streak</span>
         </div>
         <div className="flex items-center gap-2 h-10 px-4 rounded-lg bg-yellow-400/20 border border-yellow-400/30">
