@@ -370,6 +370,14 @@ const sequenceBuilderProgress =
   Math.round((sequenceBuilderCompleted / 30) * 100) ||
   0;
 
+  const emojiDecoderCompleted =
+  Number(localStorage.getItem("emojiDecoderCompleted")) || 0;
+
+const emojiDecoderProgress =
+  Number(localStorage.getItem("emojiDecoderProgress")) ||
+  Math.round((emojiDecoderCompleted / 20) * 100) ||
+  0;
+
     setGameProgress({
       "Logic Maze": Math.min(logicMazeProgress, 100),
       "Brain Blast": Math.min(brainBlastProgress, 100),
@@ -386,6 +394,7 @@ const sequenceBuilderProgress =
 "Water Color Sort Puzzle": Math.min(colorSortProgress, 100),
 "Help The Bee": Math.min(beeProgress, 100),
 "Sequencer Builder": Math.min(sequenceBuilderProgress, 100),
+"Emoji Decoder": Math.min(emojiDecoderProgress, 100),
     });
   };
 

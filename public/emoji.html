@@ -894,6 +894,14 @@
         let currentLevelIndex = 0;
         let coins = 0;
         const completedLevels = new Set(); // Keeps track of unique completions to prevent reward duplicate farming
+        function loadEmojiProgress() {
+    const completed =
+        Number(localStorage.getItem("emojiDecoderCompleted")) || 0;
+
+    for (let i = 0; i < completed; i++) {
+        completedLevels.add(i);
+    }
+}
         let isHintExpanded = false;
 
         function saveEmojiProgress() {
@@ -904,14 +912,17 @@
     localStorage.setItem("emojiDecoderProgress", String(progress));
     localStorage.setItem("emojiDecoderCoins", String(coins));
 
-    window.parent.postMessage({
-        type: "GAME_PROGRESS_UPDATE",
-        game: "emoji_decoder",
-        progress,
-        completed,
-        coins,
-        level: currentLevelIndex + 1
-    }, "*");
+    const payload = {
+    type: "GAME_PROGRESS_UPDATE",
+    game: "emoji_decoder",
+    progress,
+    completed,
+    coins,
+    level: currentLevelIndex + 1
+};
+
+window.parent?.postMessage(payload, "*");
+window.opener?.postMessage(payload, "*");
 }
 
 async function syncEmojiWalletBalance() {
@@ -1193,6 +1204,8 @@ async function creditEmojiCoins(amount) {
     if (window.gameSDK) {
         await window.gameSDK.init();
     }
+
+    loadEmojiProgress();
 
     await syncEmojiWalletBalance();
 
