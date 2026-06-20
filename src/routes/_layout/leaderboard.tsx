@@ -879,6 +879,7 @@ style={{
     : "Play 1+ hour to get ranked"}
 </div>
 </div>
+</div>
 
 <div className="xp-bar-track" style={{ marginTop: 14, height: 16 }}>
   <div className="xp-bar-fill" style={{ width: `${rankProgress?.percent ?? 0}%` }} />
