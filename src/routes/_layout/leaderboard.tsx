@@ -703,6 +703,7 @@ style={{
  searchTerm={searchTerm}
  setSearchTerm={setSearchTerm}
  currentStreak={currentStreak}
+ user={user}
 />
 
 
@@ -1190,7 +1191,7 @@ function PlayerRow({ player }: { player: Player }) {
   );
 }
 
-function Header({ walletCoins, searchTerm, setSearchTerm, currentStreak }: any) {
+function Header({ walletCoins, searchTerm, setSearchTerm, currentStreak, user }: any) {
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
@@ -1200,7 +1201,10 @@ function Header({ walletCoins, searchTerm, setSearchTerm, currentStreak }: any) 
     >
       <div className="min-w-0">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Welcome back, <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Player</span>
+          Welcome back,{" "}
+<span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+  {user?.user_metadata?.name || user?.email || "Player"}
+</span>
         </h1>
         <p className="text-sm text-muted-foreground mt-1">Ready to crack today's challenge?</p>
       </div>
@@ -1232,9 +1236,15 @@ function Header({ walletCoins, searchTerm, setSearchTerm, currentStreak }: any) 
           <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary animate-pulse-glow" />
         </button>
 
-        <div className="h-10 w-10 grid place-items-center rounded-lg bg-gradient-to-br from-primary to-secondary text-white font-semibold text-sm">
-          AX
-        </div>
+<div className="h-10 px-3 flex flex-col justify-center rounded-lg bg-card border border-border shadow-soft">
+  <span className="text-xs font-semibold leading-tight text-foreground">
+    {user?.user_metadata?.name || user?.email?.split("@")[0] || "Player"}
+  </span>
+
+  <span className="text-[10px] leading-tight text-muted-foreground max-w-[140px] truncate">
+    {user?.email || "Not logged in"}
+  </span>
+</div>
       </div>
     </motion.header>
   );
