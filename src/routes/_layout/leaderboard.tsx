@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_layout/leaderboard")({
 // TYPES
 // ============================================================
 type Division = "Legend" | "Mastermind" | "Challenger" | "Explorer" | "Rookie";
-type Tab = "Global" | "Weekly" | "Friends";
+type Tab = "Global" | "Weekly" ;
 type DivisionFilter = "All Divisions" | Division;
 
 interface Player {
@@ -853,10 +853,9 @@ style={{
 
               {/* Tabs */}
               <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-                {(["Global", "Weekly", "Friends"] as Tab[]).map(tab => (
+                {(["Global", "Weekly"] as Tab[]).map(tab => (
                   <button key={tab} className={`tab-btn ${activeTab === tab ? "active" : "inactive"}`}
                     onClick={() => setActiveTab(tab)}>
-                    {tab === "Friends" && "👥 "}
                     {tab}
                   </button>
                 ))}
@@ -1063,10 +1062,10 @@ style={{
                   <span style={{ fontSize: 26 }}>🏆</span>
                   <div>
                     <div style={{ fontWeight: 800, fontSize: 18 }}>
-                      {activeTab === "Weekly" ? "Weekly Leaderboard" : activeTab === "Friends" ? "Friends Leaderboard" : "Global Leaderboard"}
+                      {activeTab === "Weekly" ? "Weekly Leaderboard" : "Global Leaderboard"}
                     </div>
                     <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 600 }}>
-                      {activeTab === "Weekly" ? "Resets every Monday" : activeTab === "Friends" ? "Your friends ranking" : "Top players from around the world"}
+                      {activeTab === "Weekly" ? "Resets every Monday"  : "Top players from around the world"}
                     </div>
                   </div>
                 </div>
