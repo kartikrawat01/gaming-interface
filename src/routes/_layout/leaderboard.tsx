@@ -11,8 +11,6 @@ import {
   Trophy,
   Award,
   Settings,
-  Search,
-  Flame,
   Play,
   Lock,
   Clock,
@@ -699,9 +697,6 @@ style={{
 >
         <Header
  walletCoins={walletCoins}
- searchTerm={searchTerm}
- setSearchTerm={setSearchTerm}
- currentStreak={currentStreak}
  user={user}
 />
 
@@ -1190,32 +1185,16 @@ function PlayerRow({ player }: { player: Player }) {
   );
 }
 
-function Header({ walletCoins, searchTerm, setSearchTerm, currentStreak, user }: any) {
+function Header({ walletCoins, user }: any) {
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      className="flex justify-end items-center gap-4"
     >
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="relative flex-1 md:flex-none md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-  type="text"
-  placeholder="Search games..."
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}
-  className="w-full h-10 pl-9 pr-3 rounded-lg bg-card border border-border shadow-soft text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition"
-/>
-        </div>
-
-        <div className="flex items-center gap-1.5 h-10 px-3 rounded-lg bg-card border border-border shadow-soft">
-          <Flame className="h-4 w-4 text-orange-400" />
-          <span className="text-sm font-semibold">{currentStreak}</span>
-          <span className="hidden sm:inline text-xs text-muted-foreground">day streak</span>
-        </div>
         <div className="flex items-center gap-2 h-10 px-4 rounded-lg bg-yellow-400/20 border border-yellow-400/30">
           <span>🪙</span>
           <span className="font-bold text-white-300">{walletCoins}</span>
