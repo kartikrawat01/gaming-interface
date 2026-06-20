@@ -37,9 +37,9 @@ type DivisionFilter = "All Divisions" | Division;
 interface Player {
   rank: number;
   name: string;
-  xp: number;
-  levels: number;
-  streak: number;
+  totalCoinsEarned: number;
+  totalHoursPlayed: number;
+  coinsPerHour: number;
   avatar: string;
   isCurrentUser?: boolean;
   division: Division;
@@ -56,46 +56,46 @@ interface CategoryLeaderboard {
 // ============================================================
 // DATA
 // ============================================================
-const getDivision = (xp: number): Division => {
-  if (xp >= 12000) return "Legend";
-  if (xp >= 9000) return "Mastermind";
-  if (xp >= 6000) return "Challenger";
-  if (xp >= 3000) return "Explorer";
+const getDivision = (coinsPerHour: number): Division => {
+  if (coinsPerHour >= 12000) return "Legend";
+  if (coinsPerHour >= 9000) return "Mastermind";
+  if (coinsPerHour >= 6000) return "Challenger";
+  if (coinsPerHour >= 3000) return "Explorer";
   return "Rookie";
 };
 
-const PLAYERS: Player[] = [
-  { rank: 1, name: "Alex", xp: 12540, levels: 245, streak: 32, avatar: "👦", division: "Legend" },
-  { rank: 2, name: "MJ", xp: 12120, levels: 238, streak: 30, avatar: "👧", division: "Legend" },
-  { rank: 3, name: "Sam", xp: 12010, levels: 230, streak: 29, avatar: "🧒", division: "Legend" },
-  { rank: 4, name: "John", xp: 9850, levels: 190, streak: 18, avatar: "👦", division: "Mastermind" },
-  { rank: 5, name: "Emma", xp: 9540, levels: 185, streak: 16, avatar: "👧", division: "Mastermind" },
-  { rank: 6, name: "Noah", xp: 8760, levels: 175, streak: 14, avatar: "🧑", division: "Challenger" },
-  { rank: 7, name: "Sophia", xp: 7890, levels: 160, streak: 12, avatar: "👧", division: "Challenger" },
-  { rank: 8, name: "Liam", xp: 6980, levels: 150, streak: 10, avatar: "👦", division: "Challenger" },
-  { rank: 9, name: "Olivia", xp: 5420, levels: 120, streak: 7, avatar: "👧", division: "Explorer" },
-  { rank: 10, name: "Ava", xp: 4980, levels: 110, streak: 6, avatar: "🧒", division: "Explorer" },
-  { rank: 11, name: "Lucas", xp: 2450, levels: 80, streak: 4, avatar: "👦", division: "Rookie" },
-  { rank: 12, name: "You", xp: 6250, levels: 125, streak: 15, avatar: "🧑", division: "Challenger", isCurrentUser: true },
-];
+// const PLAYERS: Player[] = [
+//   { rank: 1, name: "Alex", xp: 12540, levels: 245, streak: 32, avatar: "👦", division: "Legend" },
+//   { rank: 2, name: "MJ", xp: 12120, levels: 238, streak: 30, avatar: "👧", division: "Legend" },
+//   { rank: 3, name: "Sam", xp: 12010, levels: 230, streak: 29, avatar: "🧒", division: "Legend" },
+//   { rank: 4, name: "John", xp: 9850, levels: 190, streak: 18, avatar: "👦", division: "Mastermind" },
+//   { rank: 5, name: "Emma", xp: 9540, levels: 185, streak: 16, avatar: "👧", division: "Mastermind" },
+//   { rank: 6, name: "Noah", xp: 8760, levels: 175, streak: 14, avatar: "🧑", division: "Challenger" },
+//   { rank: 7, name: "Sophia", xp: 7890, levels: 160, streak: 12, avatar: "👧", division: "Challenger" },
+//   { rank: 8, name: "Liam", xp: 6980, levels: 150, streak: 10, avatar: "👦", division: "Challenger" },
+//   { rank: 9, name: "Olivia", xp: 5420, levels: 120, streak: 7, avatar: "👧", division: "Explorer" },
+//   { rank: 10, name: "Ava", xp: 4980, levels: 110, streak: 6, avatar: "🧒", division: "Explorer" },
+//   { rank: 11, name: "Lucas", xp: 2450, levels: 80, streak: 4, avatar: "👦", division: "Rookie" },
+//   { rank: 12, name: "You", xp: 6250, levels: 125, streak: 15, avatar: "🧑", division: "Challenger", isCurrentUser: true },
+// ];
 
-const WEEKLY_PLAYERS: Player[] = [
-  { rank: 1, name: "Emma", xp: 3200, levels: 64, streak: 7, avatar: "👧", division: "Legend" },
-  { rank: 2, name: "Alex", xp: 2980, levels: 59, streak: 5, avatar: "👦", division: "Legend" },
-  { rank: 3, name: "Noah", xp: 2750, levels: 55, streak: 7, avatar: "🧑", division: "Mastermind" },
-  { rank: 4, name: "Sophia", xp: 2400, levels: 48, streak: 4, avatar: "👧", division: "Mastermind" },
-  { rank: 5, name: "Liam", xp: 2100, levels: 42, streak: 3, avatar: "👦", division: "Challenger" },
-  { rank: 6, name: "Olivia", xp: 1890, levels: 37, streak: 2, avatar: "👧", division: "Challenger" },
-  { rank: 7, name: "You", xp: 1650, levels: 33, streak: 5, avatar: "🧑", division: "Challenger", isCurrentUser: true },
-];
+// const WEEKLY_PLAYERS: Player[] = [
+//   { rank: 1, name: "Emma", xp: 3200, levels: 64, streak: 7, avatar: "👧", division: "Legend" },
+//   { rank: 2, name: "Alex", xp: 2980, levels: 59, streak: 5, avatar: "👦", division: "Legend" },
+//   { rank: 3, name: "Noah", xp: 2750, levels: 55, streak: 7, avatar: "🧑", division: "Mastermind" },
+//   { rank: 4, name: "Sophia", xp: 2400, levels: 48, streak: 4, avatar: "👧", division: "Mastermind" },
+//   { rank: 5, name: "Liam", xp: 2100, levels: 42, streak: 3, avatar: "👦", division: "Challenger" },
+//   { rank: 6, name: "Olivia", xp: 1890, levels: 37, streak: 2, avatar: "👧", division: "Challenger" },
+//   { rank: 7, name: "You", xp: 1650, levels: 33, streak: 5, avatar: "🧑", division: "Challenger", isCurrentUser: true },
+// ];
 
-const FRIENDS_PLAYERS: Player[] = [
-  { rank: 1, name: "Sam", xp: 12010, levels: 230, streak: 29, avatar: "🧒", division: "Legend" },
-  { rank: 2, name: "Liam", xp: 6980, levels: 150, streak: 10, avatar: "👦", division: "Challenger" },
-  { rank: 3, name: "You", xp: 6250, levels: 125, streak: 15, avatar: "🧑", division: "Challenger", isCurrentUser: true },
-  { rank: 4, name: "Ava", xp: 4980, levels: 110, streak: 6, avatar: "🧒", division: "Explorer" },
-  { rank: 5, name: "Lucas", xp: 2450, levels: 80, streak: 4, avatar: "👦", division: "Rookie" },
-];
+// const FRIENDS_PLAYERS: Player[] = [
+//   { rank: 1, name: "Sam", xp: 12010, levels: 230, streak: 29, avatar: "🧒", division: "Legend" },
+//   { rank: 2, name: "Liam", xp: 6980, levels: 150, streak: 10, avatar: "👦", division: "Challenger" },
+//   { rank: 3, name: "You", xp: 6250, levels: 125, streak: 15, avatar: "🧑", division: "Challenger", isCurrentUser: true },
+//   { rank: 4, name: "Ava", xp: 4980, levels: 110, streak: 6, avatar: "🧒", division: "Explorer" },
+//   { rank: 5, name: "Lucas", xp: 2450, levels: 80, streak: 4, avatar: "👦", division: "Rookie" },
+// ];
 
 const CATEGORIES: CategoryLeaderboard[] = [
   {
@@ -176,6 +176,8 @@ function EduPlayLeaderboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [walletCoins, setWalletCoins] = useState(0);
+  const [players, setPlayers] = useState<Player[]>([]);
+const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
 const [searchTerm, setSearchTerm] = useState("");
 useEffect(() => {
   const syncCoins = () => {
@@ -194,6 +196,38 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  const fetchLeaderboard = async () => {
+    try {
+      setLoadingLeaderboard(true);
+
+      const res = await fetch(
+        "https://wallet-api-backend-production.up.railway.app/wallet/leaderboard/coins-per-hour"
+      );
+
+      const data = await res.json();
+
+      const formattedPlayers = data.map((p: any, index: number) => ({
+        rank: index + 1,
+        name: p.name || "Player",
+        totalCoinsEarned: Number(p.totalCoinsEarned) || 0,
+        totalHoursPlayed: Number(p.totalHoursPlayed) || 0,
+        coinsPerHour: Number(p.coinsPerHour) || 0,
+        avatar: "🧑",
+        division: getDivision(Number(p.coinsPerHour) || 0),
+      }));
+
+      setPlayers(formattedPlayers);
+    } catch (err) {
+      console.error("Leaderboard fetch failed:", err);
+    } finally {
+      setLoadingLeaderboard(false);
+    }
+  };
+
+  fetchLeaderboard();
+}, []);
+
   /* 👇 YE LINE MISSING HAI */
   const [showRankUpPopup, setShowRankUpPopup] = useState(false);
 
@@ -205,10 +239,8 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }, []);
   const getPlayers = (): Player[] => {
-    if (activeTab === "Weekly") return WEEKLY_PLAYERS;
-    if (activeTab === "Friends") return FRIENDS_PLAYERS;
-    return PLAYERS;
-  };
+  return players;
+};
 
   const filteredPlayers = getPlayers().filter((p) => {
   const query = searchTerm.toLowerCase();
@@ -233,7 +265,7 @@ useEffect(() => {
     players: filteredPlayers.filter(p => p.division === div),
   })).filter(g => g.players.length > 0);
 
-  const currentUser = PLAYERS.find(p => p.isCurrentUser)!;
+  const currentUser = players.find(p => p.isCurrentUser);
 
   return (
     <div
@@ -882,13 +914,18 @@ border: "1px solid rgba(255,255,255,0.5)", display: "flex",
               }}>
                 <span className="col-header">Rank</span>
                 <span className="col-header">Player</span>
-                <span className="col-header" style={{ textAlign: "center" }}>Total XP</span>
-                <span className="col-header" style={{ textAlign: "center" }}>Levels</span>
-                <span className="col-header" style={{ textAlign: "center" }}>Win Streak</span>
+                <span className="col-header" style={{ textAlign: "center" }}>Coins / Hour</span>
+<span className="col-header" style={{ textAlign: "center" }}>Total Coins</span>
+<span className="col-header" style={{ textAlign: "center" }}>Hours Played</span>
               </div>
 
               {/* Rows */}
               <div style={{ padding: "8px 10px" }}>
+                {loadingLeaderboard && (
+  <div style={{ padding: 20, textAlign: "center", color: "var(--muted)", fontWeight: 700 }}>
+    Loading leaderboard...
+  </div>
+)}
                 {activeTab === "Global" ? (
                   groupedPlayers.map(group => {
                     const cfg = DIVISION_CONFIG[group.division];
@@ -915,11 +952,13 @@ border: "1px solid rgba(255,255,255,0.5)", display: "flex",
                 )}
 
                 {/* Current user always shown at bottom for Global */}
-                {activeTab === "Global" && !filteredPlayers.find(p => p.isCurrentUser) && (
-                  <div style={{ borderTop: "1px solid var(--border)", marginTop: 8, paddingTop: 8 }}>
-                    <PlayerRow player={currentUser} />
-                  </div>
-                )}
+                {activeTab === "Global" &&
+  currentUser &&
+  !filteredPlayers.find(p => p.isCurrentUser) && (
+    <div style={{ borderTop: "1px solid var(--border)", marginTop: 8, paddingTop: 8 }}>
+      <PlayerRow player={currentUser} />
+    </div>
+)}
               </div>
             </div>
           )}
@@ -1023,52 +1062,57 @@ border: "1px solid rgba(255,255,255,0.5)", display: "flex",
 // ============================================================
 function PlayerRow({ player }: { player: Player }) {
   const isGold = player.rank === 1;
+
   return (
     <div className={`player-row ${isGold ? "gold-row" : ""} ${player.isCurrentUser ? "current-user-row" : ""}`}>
-      {/* Rank */}
       <div style={{ display: "flex", alignItems: "center" }}>
         <RankBadge rank={player.rank} />
       </div>
 
-      {/* Player */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{
-          width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+          width: 34,
+          height: 34,
+          borderRadius: "50%",
+          flexShrink: 0,
           background: player.isCurrentUser
             ? "linear-gradient(135deg, #8b5cf6, #06b6d4)"
             : "linear-gradient(135deg, #334155, #475569)",
           border: `2px solid ${player.isCurrentUser ? "#8b5cf6" : "var(--border)"}`,
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
-        }}>{player.avatar}</div>
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 18,
+        }}>
+          {player.avatar}
+        </div>
+
         <div>
           <span style={{
-            fontWeight: 800, fontSize: 14,
+            fontWeight: 800,
+            fontSize: 14,
             color: player.isCurrentUser ? "#a78bfa" : isGold ? "#fbbf24" : "var(--text)",
           }}>
             {player.name}
             {player.rank === 1 && " 👑"}
-            {player.isCurrentUser && " (You)"}
           </span>
+
           <div style={{ fontSize: 10, color: "var(--muted)", fontWeight: 600 }}>
             {DIVISION_CONFIG[player.division].badge} {player.division}
           </div>
         </div>
       </div>
 
-      {/* XP */}
-      <div style={{ textAlign: "center", fontWeight: 800, fontSize: 14, color: isGold ? "#fbbf24" : "var(--text)" }}>
-        {player.xp.toLocaleString()} XP
+      <div style={{ textAlign: "center", fontWeight: 900, fontSize: 14, color: isGold ? "#fbbf24" : "var(--text)" }}>
+        {player.coinsPerHour.toLocaleString()} coins/hr
       </div>
 
-      {/* Levels */}
       <div style={{ textAlign: "center", fontWeight: 700, fontSize: 14, color: "var(--muted)" }}>
-        {player.levels}
+        {player.totalCoinsEarned.toLocaleString()}
       </div>
 
-      {/* Streak */}
-      <div style={{ textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 5, fontWeight: 700, fontSize: 14 }}>
-        <span className="fire-icon" style={{ fontSize: 16 }}>🔥</span>
-        <span style={{ color: "#fb923c" }}>{player.streak}</span>
+      <div style={{ textAlign: "center", fontWeight: 700, fontSize: 14, color: "#fb923c" }}>
+        {player.totalHoursPlayed} hr
       </div>
     </div>
   );
