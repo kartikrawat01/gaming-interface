@@ -376,7 +376,7 @@ style={{
         .stat-card {
   flex: 1;
   border-radius: 20px;
-  padding: 20px 24px;
+  padding: 14px 18px;
   transition: all 0.25s ease;
   cursor: default;
 
@@ -695,24 +695,23 @@ style={{
   marginLeft: "0",
 }}
 >
-        <Header
- walletCoins={walletCoins}
- user={user}
-/>
 
 
         <div style={{ padding: "0" }}>
 
-          {/* ── HERO SECTION: Title + Rank Card ── */}
+          <div style={{ padding: "0" }}>
+
+          {/* ── TOP SECTION: Left (title+tabs+stats) / Right (header+rank card) ── */}
           <div style={{
-display:"grid",
-gridTemplateColumns:"1fr 320px",
-gap:"24px",
-marginTop:"8px",
-alignItems:"start"
-}}>
-            {/* Left: Title + tabs */}
-            <div style={{ flex: 1 }}>
+            display: "grid",
+            gridTemplateColumns: "1fr 340px",
+            gap: "20px",
+            alignItems: "start",
+            marginBottom: "24px",
+          }}>
+
+            {/* LEFT COLUMN: Title, tagline, tabs, Games/Streak cards */}
+            <div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
                 <h1 style={{ fontSize: 42, fontWeight: 900, lineHeight: 1, letterSpacing: "-1px", color: "var(--text)" }}>
                   Leaderboard
@@ -728,8 +727,7 @@ alignItems:"start"
               </div>
 
               {/* Tabs */}
-              <div style={{ display: "flex", gap: 10 }}>
-                {/* {(["Global", "Weekly", "Friends", "Category"] as Tab[]).map(tab => ( */}
+              <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
                 {(["Global", "Weekly", "Friends"] as Tab[]).map(tab => (
                   <button key={tab} className={`tab-btn ${activeTab === tab ? "active" : "inactive"}`}
                     onClick={() => setActiveTab(tab)}>
@@ -738,88 +736,100 @@ alignItems:"start"
                   </button>
                 ))}
               </div>
+
+              {/* Games Played + Win Streak row */}
+              <div style={{ display: "flex", gap: 14 }}>
+                {/* Games Played */}
+                <div className="stat-card games-card" style={{ flex: 1, minHeight: 100 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                      background: "#efffea",
+                      backdropFilter: "blur(10px)",
+                      border: "1px solid rgba(255,255,255,0.5)", display: "flex",
+                      alignItems: "center", justifyContent: "center", fontSize: 26,
+                    }}>🎮</div>
+                    <div>
+                      <div style={{ fontSize: 15, color: "#0b4520", fontWeight: 700 }}>Games Played</div>
+                      <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>2,890</div>
+                      <div style={{ fontSize: 13, color: "#4ade80", fontWeight: 700, marginTop: 2 }}>↑ 85 this week</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Win Streak */}
+                <div className="stat-card streak-card" style={{ flex: 1, minHeight: 100 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                      background: "#fff4e7",
+                      backdropFilter: "blur(10px)",
+                      border: "1px solid rgba(255,255,255,0.5)", display: "flex",
+                      alignItems: "center", justifyContent: "center", fontSize: 26,
+                    }}><span className="fire-icon">🔥</span></div>
+                    <div>
+                      <div style={{ fontSize: 15, color: "#5a3105", fontWeight: 700 }}>Win Streak</div>
+                      <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>15 Days</div>
+                      <div style={{ fontSize: 13, color: "#fbbf24", fontWeight: 700, marginTop: 2 }}>Keep it up!</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Right: Your Rank Card */}
-            <div className="rank-card" style={{ width: 320, flexShrink: 0 }}>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3,1fr)",
-                gap: "16px"
+            {/* RIGHT COLUMN: Coins/User header + bigger Your Rank profile card */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <Header walletCoins={walletCoins} user={user} />
+
+              <div className="rank-card" style={{
+                padding: "24px 26px",
+                minHeight: 213,
+                width: "100%",
+                boxSizing: "border-box",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
               }}>
-                <div style={{
-                  width: 64, height: 64, borderRadius: "50%", flexShrink: 0,
-                  background: "linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)",
-                  border: "3px solid #8b5cf6", display: "flex", alignItems: "center",
-                  justifyContent: "center", fontSize: 32, boxShadow: "0 0 20px rgba(139,92,246,0.45)",
-                }}>🧑</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 700, marginBottom: 2 }}>Your Rank</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 36, fontWeight: 900, lineHeight: 1, color: "var(--text)" }}>12</span>
-                    <span style={{ fontSize: 22 }}>🔷</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{
+                    width: 84, height: 84, fontSize: 44,
+                    borderRadius: "50%", flexShrink: 0,
+                    background: "linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%)",
+                    border: "3px solid #8b5cf6",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 0 18px rgba(139,92,246,0.35)",
+                  }}>
+                    🧑
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                    <span style={{ fontSize: 14 }}>⬆️</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#4ade80" }}>Challenger</span>
+<div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ fontSize: 13, color: "var(--muted)", fontWeight: 700 }}>
+                      Your Rank
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 46, fontWeight: 900, lineHeight: 1, color: "var(--text)" }}>
+                        12
+                      </span>
+                      <span style={{ fontSize: 22 }}>🔷</span>
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#22c55e" }}>
+                      ⬆️ Challenger
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 600 }}>
+                      6,250 / 12,000 XP
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2, fontWeight: 600 }}>
-                    6,250 / 12,000 XP
-                  </div>
+                  
                 </div>
-              </div>
-              <div className="xp-bar-track">
-                <div className="xp-bar-fill" style={{ width: "52%" }} />
-              </div>
-            </div>
-          </div>
 
-          {/* ── STATS ROW ── */}
-          {/* ── STATS ROW ── */}
-<div style={{
-  display:"grid",
-  gridTemplateColumns:"repeat(2,1fr)",
-  gap:"18px",
-  marginTop:24,
-  marginBottom:24
-}}>
-
-            {/* Games Played */}
-            <div className="stat-card games-card">
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{
-                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-                  background: "#efffea",
-backdropFilter: "blur(10px)",
-border: "1px solid rgba(255,255,255,0.5)", display: "flex",
-                  alignItems: "center", justifyContent: "center", fontSize: 26,
-                }}>🎮</div>
-                <div>
-                  <div style={{ fontSize: 15, color: "#0b4520", fontWeight: 700 }}>Games Played</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>2,890</div>
-                  <div style={{ fontSize: 13, color: "#4ade80", fontWeight: 700, marginTop: 2 }}>↑ 85 this week</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Win Streak */}
-            <div className="stat-card streak-card">
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{
-                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-                  background: "#fff4e7",
-backdropFilter: "blur(10px)",
-border: "1px solid rgba(255,255,255,0.5)", display: "flex",
-                  alignItems: "center", justifyContent: "center", fontSize: 26,
-                }}><span className="fire-icon">🔥</span></div>
-                <div>
-                  <div style={{ fontSize: 15, color: "#5a3105", fontWeight: 700 }}>Win Streak</div>
-                  <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>15 Days</div>
-                  <div style={{ fontSize: 13, color: "#fbbf24", fontWeight: 700, marginTop: 2 }}>Keep it up!</div>
+                <div className="xp-bar-track" style={{ marginTop: 14, height: 16 }}>
+                  <div className="xp-bar-fill" style={{ width: "52%" }} />
                 </div>
               </div>
             </div>
           </div>
+
+            </div>
+          
 
           {/* ── CATEGORY VIEW ── */}
           {/* {activeTab === "Category" ? ( */}
@@ -1079,7 +1089,7 @@ border: "1px solid rgba(255,255,255,0.5)", display: "flex",
             <span style={{ fontSize: 22, flexShrink: 0 }}>💡</span>
             <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
               <span style={{ fontWeight: 800, color: "#fbbf24" }}>Tip: </span>
-              Play daily, complete levels with good accuracy & explore different categories to earn more XP!
+              Play daily, complete levels with good accuracy & explore different categories to earn more coins!
             </div>
             <span style={{ fontSize: 22, flexShrink: 0 }}>🌸</span>
           </div>
