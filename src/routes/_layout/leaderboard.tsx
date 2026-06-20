@@ -769,7 +769,7 @@ style={{
                     }}><span className="fire-icon">🔥</span></div>
                     <div>
                       <div style={{ fontSize: 15, color: "#5a3105", fontWeight: 700 }}>Win Streak</div>
-                      <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>15 Days</div>
+                      <div style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, color: "var(--text)" }}>{currentStreak} {currentStreak === 1 ? "Day" : "Days"}</div>
                       <div style={{ fontSize: 13, color: "#fbbf24", fontWeight: 700, marginTop: 2 }}>Keep it up!</div>
                     </div>
                   </div>
