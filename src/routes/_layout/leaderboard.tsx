@@ -63,6 +63,22 @@ const getDivision = (coinsPerHour: number): Division => {
   return "Rookie";
 };
 
+function getDivisionProgress(coinsPerHour: number) {
+  const ranges: Record<Division, { min: number; max: number }> = {
+    Rookie:     { min: 0,  max: 10 },
+    Explorer:   { min: 10, max: 25 },
+    Challenger: { min: 25, max: 50 },
+    Mastermind: { min: 50, max: 80 },
+    Legend:     { min: 80, max: 120 }, // Legend ka upper cap nahi hai, 120 display ke liye assume kiya
+  };
+
+  const division = getDivision(coinsPerHour);
+  const { min, max } = ranges[division];
+  const percent = Math.min(100, Math.max(0, ((coinsPerHour - min) / (max - min)) * 100));
+
+  return { min, max, percent, division };
+}
+
 // const PLAYERS: Player[] = [
 //   { rank: 1, name: "Alex", xp: 12540, levels: 245, streak: 32, avatar: "👦", division: "Legend" },
 //   { rank: 2, name: "MJ", xp: 12120, levels: 238, streak: 30, avatar: "👧", division: "Legend" },
@@ -295,8 +311,21 @@ useEffect(() => {
     try {
       setLoadingLeaderboard(true);
 
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      if (!token) {
+        setLoadingLeaderboard(false);
+        return;
+      }
+
       const res = await fetch(
-        "https://wallet-api-backend-production.up.railway.app/wallet/leaderboard/coins-per-hour"
+        "https://wallet-api-backend-production.up.railway.app/wallet/leaderboard/coins-per-hour",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await res.json();
@@ -309,6 +338,7 @@ useEffect(() => {
         coinsPerHour: Number(p.coinsPerHour) || 0,
         avatar: "🧑",
         division: getDivision(Number(p.coinsPerHour) || 0),
+        isCurrentUser: p.userId === user?.id,
       }));
 
       setPlayers(formattedPlayers);
@@ -320,7 +350,7 @@ useEffect(() => {
   };
 
   fetchLeaderboard();
-}, []);
+}, [user?.id]);
 
   /* 👇 YE LINE MISSING HAI */
   const [showRankUpPopup, setShowRankUpPopup] = useState(false);
@@ -360,6 +390,7 @@ useEffect(() => {
   })).filter(g => g.players.length > 0);
 
   const currentUser = players.find(p => p.isCurrentUser);
+const rankProgress = currentUser ? getDivisionProgress(currentUser.coinsPerHour) : null;
 
   return (
     <div
@@ -835,23 +866,23 @@ style={{
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 46, fontWeight: 900, lineHeight: 1, color: "var(--text)" }}>
-                        12
-                      </span>
-                      <span style={{ fontSize: 22 }}>🔷</span>
-                    </div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#22c55e" }}>
-                      ⬆️ Challenger
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 600 }}>
-                      6,250 / 12,000 XP
-                    </div>
-                  </div>
-                  
-                </div>
+  {currentUser ? currentUser.rank : "-"}
+</span>
+<span style={{ fontSize: 22 }}>{currentUser ? DIVISION_CONFIG[currentUser.division].badge : "🔰"}</span>
+</div>
+<div style={{ fontSize: 14, fontWeight: 700, color: currentUser ? DIVISION_CONFIG[currentUser.division].color : "#94a3b8" }}>
+  ⬆️ {currentUser ? currentUser.division : "Not Ranked"}
+</div>
+<div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 600 }}>
+  {currentUser
+    ? `${currentUser.coinsPerHour} / ${rankProgress?.max} coins/hr`
+    : "Play 1+ hour to get ranked"}
+</div>
+</div>
 
-                <div className="xp-bar-track" style={{ marginTop: 14, height: 16 }}>
-                  <div className="xp-bar-fill" style={{ width: "52%" }} />
-                </div>
+<div className="xp-bar-track" style={{ marginTop: 14, height: 16 }}>
+  <div className="xp-bar-fill" style={{ width: `${rankProgress?.percent ?? 0}%` }} />
+</div>
               </div>
             </div>
           </div>
