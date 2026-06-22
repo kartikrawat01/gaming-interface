@@ -459,17 +459,7 @@ useEffect(() => {
 }, [currentUser?.division, user?.id]);
 
   return (
-    <div
-style={{
-  position: "relative",
-  minHeight: "100vh",
-  width: "100%",
-  maxWidth: "1600px",
-  margin: "0 auto",
-  padding: "12px 18px",
-  boxSizing: "border-box",
-}}
->
+<div className="leaderboard-page">
       <style>{`
       :root {
   --card: #ffffff;
@@ -477,6 +467,135 @@ style={{
   --muted: #64748b;
   --border: #e2e8f0;
   --shadow: 0 8px 30px rgba(0,0,0,0.05);
+}
+
+.leaderboard-page {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 12px 18px;
+  box-sizing: border-box;
+}
+
+.leaderboard-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.leaderboard-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.leaderboard-title {
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -1px;
+  color: var(--text);
+}
+
+.leaderboard-stats-row {
+  display: flex;
+  gap: 14px;
+}
+
+.leaderboard-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  gap: 14px;
+}
+
+.leaderboard-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .leaderboard-page {
+    padding: 10px 12px;
+  }
+
+  .leaderboard-top-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .leaderboard-title {
+    font-size: 32px;
+  }
+
+  .leaderboard-title-row span {
+    font-size: 28px !important;
+  }
+
+  .leaderboard-stats-row {
+    flex-direction: column;
+  }
+
+  .leaderboard-panel-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .leaderboard-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box,
+  .dropdown-select {
+    width: 100% !important;
+  }
+
+  .player-row {
+    grid-template-columns: 42px 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .player-row .coins-hour,
+  .player-row .total-coins,
+  .player-row .hours-played {
+    grid-column: 2;
+    text-align: left !important;
+    font-size: 12px !important;
+  }
+
+  .table-header-row {
+    display: none !important;
+  }
+
+  .rank-card {
+    padding: 18px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-title {
+    font-size: 28px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 8px 12px;
+  }
+
+  .stat-card {
+    padding: 12px;
+  }
 }
  
         .tab-btn {
@@ -827,18 +946,12 @@ style={{
           <div style={{ padding: "0" }}>
 
           {/* ── TOP SECTION: Left (title+tabs+stats) / Right (header+rank card) ── */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 340px",
-            gap: "20px",
-            alignItems: "start",
-            marginBottom: "24px",
-          }}>
+          <div className="leaderboard-top-grid">
 
             {/* LEFT COLUMN: Title, tagline, tabs, Games/Streak cards */}
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                <h1 style={{ fontSize: 42, fontWeight: 900, lineHeight: 1, letterSpacing: "-1px", color: "var(--text)" }}>
+              <div className="leaderboard-title-row">
+                <h1 className="leaderboard-title">
                   Leaderboard
                 </h1>
                 <span style={{ fontSize: 34 }}>👑</span>
@@ -862,7 +975,7 @@ style={{
               </div>
 
               {/* Games Played + Win Streak row */}
-              <div style={{ display: "flex", gap: 14 }}>
+              <div className="leaderboard-stats-row">
                 {/* Games Played */}
                 <div className="stat-card games-card" style={{ flex: 1, minHeight: 100 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -1054,10 +1167,7 @@ style={{
             /* ── GLOBAL / WEEKLY / FRIENDS LEADERBOARD PANEL ── */
             <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
               {/* Panel Header */}
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "20px 24px", borderBottom: "1px solid var(--border)",
-              }}>
+              <div className="leaderboard-panel-header">
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ fontSize: 26 }}>🏆</span>
                   <div>
@@ -1069,7 +1179,7 @@ style={{
                     </div>
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div className="leaderboard-filters">
                   <input
   className="search-box"
   placeholder="🔍 Search player..."
@@ -1091,11 +1201,11 @@ style={{
               </div>
 
               {/* Table Header */}
-              <div className="player-row" style={{
-                background: "#f8fafc", cursor: "default",
-                borderBottom: "1px solid var(--border)",
-                borderRadius: 0,
-              }}>
+              <div className="player-row table-header-row" style={{
+  background: "#f8fafc", cursor: "default",
+  borderBottom: "1px solid var(--border)",
+  borderRadius: 0,
+}}>
                 <span className="col-header">Rank</span>
                 <span className="col-header">Player</span>
                 <span className="col-header" style={{ textAlign: "center" }}>Coins / Hour</span>
@@ -1288,15 +1398,15 @@ function PlayerRow({ player }: { player: Player }) {
         </div>
       </div>
 
-      <div style={{ textAlign: "center", fontWeight: 900, fontSize: 14, color: isGold ? "#fbbf24" : "var(--text)" }}>
+      <div className="coins-hour" style={{ textAlign: "center", fontWeight: 900, fontSize: 14, color: isGold ? "#fbbf24" : "var(--text)" }}>
         {player.coinsPerHour.toLocaleString()} coins/hr
       </div>
 
-      <div style={{ textAlign: "center", fontWeight: 700, fontSize: 14, color: "var(--muted)" }}>
+      <div className="total-coins" style={{ textAlign: "center", fontWeight: 700, fontSize: 14, color: "var(--muted)" }}>
         {player.totalCoinsEarned.toLocaleString()}
       </div>
 
-      <div style={{ textAlign: "center", fontWeight: 700, fontSize: 14, color: "#fb923c" }}>
+      <div className="hours-played" style={{ textAlign: "center", fontWeight: 700, fontSize: 14, color: "#fb923c" }}>
         {player.totalHoursPlayed} hr
       </div>
     </div>
