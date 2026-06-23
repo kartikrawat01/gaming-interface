@@ -513,6 +513,7 @@ const updatedGames = filteredGames.map((game) => ({
                   !locked ? "hover:shadow-lg" : "opacity-75"
                 }`}
 onClick={() => {
+  localStorage.setItem("lastPlayedGame", game.title);
   if (game.title === "Logic Maze") {
     window.open("/logic_maze.html", "_blank");
   }
@@ -628,6 +629,7 @@ if (game.title === "Emoji Decoder") {
                     }`}
 onClick={(e) => {
   e.stopPropagation();
+  localStorage.setItem("lastPlayedGame", game.title);
 
   if (game.title === "Logic Maze") {
     window.open("/logic_maze.html", "_blank");
