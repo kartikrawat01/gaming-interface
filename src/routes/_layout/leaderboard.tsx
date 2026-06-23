@@ -522,6 +522,24 @@ useEffect(() => {
   gap: 10px;
 }
 
+.mobile-wallet-header {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .desktop-wallet-header {
+    display: none !important;
+  }
+
+  .mobile-wallet-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+}
+
 @media (max-width: 900px) {
   .leaderboard-page {
     padding: 10px 12px;
@@ -554,6 +572,7 @@ useEffect(() => {
     flex-direction: column;
     align-items: stretch;
   }
+    
 
   .search-box,
   .dropdown-select {
@@ -964,6 +983,10 @@ style={{
                 <span style={{ color: "#22d3ee" }}>Become the Champion!</span>
               </div>
 
+              <div className="mobile-wallet-header">
+  <Header walletCoins={walletCoins} user={user} />
+</div>
+
               {/* Tabs */}
               <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
                 {(["Global", "Weekly"] as Tab[]).map(tab => (
@@ -1016,7 +1039,9 @@ style={{
 
             {/* RIGHT COLUMN: Coins/User header + bigger Your Rank profile card */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <Header walletCoins={walletCoins} user={user} />
+              <div className="desktop-wallet-header">
+  <Header walletCoins={walletCoins} user={user} />
+</div>
 
               <div className="rank-card" style={{
                 padding: "24px 26px",
