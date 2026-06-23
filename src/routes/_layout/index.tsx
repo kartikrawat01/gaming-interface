@@ -1745,7 +1745,7 @@ useEffect(() => {
     </div>
   </div>
 )}
-            <Hero />
+            <Hero games={games} />
             <div className="grid grid-cols-1 gap-8">
 <GamesSection
   logicMazeStats={logicMazeStats}
@@ -2080,8 +2080,41 @@ setShowDropdown(false);
 });
 /* ───────────────────────── Hero ───────────────────────── */
 
-const Hero = memo(function Hero() {
+const Hero = memo(function Hero({ games }: { games: Game[] }) {
   const navigate = useNavigate();
+
+  const continuePlaying = () => {
+    const lastGame =
+      localStorage.getItem("lastPlayedGame") ||
+      "";
+
+    const gameRoutes: Record<string, string> = {
+      "Logic Maze": "/logic_maze.html",
+      "Brain Blast": "/brain_blast.html",
+      "Trivia": "/trivia.html",
+      "Zip": "/zip_master.html",
+      "Stop Motion Studio": "/stop_motion.html",
+      "Piano": "/piano.html",
+      "Math Shop Game": "/math_shop_final.html",
+      "Mini Sudoku": "/suduko.html",
+      "Match the Pairs": "/card2.html",
+      "Connect the Water Pipes": "/pipes.html",
+      "Sort and Think": "/sort2.html",
+      "Motor Boat": "/motor_boat.html",
+      "Bubble Maths Challenge": "/bubble_math_challenge.html",
+      "Smart Traffic Controller": "/traffic.html",
+      "Water Color Sort Puzzle": "/color-sort.html",
+      "Help The Bee": "/bee2.html",
+      "Sequence Builder": "/sequence2.html",
+      "Emoji Decoder": "/emoji.html",
+    };
+
+    if (lastGame && gameRoutes[lastGame]) {
+      window.open(gameRoutes[lastGame], "_blank");
+    } else {
+      navigate({ to: "/categories" });
+    }
+  };
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -2120,10 +2153,11 @@ const Hero = memo(function Hero() {
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="inline-flex items-center gap-2 h-11 px-5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm shadow-glow transition"
-            >
+  onClick={continuePlaying}
+  whileHover={{ scale: 1.03 }}
+  whileTap={{ scale: 0.97 }}
+  className="inline-flex items-center gap-2 h-11 px-5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm shadow-glow transition"
+>
               <Play className="h-4 w-4 fill-current" /> Continue Playing
             </motion.button>
 <Link
@@ -2335,6 +2369,7 @@ function GameCard({ game, index }: { game: Game; index: number }) {
       whileHover={!locked ? { y: -4 } : {}}
 
       onClick={() => {
+        localStorage.setItem("lastPlayedGame", game.title);
     if (game.title === "Logic Maze") {
       window.open("/logic_maze.html", "_blank");
     }
