@@ -493,19 +493,6 @@ useEffect(() => {
   gap: 12px;
   margin-bottom: 6px;
 }
-  .mobile-leaderboard-header {
-  display: none;
-}
-
-.desktop-leaderboard-header {
-  display: block;
-}
-
-.leaderboard-title-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
 .leaderboard-title {
   font-size: 42px;
@@ -536,20 +523,6 @@ useEffect(() => {
 }
 
 @media (max-width: 900px) {
-.leaderboard-title-row {
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.mobile-leaderboard-header {
-  display: block;
-  flex-shrink: 0;
-}
-
-.desktop-leaderboard-header {
-  display: none;
-}
-
   .leaderboard-page {
     padding: 10px 12px;
   }
@@ -978,17 +951,11 @@ style={{
             {/* LEFT COLUMN: Title, tagline, tabs, Games/Streak cards */}
             <div>
               <div className="leaderboard-title-row">
-  <div className="leaderboard-title-left">
-    <h1 className="leaderboard-title">
-      Leaderboard
-    </h1>
-    <span style={{ fontSize: 34 }}>👑</span>
-  </div>
-
-  <div className="mobile-leaderboard-header">
-    <Header walletCoins={walletCoins} user={user} />
-  </div>
-</div>
+                <h1 className="leaderboard-title">
+                  Leaderboard
+                </h1>
+                <span style={{ fontSize: 34 }}>👑</span>
+              </div>
               <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 20, color: "var(--muted)" }}>
                 <span style={{ color: "#f472b6" }}>Compete</span>
                 <span style={{ color: "var(--muted)", margin: "0 8px" }}>•</span>
@@ -1049,9 +1016,7 @@ style={{
 
             {/* RIGHT COLUMN: Coins/User header + bigger Your Rank profile card */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div className="desktop-leaderboard-header">
-  <Header walletCoins={walletCoins} user={user} />
-</div>
+              <Header walletCoins={walletCoins} user={user} />
 
               <div className="rank-card" style={{
                 padding: "24px 26px",
@@ -1454,17 +1419,17 @@ function Header({ walletCoins, user }: any) {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex justify-end items-center gap-2"
+      className="flex justify-end items-center gap-4"
     >
 
-      <div className="flex items-center gap-1.5 sm:gap-3">
-        <div className="flex items-center gap-1 h-8 px-2.5 rounded-lg bg-yellow-400/20 border border-yellow-400/30">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 h-10 px-4 rounded-lg bg-yellow-400/20 border border-yellow-400/30">
           <span>🪙</span>
-          <span className="font-bold text-sm text-white-300">{walletCoins}</span>
+          <span className="font-bold text-white-300">{walletCoins}</span>
         </div>
 
-<div className="h-8 px-2.5 flex items-center rounded-lg bg-card border border-border shadow-soft max-w-[82px] sm:max-w-[180px]">
-  <span className="text-[11px] font-semibold text-foreground max-w-[75px] sm:max-w-[180px] truncate">
+<div className="h-10 px-3 flex items-center rounded-lg bg-card border border-border shadow-soft">
+  <span className="text-xs font-semibold text-foreground max-w-[180px] truncate">
     {user?.email || "Not logged in"}
   </span>
 </div>
