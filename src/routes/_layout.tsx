@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   Gamepad2,
   Trophy,
-  Award,
   Settings,
   Code2,
   ChevronRight,
@@ -25,7 +24,6 @@ const menuItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" },
   { label: "Categories", icon: Gamepad2, to: "/categories" },
   { label: "Leaderboard", icon: Trophy, to: "/leaderboard" },
-  { label: "Achievements", icon: Award, to: "/achievements" },
   { label: "Settings", icon: Settings, to: "/settings" },
 ];
 
