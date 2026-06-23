@@ -125,15 +125,13 @@ window.removeEventListener("userProfileUpdated", handleProfileUpdate);
     <div className="min-h-screen lg:h-screen bg-[#dfeef7] text-gray-900 lg:overflow-hidden flex flex-col lg:flex-row">
       {/* MOBILE TOP BAR */}
 <div className="lg:hidden sticky top-0 z-40 h-16 bg-[#dfeef7]/95 backdrop-blur border-b border-white/40 px-4 flex items-center justify-between">
-  <div className="flex items-center gap-3">
-    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-      <Code2 className="h-5 w-5 text-white" />
-    </div>
-    <div>
-      <h1 className="font-bold text-lg">GameVerse</h1>
-      <p className="text-xs text-gray-500">Play. Learn. Earn Rewards.</p>
-    </div>
-  </div>
+  <div className="flex items-center">
+  <img
+    src="/assets/logo.png"
+    alt="Be Cre8v"
+    className="h-10 w-auto object-contain"
+  />
+</div>
 
   <button
     onClick={() => setMobileMenuOpen(true)}
