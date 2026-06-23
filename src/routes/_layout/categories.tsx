@@ -493,7 +493,7 @@ const updatedGames = filteredGames.map((game) => ({
 </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
   {updatedGames.length === 0 && (
     <div className="col-span-full text-center py-16 text-gray-500 text-lg font-medium">
       No games found 🔍
@@ -575,7 +575,7 @@ if (game.title === "Emoji Decoder") {
 }}
               >
                 {/* Top */}
-                <div className={`h-40 sm:h-48 relative bg-gradient-to-br ${game.accent} overflow-hidden`}>
+                <div className={`h-28 sm:h-48 relative bg-gradient-to-br ${game.accent} overflow-hidden`}>
   {game.image ? (
     <img
       src={game.image}
