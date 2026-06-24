@@ -1532,6 +1532,23 @@
   }, "*");
 }
 
+function loadPatternProphetProgress() {
+  const completed =
+    Number(localStorage.getItem("patternProphetCompleted")) || 0;
+
+  completedLevels = new Set(
+    Array.from({ length: completed }, (_, i) => i)
+  );
+
+  coins =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(localStorage.getItem("patternProphetCoins")) ||
+    0;
+
+  document.getElementById("coin-counter").textContent = coins;
+}
+
+
 async function syncPatternProphetWalletBalance() {
   const saved =
     Number(localStorage.getItem("walletCoins")) ||
@@ -1598,6 +1615,7 @@ async function creditPatternProphetCoins(amount) {
   }
 
   await syncPatternProphetWalletBalance();
+  loadPatternProphetProgress();
 
   buildLevelRibbon();
   loadLevel(0);

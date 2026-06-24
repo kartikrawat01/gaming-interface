@@ -580,12 +580,21 @@ const [emojiDecoderStats, setEmojiDecoderStats] = useState({
   time: "0 min",
 });
 
+const [patternProphetStats, setPatternProphetStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
 const [sentenceSurgeonStats, setSentenceSurgeonStats] = useState({
   progress: 0,
   coins: 0,
   completed: 0,
   time: "0 min",
 });
+
+
 
   const {
   coins: walletCoins,
@@ -1687,6 +1696,51 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
+  const loadPatternProphetProgress = () => {
+    const completed =
+      Number(localStorage.getItem("patternProphetCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("patternProphetProgress")) ||
+      Math.round((completed / 30) * 100) ||
+      0;
+
+    setPatternProphetStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+      coins: Number(localStorage.getItem("patternProphetCoins")) || prev.coins,
+    }));
+  };
+
+  loadPatternProphetProgress();
+
+  const handlePatternMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "pattern_prophet"
+    ) {
+      setPatternProphetStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadPatternProphetProgress);
+  window.addEventListener("storage", loadPatternProphetProgress);
+  window.addEventListener("message", handlePatternMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadPatternProphetProgress);
+    window.removeEventListener("storage", loadPatternProphetProgress);
+    window.removeEventListener("message", handlePatternMessage);
+  };
+}, []);
+
+useEffect(() => {
   const loadSentenceSurgeonProgress = () => {
     const completed =
       Number(localStorage.getItem("sentenceSurgeonCompleted")) || 0;
@@ -1846,6 +1900,7 @@ useEffect(() => {
   emojiDecoderStats={emojiDecoderStats}
   colorSortStats={colorSortStats}
   trafficStats={trafficStats}
+  patternProphetStats={patternProphetStats}
   sentenceSurgeonStats={sentenceSurgeonStats}
   searchTerm={searchTerm}
   
@@ -2290,6 +2345,7 @@ const GamesSection = memo(function GamesSection({
   emojiDecoderStats,
   colorSortStats,
   trafficStats,
+  patternProphetStats,
   sentenceSurgeonStats,
   searchTerm,
 }: any) {
@@ -2417,6 +2473,13 @@ const filteredGames = games.filter((g) =>
     progress: emojiDecoderStats.progress,
     xp: emojiDecoderStats.coins,
     time: emojiDecoderStats.time,
+  }
+  : g.title === "Pattern Prophet"
+? {
+    ...g,
+    progress: patternProphetStats.progress,
+    xp: patternProphetStats.coins,
+    time: patternProphetStats.time,
   }
   : g.title === "Water Color Sort Puzzle"
 ? {
