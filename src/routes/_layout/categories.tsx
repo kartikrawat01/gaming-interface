@@ -241,6 +241,7 @@ const difficultyStyles = {
 function CategoriesPage() {
   const [active, setActive] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAllGames, setShowAllGames] = useState(false);
   
 const [gameProgress, setGameProgress] = useState<Record<string, number>>({
   "Logic Maze": 0,
@@ -436,6 +437,10 @@ const updatedGames = filteredGames.map((game) => ({
   progress: gameProgress[game.title] ?? game.progress,
 }));
 
+const visibleGames = showAllGames
+  ? updatedGames
+  : updatedGames.slice(0, 8);
+
   return (
     <div className="min-h-screen bg-[#dfeef7] text-gray-900 px-3 py-4 sm:p-6 overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
@@ -499,7 +504,7 @@ const updatedGames = filteredGames.map((game) => ({
       No games found 🔍
     </div>
   )}
-          {updatedGames.map((game, i) => {
+         {visibleGames.map((game, i) => {
             const locked = game.locked;
 
             return (
@@ -708,11 +713,21 @@ if (game.title === "Emoji Decoder") {
         </div>
 
         {/* Bottom */}
-        <div className="mt-10 flex justify-center">
-          <button className="px-5 h-11 rounded-xl bg-white border border-gray-200 hover:border-blue-400 font-medium flex items-center gap-2">
-            View More <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+        {updatedGames.length > 8 && (
+  <div className="mt-10 flex justify-center">
+    <button
+      onClick={() => setShowAllGames(!showAllGames)}
+      className="px-5 h-11 rounded-xl bg-white border border-gray-200 hover:border-blue-400 font-medium flex items-center gap-2"
+    >
+      {showAllGames ? "View Less" : "View More"}
+      <ChevronRight
+        className={`h-4 w-4 transition-transform ${
+          showAllGames ? "rotate-90" : ""
+        }`}
+      />
+    </button>
+  </div>
+)}
       </div>
     </div>
   );
