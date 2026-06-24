@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pattern Prophet 🔮✨ | See the Pattern. Predict the Future.</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1508,11 +1514,95 @@
     let gameActive = false;
     let hasAnswered = false;
 
-    window.onload = function() {
-      buildLevelRibbon();
-      loadLevel(0);
-      openHowToPlay();
-    };
+    function savePatternProphetProgress() {
+  const completed = completedLevels.size;
+  const progress = Math.round((completed / levels.length) * 100);
+
+  localStorage.setItem("patternProphetCompleted", String(completed));
+  localStorage.setItem("patternProphetProgress", String(progress));
+  localStorage.setItem("patternProphetCoins", String(coins));
+
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "pattern_prophet",
+    progress,
+    completed,
+    coins,
+    level: currentLevelIndex + 1,
+  }, "*");
+}
+
+async function syncPatternProphetWalletBalance() {
+  const saved =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(coins) ||
+    0;
+
+  coins = saved;
+  document.getElementById("coin-counter").textContent = coins;
+
+  try {
+    if (window.gameSDK) {
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        coins = Number(balance);
+        localStorage.setItem("walletCoins", String(coins));
+        document.getElementById("coin-counter").textContent = coins;
+      }
+    }
+  } catch (err) {
+    console.warn("Pattern Prophet wallet sync failed:", err);
+  }
+}
+
+async function creditPatternProphetCoins(amount) {
+  let finalBalance =
+    Number(localStorage.getItem("walletCoins")) ||
+    Number(coins) ||
+    0;
+
+  try {
+    if (window.gameSDK) {
+      const rewardResult = await window.gameSDK.rewardCoins({
+        amount,
+        description: `Pattern Prophet Level ${currentLevelIndex + 1} Complete`,
+        game: "pattern_prophet",
+        level: currentLevelIndex + 1,
+        score: amount,
+      });
+
+      if (rewardResult && rewardResult.balance !== undefined) {
+        finalBalance = Number(rewardResult.balance);
+      } else {
+        const freshBalance = await window.gameSDK.getBalance();
+        if (freshBalance !== undefined && freshBalance !== null) {
+          finalBalance = Number(freshBalance);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Pattern Prophet reward error:", err);
+  }
+
+  coins = finalBalance;
+  localStorage.setItem("walletCoins", String(coins));
+  document.getElementById("coin-counter").textContent = coins;
+
+  savePatternProphetProgress();
+}
+
+    window.onload = async function() {
+  if (window.gameSDK) {
+    await window.gameSDK.init();
+  }
+
+  await syncPatternProphetWalletBalance();
+
+  buildLevelRibbon();
+  loadLevel(0);
+  openHowToPlay();
+};
 
     function buildLevelRibbon() {
       const container = document.getElementById("levels-grid-container");
@@ -1721,7 +1811,7 @@
       }
     }
 
-    function completeCurrentLevel() {
+    async function completeCurrentLevel() {
       const levelData = levels[currentLevelIndex];
       const badge = document.getElementById("modal-completion-badge");
       const title = document.getElementById("modal-completion-title");
@@ -1732,14 +1822,14 @@
 
       if (currentLevelWrongCount === 0) {
         if (!completedLevels.has(currentLevelIndex)) {
-          coins += levelData.coins;
-          document.getElementById("coin-counter").textContent = coins;
-          document.getElementById("modal-coins-earned").textContent = `+${levelData.coins}`;
-        } else {
-          document.getElementById("modal-coins-earned").textContent = `+0 (Already Earned)`;
-        }
-        
-        completedLevels.add(currentLevelIndex);
+  await creditPatternProphetCoins(levelData.coins);
+  document.getElementById("modal-coins-earned").textContent = `+${levelData.coins}`;
+} else {
+  document.getElementById("modal-coins-earned").textContent = `+0 (Already Earned)`;
+}
+
+completedLevels.add(currentLevelIndex);
+savePatternProphetProgress();
         buildLevelRibbon();
         AudioEngine.playComplete();
 
