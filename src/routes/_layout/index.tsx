@@ -157,6 +157,36 @@ const games: Game[] = [
   time: "10 min",
   accent: "from-pink-500/20 to-yellow-500/5"
 },
+{
+  title: "Fact Flash",
+  icon: "⚡",
+  image: "/images/factcards.webp",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 160,
+  time: "10 min",
+  accent: "from-blue-500/20 to-indigo-500/5"
+},
+{
+  title: "Pattern Prophet",
+  icon: "🔮",
+  image: "/images/pattern2.webp",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 170,
+  time: "10 min",
+  accent: "from-purple-500/20 to-pink-500/5"
+},
+{
+  title: "Sentence Surgeon",
+  icon: "🩺",
+  image: "/images/sentence-surgeon.webp",
+  difficulty: "Beginner",
+  progress: 0,
+  xp: 170,
+  time: "10 min",
+  accent: "from-green-500/20 to-emerald-500/5"
+},
 ];
 
 // const sidebarItems = [
@@ -2107,6 +2137,9 @@ const Hero = memo(function Hero({ games }: { games: Game[] }) {
       "Help The Bee": "/bee2.html",
       "Sequence Builder": "/sequence2.html",
       "Emoji Decoder": "/emoji.html",
+      "Fact Flash": "/factcards.html",
+"Pattern Prophet": "/pattern2.html",
+"Sentence Surgeon": "/sentenceSurgeon.html",
     };
 
     if (lastGame && gameRoutes[lastGame]) {
@@ -2433,6 +2466,18 @@ if (game.title === "Sequence Builder") {
 
 if (game.title === "Emoji Decoder") {
   window.open("/emoji.html", "_blank");
+}
+
+if (game.title === "Fact Flash") {
+  window.open("/factcards.html", "_blank");
+}
+
+if (game.title === "Pattern Prophet") {
+  window.open("/pattern2.html", "_blank");
+}
+
+if (game.title === "Sentence Surgeon") {
+  window.open("/sentenceSurgeon.html", "_blank");
 }
 
   }}

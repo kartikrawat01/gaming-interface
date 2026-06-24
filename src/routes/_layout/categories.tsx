@@ -230,6 +230,34 @@ const games: Game[] = [
   accent: "from-pink-400/30 to-yellow-500/20",
 },
 
+{
+  title: "Fact Flash",
+  icon: "⚡",
+  image: "/images/factcards.webp",
+  category: "Language & Knowledge",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-blue-400/30 to-indigo-500/20",
+},
+{
+  title: "Pattern Prophet",
+  icon: "🔮",
+  image: "/images/pattern2.webp",
+  category: "Logic & Puzzle",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-purple-400/30 to-pink-500/20",
+},
+{
+  title: "Sentence Surgeon",
+  icon: "🩺",
+  image: "/images/sentence-surgeon.webp",
+  category: "Language & Knowledge",
+  difficulty: "Beginner",
+  progress: 0,
+  accent: "from-green-400/30 to-emerald-500/20",
+},
+
 ];
 
 const difficultyStyles = {
@@ -260,6 +288,9 @@ const [gameProgress, setGameProgress] = useState<Record<string, number>>({
 "Help The Bee": 0,
 "Sequencer Builder": 0,
 "Emoji Decoder": 0,
+"Fact Flash": 0,
+"Pattern Prophet": 0,
+"Sentence Surgeon": 0,
 });
 useEffect(() => {
   const loadAllGameProgress = () => {
@@ -577,6 +608,18 @@ if (game.title === "Sequencer Builder") {
 if (game.title === "Emoji Decoder") {
   window.open("/emoji.html", "_blank");
 }
+
+if (game.title === "Fact Flash") {
+  window.open("/factcards.html", "_blank");
+}
+
+if (game.title === "Pattern Prophet") {
+  window.open("/pattern2.html", "_blank");
+}
+
+if (game.title === "Sentence Surgeon") {
+  window.open("/sentenceSurgeon.html", "_blank");
+}
 }}
               >
                 {/* Top */}
@@ -695,6 +738,18 @@ if (game.title === "Sequencer Builder") {
 
 if (game.title === "Emoji Decoder") {
   window.open("/emoji.html", "_blank");
+}
+
+if (game.title === "Fact Flash") {
+  window.open("/factcards.html", "_blank");
+}
+
+if (game.title === "Pattern Prophet") {
+  window.open("/pattern2.html", "_blank");
+}
+
+if (game.title === "Sentence Surgeon") {
+  window.open("/sentenceSurgeon.html", "_blank");
 }
 
 }}
