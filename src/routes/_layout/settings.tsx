@@ -675,46 +675,6 @@ window.dispatchEvent(new Event("userProfileUpdated"));
                     Game Preferences
                   </h2>
 
-                  {/* Default Difficulty */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">
-                      Default Difficulty
-                    </label>
-                    <div className="flex gap-3">
-                      {(["Beginner", "Intermediate", "Advanced"] as Difficulty[]).map(
-                        (d) => {
-                          const colors: Record<Difficulty, string> = {
-                            Beginner:
-                              "border-green-400 bg-green-50 text-green-700",
-                            Intermediate:
-                              "border-amber-400 bg-amber-50 text-amber-700",
-                            Advanced:
-                              "border-red-400 bg-red-50 text-red-700",
-                          };
-                          const isSelected = gamePrefs.defaultDifficulty === d;
-                          return (
-                            <button
-                              key={d}
-                              onClick={() =>
-                                setGamePrefs((p) => ({
-                                  ...p,
-                                  defaultDifficulty: d,
-                                }))
-                              }
-                              className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${
-                                isSelected
-                                  ? colors[d]
-                                  : "border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300"
-                              }`}
-                            >
-                              {d}
-                            </button>
-                          );
-                        }
-                      )}
-                    </div>
-                  </div>
-
                   {/* Sound Effects */}
                   <div className="flex items-center justify-between py-4 border-t border-gray-100">
                     <div>
