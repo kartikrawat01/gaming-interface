@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sentence Surgeon - Grammar Lab Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
   <!-- Google Fonts for rounded child-friendly high-tech look -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1299,6 +1305,79 @@
     // Set of completed levels indexes
     let completedLevels = new Set();
 
+    function updateHeaderCoins(amount) {
+  coins = Number(amount) || 0;
+  localStorage.setItem("walletCoins", String(coins));
+  document.getElementById("headerCoinCount").textContent = coins;
+}
+
+function saveSentenceSurgeonProgress() {
+  const completed = completedLevels.size;
+  const progress = Math.round((completed / gameLevels.length) * 100);
+
+  localStorage.setItem("sentenceSurgeonCompleted", String(completed));
+  localStorage.setItem("sentenceSurgeonProgress", String(progress));
+  localStorage.setItem("sentenceSurgeonCoins", String(coins));
+
+  window.parent.postMessage({
+    type: "GAME_PROGRESS_UPDATE",
+    game: "sentence_surgeon",
+    progress,
+    completed,
+    coins,
+    level: currentLevelIdx + 1,
+  }, "*");
+}
+
+async function initSentenceSurgeonWallet() {
+  const saved = Number(localStorage.getItem("walletCoins")) || 0;
+  updateHeaderCoins(saved);
+
+  try {
+    if (window.gameSDK) {
+      await window.gameSDK.init();
+
+      const balance = await window.gameSDK.getBalance();
+
+      if (balance !== undefined && balance !== null) {
+        updateHeaderCoins(balance);
+      }
+    }
+  } catch (err) {
+    console.warn("Sentence Surgeon wallet init failed:", err);
+  }
+}
+
+async function rewardSentenceSurgeonCoins(amount) {
+  let finalBalance = Number(localStorage.getItem("walletCoins")) || coins || 0;
+
+  try {
+    if (window.gameSDK) {
+      const rewardResult = await window.gameSDK.rewardCoins({
+        amount,
+        description: `Sentence Surgeon Level ${currentLevelIdx + 1} Complete`,
+        game: "sentence_surgeon",
+        level: currentLevelIdx + 1,
+        score: amount,
+      });
+
+      if (rewardResult?.balance !== undefined) {
+        finalBalance = Number(rewardResult.balance);
+      } else {
+        const balance = await window.gameSDK.getBalance();
+        if (balance !== undefined && balance !== null) {
+          finalBalance = Number(balance);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Sentence Surgeon reward failed:", err);
+  }
+
+  updateHeaderCoins(finalBalance);
+  saveSentenceSurgeonProgress();
+}
+
     // Word blocks arrays
     let trayWords = [];  
     let tableWords = []; 
@@ -1974,7 +2053,7 @@
       }
     }
 
-    function triggerSuccess() {
+    async function triggerSuccess() {
       clearInterval(timerInterval);
       playTone('success');
       patientHealth = 100;
@@ -1985,12 +2064,13 @@
       const rewardAmount = currentLevel.coins || 0;
       
       if (!completedLevels.has(currentLevelIdx)) {
-        coins += rewardAmount;
-        completedLevels.add(currentLevelIdx);
-      }
-      
-      document.getElementById('headerCoinCount').textContent = coins;
-      document.getElementById('rewardCoinsAdded').textContent = rewardAmount;
+  completedLevels.add(currentLevelIdx);
+  await rewardSentenceSurgeonCoins(rewardAmount);
+  document.getElementById('rewardCoinsAdded').textContent = rewardAmount;
+} else {
+  document.getElementById('rewardCoinsAdded').textContent = 0;
+  saveSentenceSurgeonProgress();
+}
 
       buildLevelSelectors();
 
@@ -2172,10 +2252,12 @@
       initEkg();
     }
 
-    window.onload = () => {
-      document.getElementById('instructionModal').style.display = 'flex';
-      isPopupOpen = true;
-    };
+    window.onload = async () => {
+  await initSentenceSurgeonWallet();
+
+  document.getElementById('instructionModal').style.display = 'flex';
+  isPopupOpen = true;
+};
   </script>
 </body>
 </html>

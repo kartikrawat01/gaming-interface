@@ -580,6 +580,13 @@ const [emojiDecoderStats, setEmojiDecoderStats] = useState({
   time: "0 min",
 });
 
+const [sentenceSurgeonStats, setSentenceSurgeonStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
   const {
   coins: walletCoins,
   setCoins: setWalletCoins,
@@ -1794,6 +1801,7 @@ useEffect(() => {
   emojiDecoderStats={emojiDecoderStats}
   colorSortStats={colorSortStats}
   trafficStats={trafficStats}
+  sentenceSurgeonStats={sentenceSurgeonStats}
   searchTerm={searchTerm}
   
 />
@@ -2237,6 +2245,7 @@ const GamesSection = memo(function GamesSection({
   emojiDecoderStats,
   colorSortStats,
   trafficStats,
+  sentenceSurgeonStats,
   searchTerm,
 }: any) {
 const filteredGames = games.filter((g) =>
@@ -2349,6 +2358,13 @@ const filteredGames = games.filter((g) =>
     progress: sequenceBuilderStats.progress,
     xp: sequenceBuilderStats.coins,
     time: sequenceBuilderStats.time,
+  }
+  : g.title === "Sentence Surgeon"
+? {
+    ...g,
+    progress: sentenceSurgeonStats.progress,
+    xp: sentenceSurgeonStats.coins,
+    time: sentenceSurgeonStats.time,
   }
   : g.title === "Emoji Decoder"
 ? {
