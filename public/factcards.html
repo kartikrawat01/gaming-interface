@@ -1,0 +1,2913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fact Flash ⚡🧠 - Read Fast, Think Fast!</title>
+    <!-- Google Fonts: Fredoka & Quicksand for clean, friendly, rounded UI -->
+     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="./supabaseClient.js"></script>
+<script src="./walletApi.js"></script>
+<script src="./gameSDK.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1E40AF; /* Electric Deep Blue */
+            --primary-light: #EFF6FF; /* Soft Light Cyan/Blue */
+            --success: #10B981; /* Fresh Emerald Green */
+            --success-light: #D1FAE5;
+            --danger: #EF4444; /* Vibrant Coral Red */
+            --danger-light: #FEE2E2;
+            --warning: #F59E0B; /* Knowledge Yellow/Amber */
+            --warning-light: #FEF3C7;
+            --orange: #F97316; /* Energetic Orange */
+            --text-dark: #0F172A; /* Dark Slate */
+            --text-muted: #475569; /* Slate Grey */
+            --bg-gradient: linear-gradient(135deg, #ECFDF5 0%, #EFF6FF 50%, #FFFBEB 100%); /* Tri-gradient background */
+            --card-shadow: 0 20px 40px rgba(30, 64, 175, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05);
+            --font-display: 'Fredoka', 'Quicksand', sans-serif;
+            --font-body: 'Quicksand', sans-serif;
+            --border-radius-lg: 24px;
+            --border-radius-md: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-gradient);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient floating shapes in background */
+        .ambient-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            filter: blur(20px);
+            z-index: -1;
+            pointer-events: none;
+            animation: floatAmbient 12s infinite alternate ease-in-out;
+        }
+
+        @keyframes floatAmbient {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-40px) scale(1.15); }
+        }
+
+        /* Confetti canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Top Header Navigation */
+        header {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            max-height: 55px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Fallback logo style in case image is missing */
+        .logo-fallback {
+            background: #FFF;
+            border: 3px solid var(--primary);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Controls / Wallet Display */
+        .wallet {
+            background: #FFF;
+            border: 3px solid #FFF;
+            border-radius: 30px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--card-shadow);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--text-dark);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .wallet.pulse {
+            transform: scale(1.15);
+        }
+
+        .coin-icon {
+            font-size: 1.4rem;
+            animation: spinCoin 3s infinite linear;
+            display: inline-block;
+        }
+
+        @keyframes spinCoin {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        .btn-how-to {
+            background: var(--orange);
+            color: #FFF;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 159, 67, 0.4);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-how-to:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 159, 67, 0.6);
+        }
+
+        .audio-toggle {
+            background: #FFF;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s;
+        }
+
+        .audio-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        /* Level Selector Map Bar */
+        .level-bar-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 10px 24px;
+            z-index: 10;
+        }
+
+        .level-bar-title {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .level-grid {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 4px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .level-grid::-webkit-scrollbar {
+            height: 6px;
+        }
+        .level-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .level-grid::-webkit-scrollbar-thumb {
+            background: rgba(30, 64, 175, 0.3);
+            border-radius: 10px;
+        }
+
+        .level-node {
+            flex: 0 0 auto;
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+            background: #FFF;
+            border: 3px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .level-node:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .level-node.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            box-shadow: 0 0 12px rgba(30, 64, 175, 0.4);
+            transform: scale(1.08);
+        }
+
+        .level-node.completed {
+            background: var(--success);
+            border-color: var(--success);
+            color: #FFF;
+        }
+
+        .level-node.completed::after {
+            content: '✓';
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            background: var(--warning);
+            color: #FFF;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #FFF;
+            font-weight: bold;
+        }
+
+        /* Main Game Deck */
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 950px;
+            padding: 15px 24px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .game-card {
+            background: #FFF;
+            border-radius: var(--border-radius-lg);
+            border: 6px solid #FFF;
+            box-shadow: var(--card-shadow);
+            width: 100%;
+            padding: 40px;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Intro Screen State */
+        .screen-intro {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .intro-hero {
+            font-size: 4.5rem;
+            margin-bottom: 15px;
+            animation: pulseHero 2s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulseHero {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+
+        .tagline {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-bottom: 25px;
+        }
+
+        .game-desc {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .btn-large {
+            background: var(--primary);
+            color: #FFF;
+            border: none;
+            border-radius: 40px;
+            padding: 16px 36px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.25rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(30, 64, 175, 0.4);
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-large:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 12px 24px rgba(30, 64, 175, 0.5);
+        }
+
+        /* Memorize Screen State */
+        .screen-memorize {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .level-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #E2E8F0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .badge-category {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-reward {
+            background: var(--warning-light);
+            color: #B7950B;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .timer-container {
+            margin-bottom: 20px;
+        }
+
+        .timer-bar-bg {
+            background: #E2E8F0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .timer-bar-fill {
+            background: linear-gradient(90deg, var(--success) 0%, #1E40AF 100%);
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.1s linear;
+        }
+
+        .timer-text-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .fact-card-inner {
+            background: #FFFDF5;
+            border: 3px solid #FDE68A;
+            border-radius: var(--border-radius-md);
+            padding: 30px;
+            line-height: 1.8;
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.02);
+            animation: cardFlipIn 0.5s ease-out;
+        }
+
+        @keyframes cardFlipIn {
+            0% { transform: rotateX(-15deg); opacity: 0; }
+            100% { transform: rotateX(0deg); opacity: 1; }
+        }
+
+        .fact-card-inner strong {
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
+        .memorize-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: auto;
+        }
+
+        /* Quiz Screen State */
+        .screen-quiz {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .quiz-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .progress-indicator {
+            flex: 1;
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            gap: 4px;
+        }
+
+        .progress-step {
+            flex: 1;
+            background: #CBD5E1;
+            transition: background 0.3s;
+        }
+
+        .progress-step.completed {
+            background: var(--success);
+        }
+
+        .progress-step.active {
+            background: var(--primary);
+        }
+
+        .progress-text {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+
+        .options-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        @media (min-width: 640px) {
+            .options-list {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+        }
+
+        .option-btn {
+            background: #FFF;
+            border: 3px solid #E2E8F0;
+            border-radius: var(--border-radius-md);
+            padding: 16px 20px;
+            font-family: var(--font-body);
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            transform: translateX(4px);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #196F3D;
+        }
+
+        .option-btn.incorrect {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #7B241C;
+        }
+
+        .feedback-box {
+            background: #F8FAFC;
+            border-radius: var(--border-radius-md);
+            padding: 18px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            0% { transform: translateY(-10px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .feedback-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feedback-title.correct {
+            color: var(--success);
+        }
+
+        .feedback-title.incorrect {
+            color: var(--danger);
+        }
+
+        .feedback-desc {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-dark);
+        }
+
+        /* Results Screen State */
+        .screen-result {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .result-illustration {
+            font-size: 5rem;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .result-desc {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .result-stats {
+            background: var(--primary-light);
+            border-radius: var(--border-radius-md);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            display: inline-flex;
+            gap: 30px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-val {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Permanent Floating Popup for Coins */
+        .coin-pop-toast {
+            position: fixed;
+            top: 100px;
+            right: 24px;
+            background: var(--success);
+            color: #FFF;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .coin-pop-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Instructions Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #FFF;
+            border-radius: var(--border-radius-lg);
+            width: 100%;
+            max-width: 580px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #E2E8F0;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        .instructions-body {
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin: 15px 0 8px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .list-rules {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .list-rules li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 6px;
+        }
+
+        .list-rules li::before {
+            content: "•";
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: absolute;
+            left: 5px;
+            top: -2px;
+        }
+
+        .reward-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .reward-card {
+            background: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 8px;
+        }
+
+        .reward-card .lvl-rng {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .reward-card .lvl-coins {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: #D4AC0D;
+            margin-top: 4px;
+        }
+
+        .note-card {
+            background: var(--warning-light);
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 15px 0 20px;
+            font-size: 0.88rem;
+            color: #7D6608;
+        }
+
+        .btn-modal-action {
+            width: 100%;
+            background: var(--primary);
+            color: #FFF;
+            border: none;
+            border-radius: 30px;
+            padding: 12px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+            transition: background 0.2s;
+        }
+
+        .btn-modal-action:hover {
+            background: #1D4ED8;
+        }
+
+        /* Helper styles */
+        .txt-success { color: var(--success); }
+        .txt-danger { color: var(--danger); }
+        .m-t-20 { margin-top: 20px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 10px 15px;
+            }
+            .brand-logo {
+                max-height: 44px;
+            }
+            .game-card {
+                padding: 20px;
+                min-height: auto;
+            }
+            .level-bar-container {
+                padding: 5px 15px;
+            }
+            .question-text {
+                font-size: 1.15rem;
+            }
+            .option-btn {
+                padding: 12px 16px;
+                font-size: 0.95rem;
+            }
+            .btn-large {
+                padding: 12px 28px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Floating Background Shapes -->
+    <div class="ambient-shape" style="width: 250px; height: 250px; top: 10%; left: -5%;"></div>
+    <div class="ambient-shape" style="width: 300px; height: 300px; bottom: 5%; right: -5%; animation-delay: -3s;"></div>
+
+    <!-- Toast Notification for Coins -->
+    <div id="coin-toast" class="coin-pop-toast">
+        <span id="toast-text">+15 Coins Earned</span> <span class="coin-icon">🪙</span>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-box">
+            <img src="assets/logocre8v.png" alt="BeCre8v Logo" class="brand-logo" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';">
+            <div id="fallback-logo" class="logo-fallback" style="display: none;">BeCre8v 🚀</div>
+        </div>
+
+        <div class="header-actions">
+            <!-- How to Play permanent button -->
+            <button class="btn-how-to" onclick="openInstructions()">
+                ℹ️ <span>How To Play</span>
+            </button>
+
+            <!-- Audio Toggle Synthesizer Control -->
+            <button class="audio-toggle" onclick="toggleAudio()" id="btn-audio" title="Toggle Sound Effects">
+                🔊
+            </button>
+
+            <!-- Wallet -->
+            <div class="wallet" id="wallet-badge">
+                <span class="coin-icon">🪙</span> <span id="coin-balance">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Map Level Selectors Bar -->
+    <div class="level-bar-container">
+        <div class="level-bar-title">
+            <span>Level Map (Choose any Level)</span>
+            <span id="level-nav-hint" style="font-size:0.85rem; color: var(--text-muted); font-weight: normal;">Swipe to explore levels ➡️</span>
+        </div>
+        <div class="level-grid" id="levels-map-grid">
+            <!-- JS dynamically inserts levels here -->
+        </div>
+    </div>
+
+    <!-- Main Game Deck Container -->
+    <main>
+        <div class="game-card" id="game-arena">
+            <!-- Dynamic game states injected here -->
+        </div>
+    </main>
+
+    <!-- Instructions Modal (appears automatically on load) -->
+    <div class="modal-overlay" id="instructions-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>Fact Flash ⚡🧠</span>
+                </div>
+                <button class="modal-close" onclick="closeInstructions()">&times;</button>
+            </div>
+            <div class="instructions-body">
+                <p style="text-align: center; font-size: 1.05rem; font-weight: bold; margin-bottom: 12px; color: var(--primary);">
+                    "Read Fast. Think Fast. Remember Everything!"
+                </p>
+
+                <div class="section-title">🎮 How To Play</div>
+                <ul class="list-rules">
+                    <li>Read the displayed educational fact card carefully.</li>
+                    <li>Pay attention to keywords and numbers before the timer runs out!</li>
+                    <li>Answer the challenge questions correctly based on what you memorized.</li>
+                    <li>Get all <strong>5 questions</strong> right in a level to complete it and win coins!</li>
+                </ul>
+
+                <div class="section-title">🪙 Coin Rewards</div>
+                <div class="reward-grid" style="grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 15px 0;">
+                    <div class="reward-card" style="padding: 10px 4px;">
+                        <div class="lvl-rng" style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Lv. 1–5</div>
+                        <div class="lvl-coins" style="font-size: 0.9rem; font-weight: bold; color: var(--orange); margin-top: 4px;">+15 🪙</div>
+                    </div>
+                    <div class="reward-card" style="padding: 10px 4px;">
+                        <div class="lvl-rng" style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Lv. 6–10</div>
+                        <div class="lvl-coins" style="font-size: 0.9rem; font-weight: bold; color: var(--orange); margin-top: 4px;">+20 🪙</div>
+                    </div>
+                    <div class="reward-card" style="padding: 10px 4px;">
+                        <div class="lvl-rng" style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Lv. 11–15</div>
+                        <div class="lvl-coins" style="font-size: 0.9rem; font-weight: bold; color: var(--orange); margin-top: 4px;">+25 🪙</div>
+                    </div>
+                    <div class="reward-card" style="padding: 10px 4px;">
+                        <div class="lvl-rng" style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Lv. 16–25</div>
+                        <div class="lvl-coins" style="font-size: 0.9rem; font-weight: bold; color: var(--orange); margin-top: 4px;">+30 🪙</div>
+                    </div>
+                    <div class="reward-card" style="padding: 10px 4px;">
+                        <div class="lvl-rng" style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Lv. 26–30</div>
+                        <div class="lvl-coins" style="font-size: 0.9rem; font-weight: bold; color: var(--orange); margin-top: 4px;">+40 🪙</div>
+                    </div>
+                </div>
+
+                <div class="note-card">
+                    💡 <strong>Reward Note:</strong> Earn coins in-game and redeem them for fantastic learning discounts on premium BeCre8v kits like <strong>RoboCoders</strong>, <strong>Spin Genius</strong>, and <strong>Infinity Mirror</strong>!
+                </div>
+
+                <button class="btn-modal-action" onclick="closeInstructions()">Start Playing! 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game Dataset containing 30 Levels
+        const levelsData = [
+            {
+                id: 1,
+                category: "Science",
+                emoji: "🔬",
+                difficulty: "Easy",
+                reward: 15,
+                viewTime: 12,
+                fact: "Plants are master chefs! They use green pigments called <strong>Chlorophyll</strong> to capture sunlight, converting carbon dioxide and water into oxygen and glucose. This chemical engine is called <strong>Photosynthesis</strong>.",
+                questions: [
+                    {
+                        text: "What pigment helps plants capture sunlight?",
+                        options: ["Carotenoid", "Chlorophyll", "Melanin", "Hemoglobin"],
+                        answer: 1,
+                        explanation: "Chlorophyll is the green pigment in plants that absorbs solar energy."
+                    },
+                    {
+                        text: "Which two raw materials are converted by plants during Photosynthesis?",
+                        options: ["Oxygen and glucose", "Nitrogen and hydrogen", "Carbon dioxide and water", "Helium and soil"],
+                        answer: 2,
+                        explanation: "Plants convert carbon dioxide and water into chemical energy."
+                    },
+                    {
+                        text: "Why is Photosynthesis conceptually described as a master chef process?",
+                        options: ["It produces heat for the environment", "It allows plants to make their own food internally", "It dissolves nutrients from the soil", "It cools down the leaves"],
+                        answer: 1,
+                        explanation: "It manufactures organic compounds (glucose) out of simple inorganic ingredients."
+                    },
+                    {
+                        text: "What gas do plants release into the atmosphere as a byproduct?",
+                        options: ["Carbon dioxide", "Oxygen", "Methane", "Nitrogen"],
+                        answer: 1,
+                        explanation: "Oxygen is released as a vital byproduct, supporting respiration on Earth."
+                    },
+                    {
+                        text: "True or False: Chlorophyll is primarily a yellow-colored pigment.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Chlorophyll is a vibrant green pigment."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                category: "Space",
+                emoji: "🚀",
+                difficulty: "Easy",
+                reward: 15,
+                viewTime: 12,
+                fact: "Our solar system has <strong>eight planets</strong>. The biggest of all is <strong>Jupiter</strong>, a massive gas giant. Jupiter has a famous stormy red spot that is wider than the planet Earth itself!",
+                questions: [
+                    {
+                        text: "How many planets currently populate our solar system?",
+                        options: ["Seven", "Eight", "Nine", "Ten"],
+                        answer: 1,
+                        explanation: "Our solar system contains exactly eight officially recognized planets."
+                    },
+                    {
+                        text: "Which planet is designated as the largest gas giant in our solar system?",
+                        options: ["Saturn", "Neptune", "Jupiter", "Uranus"],
+                        answer: 2,
+                        explanation: "Jupiter is the largest planet, making up a massive gas giant."
+                    },
+                    {
+                        text: "What is the natural phenomenon behind Jupiter's famous Great Red Spot?",
+                        options: ["A massive volcano", "An ocean of lava", "A giant storm", "An impact crater"],
+                        answer: 2,
+                        explanation: "The spot is a high-pressure storm system that has raged for centuries."
+                    },
+                    {
+                        text: "How does the size of Jupiter's Great Red Spot compare to Earth?",
+                        options: ["Smaller than Texas", "Exactly the same size as Earth", "Wider than planet Earth", "Twice the size of the Moon"],
+                        answer: 2,
+                        explanation: "The storm's physical diameter is actually wider than the entire planet Earth."
+                    },
+                    {
+                        text: "True or False: Jupiter is a terrestrial rocky planet similar to Earth.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Jupiter is a classic gaseous planet made mostly of hydrogen and helium."
+                    }
+                ]
+            },
+            {
+                id: 3,
+                category: "Animals",
+                emoji: "🐾",
+                difficulty: "Easy",
+                reward: 15,
+                viewTime: 12,
+                fact: "The <strong>Cheetah</strong> is the speed king of land, sprinting up to <strong>70 miles per hour</strong>! They have non-retractable claws that act like running spikes for extra grip on the soil.",
+                questions: [
+                    {
+                        text: "What is the peak running speed of a Cheetah on land?",
+                        options: ["40 mph", "60 mph", "70 mph", "90 mph"],
+                        answer: 2,
+                        explanation: "Cheetahs can reach phenomenal speeds of up to 70 miles per hour."
+                    },
+                    {
+                        text: "How do a Cheetah's claws physically aid its high-speed sprints?",
+                        options: ["By grasping tree branches", "Acting like running spikes for soil grip", "By silent whispering footsteps", "Delivering a toxic chemical release"],
+                        answer: 1,
+                        explanation: "Because their claws are always out, they grip the dirt like athletic spikes."
+                    },
+                    {
+                        text: "What makes a Cheetah's claws structurally distinct from most other cats?",
+                        options: ["They are razor-sharp iron claws", "They are non-retractable", "They fall off and grow back weekly", "They are made of plant matter"],
+                        answer: 1,
+                        explanation: "Unlike other felines, a cheetah's claws do not retract into their paws."
+                    },
+                    {
+                        text: "Why is the Cheetah's build optimized for high-speed chasing rather than marathon running?",
+                        options: ["Their heavy bones store heat", "Their claws act as running spikes for instant traction", "They can sleep while walking", "They breathe through their ears"],
+                        answer: 1,
+                        explanation: "The permanent spike-like grip provides extreme acceleration and traction over short distances."
+                    },
+                    {
+                        text: "True or False: Cheetahs retract their claws completely when sleeping.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Their claws remain exposed permanently."
+                    }
+                ]
+            },
+            {
+                id: 4,
+                category: "Geography",
+                emoji: "🌍",
+                difficulty: "Easy",
+                reward: 15,
+                viewTime: 12,
+                fact: "Mount Everest is Earth's highest peak, towering at <strong>8,849 meters</strong>. It sits in the <strong>Himalayas</strong> on the border between Nepal and China, growing about 4 millimeters higher every year.",
+                questions: [
+                    {
+                        text: "What is the official altitude of Mount Everest's peak?",
+                        options: ["6,200 meters", "8,849 meters", "10,000 meters", "12,450 meters"],
+                        answer: 1,
+                        explanation: "The peak is officially measured at 8,849 meters."
+                    },
+                    {
+                        text: "On which international border does Mount Everest stand?",
+                        options: ["India and Egypt", "Nepal and China", "Pakistan and Russia", "Bhutan and Vietnam"],
+                        answer: 1,
+                        explanation: "Everest is situated precisely on the border of Nepal and China."
+                    },
+                    {
+                        text: "How does Mount Everest's height dynamically change annually?",
+                        options: ["It shrinks from severe weather", "It grows 4 millimeters higher", "It alternates sinking and rising", "It collapses partially from tremors"],
+                        answer: 1,
+                        explanation: "Tectonic movements shift the mountain upwards by about 4mm each year."
+                    },
+                    {
+                        text: "In which mountain range can you locate this colossal peak?",
+                        options: ["The Andes", "The Rockies", "The Himalayas", "The Alps"],
+                        answer: 2,
+                        explanation: "Mount Everest is the crowning peak of the mighty Himalayas."
+                    },
+                    {
+                        text: "True or False: Mount Everest is shrinking by 4 millimeters annually.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It actually rises and grows taller by 4mm each year."
+                    }
+                ]
+            },
+            {
+                id: 5,
+                category: "Human Body",
+                emoji: "🧠",
+                difficulty: "Easy",
+                reward: 15,
+                viewTime: 12,
+                fact: "The adult heart beats about <strong>100,000 times</strong> a day, pumping blood through 60,000 miles of vessels! It uses <strong>four valves</strong> to ensure blood only flows in one direction.",
+                questions: [
+                    {
+                        text: "Around how many times does an adult heart beat over a 24-hour period?",
+                        options: ["10,000 times", "50,000 times", "100,000 times", "1,000,000 times"],
+                        answer: 2,
+                        explanation: "The human heart processes roughly 100,000 beats daily."
+                    },
+                    {
+                        text: "What is the key functional role of the four heart valves?",
+                        options: ["To oxygenate red cells", "To filter out micro-waste", "To ensure blood flows in only one direction", "To store iron-dense proteins"],
+                        answer: 2,
+                        explanation: "Valves open and close tightly to prevent blood from backflowing."
+                    },
+                    {
+                        text: "What is the cumulative length of blood vessels inside an adult human?",
+                        options: ["1,000 miles", "20,000 miles", "60,000 miles", "200,000 miles"],
+                        answer: 2,
+                        explanation: "The networks of vessels measure a staggering 60,000 miles."
+                    },
+                    {
+                        text: "Which of the following describes the mechanical heart cycle based on the text?",
+                        options: ["Air filtration in pulmonary tracts", "Pumping blood continuously through vessels", "Producing bone marrow platelets", "Balancing insulin hormones"],
+                        answer: 1,
+                        explanation: "The heart functions as a muscular pump driving blood through miles of circuits."
+                    },
+                    {
+                        text: "True or False: The human heart has six active valves to regulate reverse flow.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! The heart uses exactly four distinct valves."
+                    }
+                ]
+            },
+            {
+                id: 6,
+                category: "Environment",
+                emoji: "🌱",
+                difficulty: "Easy-Medium",
+                reward: 20,
+                viewTime: 15,
+                fact: "Plastic waste can take up to <strong>500 years</strong> to decompose. Much of it ends up in the <strong>Great Pacific Garbage Patch</strong>, a massive swirl of microplastics that is twice the size of Texas!",
+                questions: [
+                    {
+                        text: "What is the estimated maximum decomposition time for common plastics?",
+                        options: ["50 years", "100 years", "500 years", "5,000 years"],
+                        answer: 2,
+                        explanation: "Plastics are highly resilient and take up to 500 years to break down."
+                    },
+                    {
+                        text: "Where does a significant concentration of marine plastic waste gather?",
+                        options: ["The Mariana Trench floor", "The Great Pacific Garbage Patch", "The Gulf Stream current", "The Antarctic ice shelf"],
+                        answer: 1,
+                        explanation: "Ocean currents consolidate waste in the Great Pacific Garbage Patch."
+                    },
+                    {
+                        text: "How large is the Great Pacific Garbage Patch relative to US states?",
+                        options: ["Half the size of Rhode Island", "Twice the size of Texas", "Identical to California", "Four times the size of Alaska"],
+                        answer: 1,
+                        explanation: "Its immense collection zone covers an area twice the size of Texas."
+                    },
+                    {
+                        text: "What physical form of plastic predominantly populates this ocean patch?",
+                        options: ["Large plastic crates", "Microplastics", "Fishing nets only", "Industrial oil drums"],
+                        answer: 1,
+                        explanation: "The sun and waves break plastic into tiny pieces called microplastics."
+                    },
+                    {
+                        text: "True or False: The garbage patch is an easily visible solid island of pristine plastic bottles.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It is a cloudy soup of microscopic plastic fragments scattered across the water."
+                    }
+                ]
+            },
+            {
+                id: 7,
+                category: "History",
+                emoji: "🏺",
+                difficulty: "Easy-Medium",
+                reward: 20,
+                viewTime: 15,
+                fact: "The <strong>Great Wall of China</strong> is not one continuous line, but a network of walls spanning over <strong>13,000 miles</strong>. It was built using rammed earth, wood, and bricks to guard against northern invaders.",
+                questions: [
+                    {
+                        text: "What is the total length covered by the Great Wall of China's network?",
+                        options: ["5,000 miles", "10,000 miles", "Over 13,000 miles", "25,000 miles"],
+                        answer: 2,
+                        explanation: "Its collective branches and walls span a distance of over 13,000 miles."
+                    },
+                    {
+                        text: "What was the strategic purpose of building the Great Wall?",
+                        options: ["To prevent severe desert flooding", "To guard against northern invaders", "To serve as an imperial highway", "To mark geological boundaries"],
+                        answer: 1,
+                        explanation: "The wall was primarily designed to secure frontiers against northern nomads."
+                    },
+                    {
+                        text: "Which structural description of the Great Wall is correct?",
+                        options: ["It is a single, unbroken straight line", "It is a network of disconnected or connected wall structures", "It is made of imported solid marble slabs", "It is entirely hollow underneath"],
+                        answer: 1,
+                        explanation: "It consists of overlapping networks of defensive walls built in different eras."
+                    },
+                    {
+                        text: "Which material was NOT explicitly listed as part of the wall's construction?",
+                        options: ["Rammed earth", "Wood", "Bricks", "Concrete steel beams"],
+                        answer: 3,
+                        explanation: "The historical wall relied on rammed earth, timber, and masonry bricks."
+                    },
+                    {
+                        text: "True or False: The Great Wall was built as a single, unbroken straight line.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It is a complex network of walls built by different dynasties."
+                    }
+                ]
+            },
+            {
+                id: 8,
+                category: "Mathematics",
+                emoji: "➕",
+                difficulty: "Easy-Medium",
+                reward: 20,
+                viewTime: 15,
+                fact: "Prime numbers are integers greater than 1 with exactly <strong>two factors</strong>: 1 and themselves. The ancient Greek scholar <strong>Eratosthenes</strong> invented a famous grid 'sieve' to quickly filter them out.",
+                questions: [
+                    {
+                        text: "What mathematical condition must a prime number satisfy?",
+                        options: ["Must be an even integer", "Greater than 1 with exactly two factors", "Must be divisible by 3", "Has infinite factors including decimals"],
+                        answer: 1,
+                        explanation: "Primes are integers greater than 1 divisible only by 1 and themselves."
+                    },
+                    {
+                        text: "Who is credited with designing the grid method for identifying primes?",
+                        options: ["Pythagoras", "Eratosthenes", "Archimedes", "Euclid"],
+                        answer: 1,
+                        explanation: "Eratosthenes created the 'sieve' to filter composite numbers out."
+                    },
+                    {
+                        text: "What is the historical name of the prime-filtering grid tool?",
+                        options: ["Scale", "Compass", "Sieve", "Slide Rule"],
+                        answer: 2,
+                        explanation: "The method is globally known as the 'Sieve of Eratosthenes'."
+                    },
+                    {
+                        text: "Based on the rules, why is the number 2 considered a prime number?",
+                        options: ["It has only one factor", "It is greater than 1 and has only factors 1 and 2", "It is divisible by any even number", "It was chosen by ancient Greek emperors"],
+                        answer: 1,
+                        explanation: "Two is the only even prime, as its only factors are 1 and 2."
+                    },
+                    {
+                        text: "True or False: Eratosthenes was a mathematician who declared all even numbers prime.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! His sieve filtered out even numbers above 2 since they have multiple factors."
+                    }
+                ]
+            },
+            {
+                id: 9,
+                category: "Technology",
+                emoji: "💻",
+                difficulty: "Easy-Medium",
+                reward: 20,
+                viewTime: 15,
+                fact: "Computers talk using <strong>Binary Code</strong>, representing data with just 1s and 0s. Millions of tiny switches called <strong>transistors</strong> turn on or off to process these signals inside chips.",
+                questions: [
+                    {
+                        text: "What encoding system do digital computers use for primary communication?",
+                        options: ["ASCII characters only", "Binary Code", "Quantum pulses", "Morse code"],
+                        answer: 1,
+                        explanation: "Digital computing architecture operates on binary calculations."
+                    },
+                    {
+                        text: "What are the fundamental digits that make up Binary Code?",
+                        options: ["0 and 9", "1 and 2", "1 and 0", "Any prime number"],
+                        answer: 2,
+                        explanation: "Binary consists strictly of base-2 numerical units: 1 and 0."
+                    },
+                    {
+                        text: "What microscopic hardware parts function as electrical switches in chips?",
+                        options: ["Resistors", "Transistors", "Capacitors", "Inductors"],
+                        answer: 1,
+                        explanation: "Transistors process digital information by switching current flow."
+                    },
+                    {
+                        text: "What physical states do transistors change between to handle data?",
+                        options: ["On and Off", "Positive and Negative", "Hot and Cold", "High and Low pitch"],
+                        answer: 0,
+                        explanation: "Transistors act as binary doors that are either open (on) or closed (off)."
+                    },
+                    {
+                        text: "True or False: Transistors read binary code by translating them into letters.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Transistors operate directly on raw electrical states representing 1 and 0."
+                    }
+                ]
+            },
+            {
+                id: 10,
+                category: "Inventions",
+                emoji: "💡",
+                difficulty: "Easy-Medium",
+                reward: 20,
+                viewTime: 15,
+                fact: "Around 1440, <strong>Johannes Gutenberg</strong> invented the movable-type printing press. This automated the copying of books, triggering a <strong>European Information Revolution</strong> that made knowledge affordable.",
+                questions: [
+                    {
+                        text: "Who designed the movable-type printing press in Europe?",
+                        options: ["Leonardo da Vinci", "Johannes Gutenberg", "Isaac Newton", "Galileo Galilei"],
+                        answer: 1,
+                        explanation: "Johannes Gutenberg revolutionized the production of literature around 1440."
+                    },
+                    {
+                        text: "What historical transition did this automated printing press spark?",
+                        options: ["Industrial Coal Age", "European Information Revolution", "The Agricultural Boom", "Space Exploration Age"],
+                        answer: 1,
+                        explanation: "It dramatically accelerated the sharing of scientific and philosophical information."
+                    },
+                    {
+                        text: "How did the printing press affect the availability of books?",
+                        options: ["It made books highly classified", "It made books affordable and widely accessible", "It banned book translations", "It limited printing to local languages only"],
+                        answer: 1,
+                        explanation: "Mass production reduced the labor cost of hand-copied texts drastically."
+                    },
+                    {
+                        text: "In which century was the movable-type press developed?",
+                        options: ["12th Century", "15th Century", "18th Century", "20th Century"],
+                        answer: 1,
+                        explanation: "Developed around 1440, which falls in the mid-15th century."
+                    },
+                    {
+                        text: "True or False: Gutenberg's invention restricted book reading exclusively to royalty.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It democratized knowledge, making reading accessible to common citizens."
+                    }
+                ]
+            },
+            {
+                id: 11,
+                category: "Oceans",
+                emoji: "🌊",
+                difficulty: "Medium",
+                reward: 25,
+                viewTime: 20,
+                fact: "The deepest spot on Earth is the <strong>Mariana Trench</strong>, plunging nearly <strong>11,000 meters</strong> down. The pressure at the bottom is 1,000 times greater than sea level—equivalent to an elephant standing on your thumb!",
+                questions: [
+                    {
+                        text: "What is the name of Earth's deepest submarine trench?",
+                        options: ["Java Trench", "Puerto Rico Trench", "Mariana Trench", "Cayman Trench"],
+                        answer: 2,
+                        explanation: "The Mariana Trench contains the lowest point in the Earth's crust."
+                    },
+                    {
+                        text: "To what depth does the Mariana Trench reach?",
+                        options: ["5,000 meters", "Nearly 11,000 meters", "15,000 meters", "22,000 meters"],
+                        answer: 1,
+                        explanation: "Its lowest point, Challenger Deep, descends nearly 11,000 meters."
+                    },
+                    {
+                        text: "How intense is the hydrostatic pressure at the bottom compared to the surface?",
+                        options: ["10 times greater", "100 times greater", "1,000 times greater", "10,000 times greater"],
+                        answer: 2,
+                        explanation: "The pressure multiplies to roughly 1,000 atmospheres at the abyss."
+                    },
+                    {
+                        text: "What sensory metaphor describes the bottom pressure?",
+                        options: ["A brick falling on a table", "An elephant standing on your thumb", "A whale brushing past a swimmer", "Water dripping from a high tap"],
+                        answer: 1,
+                        explanation: "The water weight above concentrates immense force, akin to an elephant on a tiny focal point."
+                    },
+                    {
+                        text: "True or False: The water pressure at the bottom of the trench is identical to a shallow lake.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Trench pressure is lethal and crushingly high compared to surface lakes."
+                    }
+                ]
+            },
+            {
+                id: 12,
+                category: "Famous Discoveries",
+                emoji: "🧪",
+                difficulty: "Medium",
+                reward: 25,
+                viewTime: 20,
+                fact: "In 1928, <strong>Alexander Fleming</strong> accidentally discovered <strong>Penicillin</strong>, the world's first antibiotic, after mold grew on his bacteria dishes. It revolutionized medicine and saved millions from infections.",
+                questions: [
+                    {
+                        text: "Who discovered Penicillin in the year 1928?",
+                        options: ["Louis Pasteur", "Robert Koch", "Alexander Fleming", "Edward Jenner"],
+                        answer: 2,
+                        explanation: "Dr. Fleming identified the mold's antibacterial properties in 1928."
+                    },
+                    {
+                        text: "What event directly led to the discovery of Penicillin?",
+                        options: ["Controlled lab synthesis of chemical acids", "Mold accidentally grew on bacteria dishes", "Observations of forest soil layers", "Extracting venom from exotic vipers"],
+                        answer: 1,
+                        explanation: "Penicillium mold spore landed on a petri dish left uncovered, halting bacterial growth."
+                    },
+                    {
+                        text: "To what therapeutic category does Penicillin belong?",
+                        options: ["Antivirals", "Antibiotics", "Vaccines", "Anesthetics"],
+                        answer: 1,
+                        explanation: "It was the pioneering drug used to battle bacterial infections."
+                    },
+                    {
+                        text: "Why was this mold discovery globally significant?",
+                        options: ["It helped preserve stored food", "It saved millions of lives from bacterial infections", "It cured the common cold virus", "It synthesized new plastics"],
+                        answer: 1,
+                        explanation: "Fleming's discovery turned once-fatal bacterial wounds into highly treatable conditions."
+                    },
+                    {
+                        text: "True or False: Alexander Fleming cultivated the Penicillin mold deliberately in a controlled environment.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It was an accidental contaminant from a messy workstation."
+                    }
+                ]
+            },
+            {
+                id: 13,
+                category: "Science",
+                emoji: "🔬",
+                difficulty: "Medium",
+                reward: 25,
+                viewTime: 20,
+                fact: "Water's chemical structure is <strong>H2O</strong>. Due to strong electrical attractions, water molecules stick tightly to each other in a phenomenon called <strong>cohesion</strong>, which creates surface tension.",
+                questions: [
+                    {
+                        text: "What is the fundamental chemical formula representing water?",
+                        options: ["CO2", "H2O", "HO2", "H2O2"],
+                        answer: 1,
+                        explanation: "Water consists of two Hydrogen atoms bonded to one Oxygen atom."
+                    },
+                    {
+                        text: "What is the term for water molecules clinging together due to attraction?",
+                        options: ["Adhesion", "Cohesion", "Evaporation", "Sublimation"],
+                        answer: 1,
+                        explanation: "Cohesion refers to identical molecules holding together tightly."
+                    },
+                    {
+                        text: "What macro-level property is produced by cohesive forces on water's surface?",
+                        options: ["Viscosity", "Surface tension", "High acidity", "Boiling points"],
+                        answer: 1,
+                        explanation: "Cohesion causes the surface molecules to act like a flexible elastic skin."
+                    },
+                    {
+                        text: "Why do water molecules demonstrate cohesive behaviors?",
+                        options: ["Due to gravity pull", "Due to strong electrical attractions", "Due to cold external air pressure", "Due to magnetic metal elements"],
+                        answer: 1,
+                        explanation: "Polar molecules possess positive and negative zones that attract neighboring H2O."
+                    },
+                    {
+                        text: "True or False: Cohesion forces water molecules to repel each other and break up instantly.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Cohesion causes water molecules to stick together tightly."
+                    }
+                ]
+            },
+            {
+                id: 14,
+                category: "Space",
+                emoji: "🚀",
+                difficulty: "Medium",
+                reward: 25,
+                viewTime: 20,
+                fact: "Ocean tides on Earth are primarily caused by the <strong>Moon's gravitational pull</strong>. As the Earth rotates through this pull, it creates <strong>two high tides</strong> and two low tides every single day.",
+                questions: [
+                    {
+                        text: "What principal cosmic force governs ocean tides on Earth?",
+                        options: ["Solar heat waves", "The Moon's gravitational pull", "Asteroid debris impacts", "Earth's molten iron core magnetism"],
+                        answer: 1,
+                        explanation: "The Moon's gravity pulls ocean water into a bulge toward it."
+                    },
+                    {
+                        text: "How many high tides occur on a typical coastal shoreline daily?",
+                        options: ["One", "Two", "Three", "Four"],
+                        answer: 1,
+                        explanation: "Earth rotates through two water bulges daily, causing two high tides."
+                    },
+                    {
+                        text: "What is the total count of daily tidal transitions (high + low combined)?",
+                        options: ["Two", "Three", "Four", "Eight"],
+                        answer: 2,
+                        explanation: "Coastal areas experience two high tides and two low tides in 24 hours."
+                    },
+                    {
+                        text: "What planetary movement works in tandem with gravity to cycle tides?",
+                        options: ["Earth's rotation", "Polar axis tilt shifts", "Volcanic ocean vents", "Deep water currents"],
+                        answer: 0,
+                        explanation: "As Earth spins, coastlines move in and out of the gravitational water bulges."
+                    },
+                    {
+                        text: "True or False: The gravitational field of Jupiter plays the main role in Earth's tides.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! The Moon is much closer and exerts the dominant tidal force."
+                    }
+                ]
+            },
+            {
+                id: 15,
+                category: "Animals",
+                emoji: "🐾",
+                difficulty: "Medium",
+                reward: 25,
+                viewTime: 20,
+                fact: "Honeybees communicate the location of food using an extraordinary <strong>Waggle Dance</strong>. By dancing in specific angles and patterns, they tell the hive the exact direction and distance of flowers.",
+                questions: [
+                    {
+                        text: "What is the specialized dance executed by scout honeybees?",
+                        options: ["Bumble Jump", "Waggle Dance", "Pollen Waltz", "Nectar Shake"],
+                        answer: 1,
+                        explanation: "Bees communicate floral locations using the Waggle Dance."
+                    },
+                    {
+                        text: "What vital data is communicated through the Waggle Dance?",
+                        options: ["Hive defense alarms", "Direction and distance of flowers", "Weather changes in winter", "Queen selection choices"],
+                        answer: 1,
+                        explanation: "The dance acts as a compass pointing to lucrative nectar hotspots."
+                    },
+                    {
+                        text: "How is the direction of the food resource indicated?",
+                        options: ["By chemical scent lines", "Through specific dancing angles and patterns", "By matching the hive temperature", "Using clicking noises from wings"],
+                        answer: 1,
+                        explanation: "The angle of the run relative to the sun maps the direction of food."
+                    },
+                    {
+                        text: "Who benefits from the information broadcasted by the dancing bee?",
+                        options: ["Predatory wasps", "The hive/colony members", "Local plant structures", "Farmer beekeepers only"],
+                        answer: 1,
+                        explanation: "Hive mates decode the dance and set off directly toward the mapped flowers."
+                    },
+                    {
+                        text: "True or False: Honeybees perform the waggle dance to navigate back when lost.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! They dance back at the safe hive to direct other foragers."
+                    }
+                ]
+            },
+            {
+                id: 16,
+                category: "Human Body",
+                emoji: "🧠",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "Your brain contains <strong>86 billion neurons</strong> sending electrical impulses. The left hemisphere generally governs logic and language, while the right hemisphere handles <strong>spatial recognition</strong> and creative patterns.",
+                questions: [
+                    {
+                        text: "Approximately how many neurons reside in the human brain?",
+                        options: ["10 billion", "50 billion", "86 billion", "150 billion"],
+                        answer: 2,
+                        explanation: "Studies map the average human brain to contain about 86 billion neurons."
+                    },
+                    {
+                        text: "By what mechanism do brain neurons transmit information?",
+                        options: ["Blood pressure waves", "Electrical impulses", "Hormonal secretion loops", "Air pocket vibrations"],
+                        answer: 1,
+                        explanation: "Neurons trigger electrical signals across synaptic networks."
+                    },
+                    {
+                        text: "Which cognitive domain is traditionally governed by the left hemisphere?",
+                        options: ["Music rhythm", "Logic and language", "Creative color palettes", "Dream sleep cycles"],
+                        answer: 1,
+                        explanation: "The left hemisphere dominates analytical reasoning, grammar, and calculation."
+                    },
+                    {
+                        text: "What specialization is attributed to the brain's right hemisphere?",
+                        options: ["Logic puzzles", "Spatial recognition and creative patterns", "Grammar rule storage", "Mathematical tables"],
+                        answer: 1,
+                        explanation: "The right hemisphere processes non-verbal cues, creative concepts, and three-dimensional spaces."
+                    },
+                    {
+                        text: "True or False: Neurons are only located in the right hemisphere of the brain.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Neurons are distributed extensively throughout both cerebral hemispheres."
+                    }
+                ]
+            },
+            {
+                id: 17,
+                category: "Environment",
+                emoji: "🌱",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "Rainforests act as global water pumps through <strong>evapotranspiration</strong>. Trees absorb ground water and release it as moisture into the atmosphere, creating 'rivers of rain' that travel across continents.",
+                questions: [
+                    {
+                        text: "What scientific term describes plants absorbing and releasing water as moisture?",
+                        options: ["Sublimation", "Evapotranspiration", "Condensation", "Photosynthesis"],
+                        answer: 1,
+                        explanation: "Evapotranspiration is the joint process of soil evaporation and plant transpiration."
+                    },
+                    {
+                        text: "Why are rainforests metaphorically called global water pumps?",
+                        options: ["They clean saltwater bodies", "They pull water from soil and pump it into the atmosphere", "They raise local sea levels", "They produce mineral water"],
+                        answer: 1,
+                        explanation: "Trees pump enormous quantities of water vapor into the air daily."
+                    },
+                    {
+                        text: "What atmospheric phenomenon is formed by rainforest evapotranspiration?",
+                        options: ["Tornado alleys", "Ice blizzards", "'Rivers of rain' moving across continents", "Dust storm belts"],
+                        answer: 2,
+                        explanation: "Massive airborne clouds of moisture form traveling precipitation systems."
+                    },
+                    {
+                        text: "Where does the water cycle in rainforests initiate its upward climb?",
+                        options: ["Ocean evaporation only", "From the ground/soil", "Direct cloud generation", "Melting mountain glaciers"],
+                        answer: 1,
+                        explanation: "Roots draw liquid moisture from aquifers deep in the soil."
+                    },
+                    {
+                        text: "True or False: Evapotranspiration is a process that dries up the atmosphere permanently.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It humidifies the atmosphere and fuels essential rain patterns."
+                    }
+                ]
+            },
+            {
+                id: 18,
+                category: "History",
+                emoji: "🏺",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "Ancient Romans engineered massive stone <strong>aqueducts</strong> using gravity alone to carry fresh water from distant hills to cities. They utilized a precise slope of just <strong>1 foot drop per 300 feet</strong>.",
+                questions: [
+                    {
+                        text: "What structural systems did ancient Romans build to move fresh water?",
+                        options: ["Canals", "Aqueducts", "Steel pipelines", "Sewer drains"],
+                        answer: 1,
+                        explanation: "Aqueducts were elevated stone bridge channels built to carry clean water."
+                    },
+                    {
+                        text: "What physical force did Roman aqueducts exploit to keep water flowing?",
+                        options: ["Steam engines", "Gravity alone", "Water wheel paddles", "Wind power"],
+                        answer: 1,
+                        explanation: "The channels relied on a constant, gradual downward tilt."
+                    },
+                    {
+                        text: "What was the exact gradient slope utilized by Roman hydraulic engineers?",
+                        options: ["10 feet drop per 50 feet", "1 foot drop per 300 feet", "No drop (completely flat)", "5 feet drop per mile"],
+                        answer: 1,
+                        explanation: "They calibrated channels to drop just 1 foot over a 300-foot run."
+                    },
+                    {
+                        text: "From where was water sourced for municipal distribution?",
+                        options: ["Local mud rivers", "Distant hills", "The ocean shoreline", "Underground salt pools"],
+                        answer: 1,
+                        explanation: "Water was tapped from clean, elevated spring sources in the hills."
+                    },
+                    {
+                        text: "True or False: Roman aqueducts relied on combustion engines to pump water over peaks.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Aqueducts could not pump water upwards; they depended strictly on continuous downward gravity."
+                    }
+                ]
+            },
+            {
+                id: 19,
+                category: "Mathematics",
+                emoji: "➕",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "The <strong>Fibonacci Sequence</strong> starts with 0 and 1, where each number is the sum of the two preceding ones. Dividing adjacent numbers yields the <strong>Golden Ratio (1.618)</strong>, found in sea shells and galaxies.",
+                questions: [
+                    {
+                        text: "How is each consecutive value in the Fibonacci Sequence generated?",
+                        options: ["By doubling the previous digit", "By summing the two preceding values", "Subtracting the first digit from the last", "Multiplying by a prime index"],
+                        answer: 1,
+                        explanation: "Each term is the sum of the immediate two numbers before it."
+                    },
+                    {
+                        text: "What unique mathematical constant is derived from dividing neighboring Fibonacci numbers?",
+                        options: ["Pi", "Euler's Constant", "The Golden Ratio", "Planck's Constant"],
+                        answer: 2,
+                        explanation: "Ratios of adjacent Fibonacci terms approach the Golden Ratio."
+                    },
+                    {
+                        text: "What is the approximate numerical value of the Golden Ratio?",
+                        options: ["3.141", "1.618", "2.718", "0.577"],
+                        answer: 1,
+                        explanation: "The Golden Ratio, represented by phi, is roughly 1.618."
+                    },
+                    {
+                        text: "Where in nature can you observe geometries matching the Golden Ratio?",
+                        options: ["Volcanic basalt slabs", "In sea shells and galaxies", "The polar ice sheets", "Sedimentary canyon lines"],
+                        answer: 1,
+                        explanation: "Logarithmic spirals in chambered nautilus shells and spiral galaxies trace the ratio."
+                    },
+                    {
+                        text: "True or False: The Fibonacci sequence progresses by multiplying each number by 1.618.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It progresses by adding preceding values; the ratio is a derived pattern."
+                    }
+                ]
+            },
+            {
+                id: 20,
+                category: "Technology",
+                emoji: "💻",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "The Internet uses the <strong>TCP/IP protocol</strong> to slice data into tiny packets. These packets travel across different global pathways independently before reassembling into files at the destination.",
+                questions: [
+                    {
+                        text: "Which internet protocol is responsible for organizing data into packets?",
+                        options: ["HTML format", "TCP/IP protocol", "Wi-Fi signals", "USB connection"],
+                        answer: 1,
+                        explanation: "TCP/IP sets standards for packaging, routing, and delivering digital data packets."
+                    },
+                    {
+                        text: "How do divided packets navigate the global network to their endpoint?",
+                        options: ["Together in a single, rigid chain", "Independently across various paths", "By waiting for a satellite sync", "Manually routed by local servers"],
+                        answer: 1,
+                        explanation: "Different packets take alternative routes to bypass network congestion."
+                    },
+                    {
+                        text: "What happens to the packets once they arrive at the recipient?",
+                        options: ["They get deleted immediately", "They reassemble into the original file", "They convert into analog signals", "They bounce back to the sender"],
+                        answer: 1,
+                        explanation: "The receiving computer uses TCP/IP rules to reorganize and restitch the files."
+                    },
+                    {
+                        text: "What is the fundamental unit of data transfer across the internet?",
+                        options: ["Strings", "Packets", "Pixels", "Megabytes"],
+                        answer: 1,
+                        explanation: "The protocol breaks information into manageable chunks called packets."
+                    },
+                    {
+                        text: "True or False: Packets are forced to follow a single linear cable, blockading other pathways.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Packets route dynamically and independently across multiple paths."
+                    }
+                ]
+            },
+            {
+                id: 21,
+                category: "Inventions",
+                emoji: "💡",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "In the 1880s 'War of the Currents', <strong>Thomas Edison</strong> backed Direct Current (DC), while <strong>Nikola Tesla</strong> championed Alternating Current (AC). AC won because it could easily step up voltage to travel long distances.",
+                questions: [
+                    {
+                        text: "What electricity transmission standard did Thomas Edison endorse?",
+                        options: ["Alternating Current (AC)", "Direct Current (DC)", "Microwave currents", "Static friction"],
+                        answer: 1,
+                        explanation: "Edison built his grid system utilizing Direct Current."
+                    },
+                    {
+                        text: "Who was the chief visionary backing Alternating Current (AC)?",
+                        options: ["Thomas Edison", "Nikola Tesla", "Benjamin Franklin", "Michael Faraday"],
+                        answer: 1,
+                        explanation: "Nikola Tesla engineered safe, highly transmissible AC machinery."
+                    },
+                    {
+                        text: "Why did Alternating Current eventually dominate electrical infrastructure?",
+                        options: ["It was safer to touch directly", "AC can easily change voltage to travel long distances", "It generated less heat in light bulbs", "It was free to construct"],
+                        answer: 1,
+                        explanation: "AC voltage scales up and down easily, allowing lossless long-range travel."
+                    },
+                    {
+                        text: "In what historical era did the 'War of the Currents' occur?",
+                        options: ["1830s", "1880s", "1920s", "1960s"],
+                        answer: 1,
+                        explanation: "The rivalry and commercial battle reached its peak in the 1880s."
+                    },
+                    {
+                        text: "True or False: Edison's DC standard won because it could step up voltage with ease.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Tesla's AC standard won because DC struggled to step up voltage efficiently."
+                    }
+                ]
+            },
+            {
+                id: 22,
+                category: "Oceans",
+                emoji: "🌊",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "Corals live in a symbiotic partnership with microscopic algae called <strong>zooxanthellae</strong>. When water warms too much, corals expel these colorful algae, leading to white, starving <strong>coral bleaching</strong>.",
+                questions: [
+                    {
+                        text: "What microscopic algae share a vital symbiotic relationship with corals?",
+                        options: ["Zooxanthellae", "Cyanobacteria", "Kelp spores", "Phytoplankton"],
+                        answer: 0,
+                        explanation: "Zooxanthellae live inside coral polyps, providing food via photosynthesis."
+                    },
+                    {
+                        text: "What environmental shift causes corals to expel their symbiotic algae?",
+                        options: ["Excess salinity", "Water temperature warming excessively", "Lack of tidal waves", "Deep ocean earthquakes"],
+                        answer: 1,
+                        explanation: "Elevated water temperatures stress the corals, causing them to eject the algae."
+                    },
+                    {
+                        text: "What is the physical sign of a coral colony suffering from bleaching?",
+                        options: ["They glow in green hues", "They turn completely white", "They dissolve into sand", "They grow dark green shells"],
+                        answer: 1,
+                        explanation: "Without the colorful algae, the transparent coral tissue exposes its white skeleton."
+                    },
+                    {
+                        text: "Why is coral bleaching dangerous to the long-term survival of reefs?",
+                        options: ["It attracts giant predators", "Without algae, corals begin starving and dying", "It blocks sunlight from ocean floors", "It increases local wave sizes"],
+                        answer: 1,
+                        explanation: "Corals lose their primary nutrient source and become highly susceptible to disease."
+                    },
+                    {
+                        text: "True or False: Bleached coral is a healthy stage of reef growth.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It is a critical stress state that indicates starving, damaged corals."
+                    }
+                ]
+            },
+            {
+                id: 23,
+                category: "Famous Discoveries",
+                emoji: "🧪",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "In 1953, scientists <strong>Watson and Crick</strong>, using critical X-ray data from <strong>Rosalind Franklin</strong>, discovered the double helix structure of DNA, unlocking how genetic code is stored and replicated.",
+                questions: [
+                    {
+                        text: "In what year was the molecular structure of DNA mapped?",
+                        options: ["1910", "1935", "1953", "1972"],
+                        answer: 2,
+                        explanation: "The double helix model was published in 1953."
+                    },
+                    {
+                        text: "Whose key X-ray diffraction images made the DNA mapping possible?",
+                        options: ["Rosalind Franklin", "Marie Curie", "Ada Lovelace", "Jane Goodall"],
+                        answer: 0,
+                        explanation: "Rosalind Franklin took the famous Photo 51 showing the helix shape."
+                    },
+                    {
+                        text: "What duo is credited with defining the double helix DNA model?",
+                        options: ["Einstein and Bohr", "Watson and Crick", "Newton and Leibniz", "Darwin and Wallace"],
+                        answer: 1,
+                        explanation: "James Watson and Francis Crick mapped out the physical structure."
+                    },
+                    {
+                        text: "What biological mystery was solved by discovering the double helix?",
+                        options: ["How blood is produced in bones", "How genetic information is stored and replicated", "How muscles convert oxygen", "How viruses mutate in soil"],
+                        answer: 1,
+                        explanation: "The chemical base pairs showed how cells duplicate genes."
+                    },
+                    {
+                        text: "True or False: Rosalind Franklin's research played no role in the discovery of DNA.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Her precise X-ray photographs were crucial to mapping the structure."
+                    }
+                ]
+            },
+            {
+                id: 24,
+                category: "Science",
+                emoji: "🔬",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "Newton's <strong>First Law</strong> states an object stays at rest unless acted on by force. His <strong>Third Law</strong> states every action has an equal and opposite reaction, which is the foundational physics behind rocket propulsion.",
+                questions: [
+                    {
+                        text: "What mechanical state does Newton's First Law describe?",
+                        options: ["Objects accelerate under gravity", "An object remains at rest unless acted on by an external force", "Friction converts speed to thermal heat", "Mass scales with gravitational fields"],
+                        answer: 1,
+                        explanation: "Also known as the Law of Inertia, objects resist changes in movement."
+                    },
+                    {
+                        text: "Which of Isaac Newton's laws highlights equal and opposite forces?",
+                        options: ["First Law", "Second Law", "Third Law", "Law of Gravitation"],
+                        answer: 2,
+                        explanation: "The Third Law states forces always occur in matching action-reaction pairs."
+                    },
+                    {
+                        text: "What modern technology relies heavily on Newton's Third Law for flight?",
+                        options: ["Hot air balloons", "Rocket propulsion", "Magnetic trains", "Nuclear reactors"],
+                        answer: 1,
+                        explanation: "Exhaust gas pushes down (action), launching the rocket upward (reaction)."
+                    },
+                    {
+                        text: "According to Newton's laws, what is needed to change an object's momentum?",
+                        options: ["Frictionless air", "An external force", "Constant mass shifts", "A change in temperature"],
+                        answer: 1,
+                        explanation: "An external unbalanced force must apply to shift an object's trajectory."
+                    },
+                    {
+                        text: "True or False: Rocket fuel pushes against atmospheric air to fly, ignoring the Third Law.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Rockets fly in empty space because they push their own mass (fuel) away."
+                    }
+                ]
+            },
+            {
+                id: 25,
+                category: "Space",
+                emoji: "🚀",
+                difficulty: "Hard",
+                reward: 30,
+                viewTime: 25,
+                fact: "A <strong>Black Hole</strong> is a point of infinite density. Its boundary is the <strong>Event Horizon</strong>—the point of no return where escape velocity exceeds the speed of light, trapping even photons.",
+                questions: [
+                    {
+                        text: "What is the dense focal point of a black hole called?",
+                        options: ["A point of infinite density", "The accretion disk", "An iron core", "A dark matter pocket"],
+                        answer: 0,
+                        explanation: "A singularity is mapped as a spot containing infinite density."
+                    },
+                    {
+                        text: "What is the term for the outer threshold of a black hole?",
+                        options: ["Chronos Ring", "Event Horizon", "Plasma Belt", "Orbit Limit"],
+                        answer: 1,
+                        explanation: "The Event Horizon is the boundary marking no-escape zones."
+                    },
+                    {
+                        text: "Why can nothing escape past the Event Horizon?",
+                        options: ["Magnetism blocks all currents", "The required escape velocity is faster than the speed of light", "Intense heat vaporizes all metals", "Time moves backward there"],
+                        answer: 1,
+                        explanation: "Gravity is so intense that nothing can move fast enough to leave once inside."
+                    },
+                    {
+                        text: "What basic units of light are permanently trapped inside a black hole?",
+                        options: ["Electrons", "Photons", "Neutrons", "Positrons"],
+                        answer: 1,
+                        explanation: "Photons, which represent light energy, cannot travel fast enough to escape."
+                    },
+                    {
+                        text: "True or False: The Event Horizon is a visible ring of gas orbiting a planet.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It is an invisible boundary in space surrounding a collapsed star."
+                    }
+                ]
+            },
+            {
+                id: 26,
+                category: "Human Body",
+                emoji: "🧠",
+                difficulty: "Very Hard",
+                reward: 40,
+                viewTime: 30,
+                fact: "The body's adaptive immunity relies on <strong>T-cells</strong> and <strong>B-cells</strong>. B-cells construct custom protein shields called <strong>antibodies</strong> to lock onto virus spikes, while killer T-cells destroy infected cells.",
+                questions: [
+                    {
+                        text: "What dual cell systems coordinate the body's adaptive immune response?",
+                        options: ["Red cells and platelets", "T-cells and B-cells", "Plasma and hemoglobin", "Neurons and glia"],
+                        answer: 1,
+                        explanation: "Lymphocytes called T-cells and B-cells drive adaptive cellular defense."
+                    },
+                    {
+                        text: "Which specific cells assemble molecular shields against pathogens?",
+                        options: ["Killer T-cells", "B-cells", "Red blood cells", "Bone osteoclasts"],
+                        answer: 1,
+                        explanation: "B-cells detect foreign antigens and build targeting defenses."
+                    },
+                    {
+                        text: "What is the scientific name for the defensive protein shields made by B-cells?",
+                        options: ["Antigens", "Antibodies", "Hormones", "Enzymes"],
+                        answer: 1,
+                        explanation: "Antibodies are proteins shaped to lock onto precise foreign targets."
+                    },
+                    {
+                        text: "What is the primary role of killer T-cells?",
+                        options: ["To transport antibodies to cuts", "To target and destroy infected body cells", "To create stomach digestive acids", "To manufacture new red marrow"],
+                        answer: 1,
+                        explanation: "Killer T-cells seek out host cells displaying signs of viral infections."
+                    },
+                    {
+                        text: "True or False: T-cells form antibodies, while B-cells are purely passive.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! B-cells build antibodies; T-cells target infected cells directly."
+                    }
+                ]
+            },
+            {
+                id: 27,
+                category: "Environment",
+                emoji: "🌱",
+                difficulty: "Very Hard",
+                reward: 40,
+                viewTime: 30,
+                fact: "Oceans absorb 30% of global CO2, acting as a massive <strong>carbon sink</strong>. However, excess CO2 reacts with water to form carbonic acid, triggering <strong>ocean acidification</strong> which dissolves shellfish skeletons.",
+                questions: [
+                    {
+                        text: "What percentage of human carbon emissions are absorbed by Earth's oceans?",
+                        options: ["10%", "30%", "60%", "90%"],
+                        answer: 1,
+                        explanation: "Earth's oceans act as huge regulators, absorbing roughly 30% of CO2."
+                    },
+                    {
+                        text: "What ecological term describes the ocean's role as a carbon absorbing sponge?",
+                        options: ["Carbon source", "Carbon sink", "Thermal vent", "Atmospheric filter"],
+                        answer: 1,
+                        explanation: "A carbon sink accumulates and stores carbon compounds."
+                    },
+                    {
+                        text: "What chemical compound is produced when excess CO2 merges with seawater?",
+                        options: ["Hydrochloric acid", "Carbonic acid", "Sulfuric acid", "Nitric acid"],
+                        answer: 1,
+                        explanation: "Dissolving CO2 reacts with seawater to form weak Carbonic Acid."
+                    },
+                    {
+                        text: "What biological disaster is sparked by ocean acidification?",
+                        options: ["Excess seaweed growth", "It dissolves shellfish skeletons", "Rapid heating of corals", "Plankton turning toxic"],
+                        answer: 1,
+                        explanation: "Acidic water depletes carbonate ions needed for shells and bones."
+                    },
+                    {
+                        text: "True or False: Seawater acidity reduces when massive amounts of carbon are dissolved.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Dissolved carbon dioxide forms acid, raising the acidity of the oceans."
+                    }
+                ]
+            },
+            {
+                id: 28,
+                category: "History",
+                emoji: "🏺",
+                difficulty: "Very Hard",
+                reward: 40,
+                viewTime: 30,
+                fact: "The Industrial Revolution accelerated when <strong>James Watt</strong> patent-improved the steam engine in 1769. By adding a separate <strong>condenser</strong>, he prevented energy waste, multiplying engine efficiency by <strong>four times</strong>.",
+                questions: [
+                    {
+                        text: "Who patent-improved steam engines in 1769 to drive the Industrial Revolution?",
+                        options: ["Thomas Newcomen", "James Watt", "Robert Fulton", "George Stephenson"],
+                        answer: 1,
+                        explanation: "James Watt vastly refined existing steam machine models."
+                    },
+                    {
+                        text: "What mechanical component did James Watt introduce to prevent thermal waste?",
+                        options: ["A rotary piston", "A separate condenser", "High-pressure safety valves", "A heavy iron boiler"],
+                        answer: 1,
+                        explanation: "The separate condenser kept the cylinder hot while cooling steam elsewhere."
+                    },
+                    {
+                        text: "By what factor did Watt's condenser increase steam engine efficiency?",
+                        options: ["Double", "Triple", "Four times", "Ten times"],
+                        answer: 2,
+                        explanation: "His designs cut fuel waste, rendering engines four times more efficient."
+                    },
+                    {
+                        text: "In which year was the condenser improvement patented?",
+                        options: ["1712", "1769", "1804", "1850"],
+                        answer: 1,
+                        explanation: "Watt locked in his monumental patent in the year 1769."
+                    },
+                    {
+                        text: "True or False: The separate condenser caused the steam engine to consume quadruple the coal.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! It saved enormous amounts of fuel by avoiding heating-cooling cycles."
+                    }
+                ]
+            },
+            {
+                id: 29,
+                category: "Mathematics",
+                emoji: "➕",
+                difficulty: "Very Hard",
+                reward: 40,
+                viewTime: 30,
+                fact: "In the <strong>Monty Hall Problem</strong>, a game show contestant picks one of three doors. If the host opens a losing door and offers a swap, switching doors mathematically doubles your win chance from <strong>1/3 to 2/3</strong>!",
+                questions: [
+                    {
+                        text: "What is the name of the probability puzzle involving three doors and a host?",
+                        options: ["Monty Hall Problem", "Prisoner's Dilemma", "Sieve of Primes", "Pascal's Paradox"],
+                        answer: 0,
+                        explanation: "It is named after Monty Hall, host of 'Let's Make a Deal'."
+                    },
+                    {
+                        text: "What is the baseline probability of selecting the prize door initially?",
+                        options: ["1/2", "1/3", "2/3", "1/4"],
+                        answer: 1,
+                        explanation: "Three doors offer a simple initial 1 in 3 chance of selection."
+                    },
+                    {
+                        text: "If you switch doors when offered, what does your mathematical win probability become?",
+                        options: ["1/2", "1/3", "2/3", "100%"],
+                        answer: 2,
+                        explanation: "Switching shifts your odds to the combined remaining probability of 2/3."
+                    },
+                    {
+                        text: "Why is switching doors the optimal logical strategy in this scenario?",
+                        options: ["The host gets angry", "It doubles your win probability", "It randomizes the remaining choices", "The second doors are always larger"],
+                        answer: 1,
+                        explanation: "Switching leverages host information, shifting odds from 1/3 to 2/3."
+                    },
+                    {
+                        text: "True or False: The probability remains exactly 1/3 whether you switch or stay.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Swapping doors statistically doubles your winning odds."
+                    }
+                ]
+            },
+            {
+                id: 30,
+                category: "Technology",
+                emoji: "💻",
+                difficulty: "Very Hard",
+                reward: 40,
+                viewTime: 30,
+                fact: "Quantum computers utilize <strong>qubits</strong> instead of standard bits. Qubits leverage <strong>superposition</strong> to exist as both 0 and 1 simultaneously, enabling processing of complex equations at exponential speeds.",
+                questions: [
+                    {
+                        text: "What are the basic informational units inside a quantum computer?",
+                        options: ["Megabits", "Qubits", "Binary gates", "Microconductors"],
+                        answer: 1,
+                        explanation: "Quantum bits are shortened and referred to as qubits."
+                    },
+                    {
+                        text: "What physics phenomenon enables a qubit to be both 1 and 0 at once?",
+                        options: ["Superposition", "Entanglement", "Conduction", "Inductance"],
+                        answer: 0,
+                        explanation: "Superposition allows quantum systems to exist in multiple states at once."
+                    },
+                    {
+                        text: "How does quantum speed scale compared to classical processing speeds?",
+                        options: ["Linear speed", "Logarithmic steps", "At exponential speeds", "Identical speeds"],
+                        answer: 2,
+                        explanation: "Evaluating combinations simultaneously allows scaling at exponential rates."
+                    },
+                    {
+                        text: "What is the fundamental difference between standard bits and qubits?",
+                        options: ["Standard bits are made of light", "Qubits can exist in superposition as both states simultaneously", "Qubits only exist in extremely hot environments", "Standard bits cannot run basic math"],
+                        answer: 1,
+                        explanation: "Traditional bits are strictly 0 or 1; qubits manipulate probability mixtures of both."
+                    },
+                    {
+                        text: "True or False: Superposition forces qubits to lock into a single value of 0.",
+                        options: ["True", "False"],
+                        answer: 1,
+                        explanation: "False! Superposition allows them to represent both 0 and 1 simultaneously."
+                    }
+                ]
+            }
+        ];
+
+        // Global State variables
+        let currentLevelIndex = 0;
+        let activeQuestionIndex = 0;
+        let score = 0;
+        let coins = 0;
+        const completedLevels = new Set();
+        let timerInterval = null;
+        let isAudioMuted = false;
+
+        function saveFactFlashProgress() {
+    const completed = completedLevels.size;
+    const progress = Math.round((completed / levelsData.length) * 100);
+
+    localStorage.setItem("factFlashCompleted", String(completed));
+    localStorage.setItem("factFlashProgress", String(progress));
+    localStorage.setItem("factFlashCoins", String(coins));
+
+    window.parent.postMessage({
+        type: "GAME_PROGRESS_UPDATE",
+        game: "fact_flash",
+        progress,
+        completed,
+        coins,
+        level: currentLevelIndex + 1,
+    }, "*");
+}
+
+async function syncFactFlashWalletBalance() {
+    const saved = Number(localStorage.getItem("walletCoins")) || coins || 0;
+    coins = saved;
+    document.getElementById("coin-balance").innerText = coins;
+
+    try {
+        if (window.gameSDK) {
+            const balance = await window.gameSDK.getBalance();
+
+            if (balance !== undefined && balance !== null) {
+                coins = Number(balance);
+                localStorage.setItem("walletCoins", String(coins));
+                document.getElementById("coin-balance").innerText = coins;
+            }
+        }
+    } catch (err) {
+        console.warn("Fact Flash wallet sync failed:", err);
+    }
+}
+
+        // Sound Synthesis via Web Audio API
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            if (isAudioMuted) return;
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'incorrect') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220.00, ctx.currentTime); // A3
+                    osc.frequency.setValueAtTime(146.83, ctx.currentTime + 0.15); // D3
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.4);
+                } else if (type === 'level-win') {
+                    const now = ctx.currentTime;
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc.start();
+                    osc.stop(now + 0.6);
+                } else if (type === 'level-fail') {
+                    const now = ctx.currentTime;
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(293.66, now); // D4
+                    osc.frequency.setValueAtTime(261.63, now + 0.15); // C4
+                    osc.frequency.setValueAtTime(220.00, now + 0.3); // A3
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start();
+                    osc.stop(now + 0.5);
+                } else if (type === 'tick') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.06);
+                }
+            } catch (err) {
+                console.log("Audio synthesis error: ", err);
+            }
+        }
+
+        function toggleAudio() {
+            isAudioMuted = !isAudioMuted;
+            const btn = document.getElementById('btn-audio');
+            if (isAudioMuted) {
+                btn.innerText = '🔇';
+                btn.style.opacity = '0.6';
+            } else {
+                btn.innerText = '🔊';
+                btn.style.opacity = '1';
+                getAudioContext();
+            }
+        }
+
+        // Lightweight self-contained canvas confetti
+        let confettiAnimationId = null;
+        function runConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const colors = ['#FFC107', '#FF5722', '#E91E63', '#9C27B0', '#3F51B5', '#00BCD4', '#4CAF50', '#8BC34A'];
+            const particles = [];
+
+            for (let i = 0; i < 100; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    r: Math.random() * 6 + 4,
+                    d: Math.random() * canvas.height,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10 - 5,
+                    tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                    tiltAngle: 0,
+                    speed: Math.random() * 3 + 2
+                });
+            }
+
+            if (confettiAnimationId) {
+                cancelAnimationFrame(confettiAnimationId);
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let active = false;
+
+                particles.forEach((p) => {
+                    p.tiltAngle += p.tiltAngleIncremental;
+                    p.y += p.speed;
+                    p.tilt = Math.sin(p.tiltAngle) * 12;
+
+                    if (p.y < canvas.height) {
+                        active = true;
+                    }
+
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                    ctx.stroke();
+                });
+
+                if (active) {
+                    confettiAnimationId = requestAnimationFrame(draw);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+            draw();
+            setTimeout(() => {
+                cancelAnimationFrame(confettiAnimationId);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }, 6000);
+        }
+
+        // Initialize Page and Level Bar
+        window.addEventListener('DOMContentLoaded', async () => {
+    if (window.gameSDK) {
+        await window.gameSDK.init();
+    }
+
+    await syncFactFlashWalletBalance();
+
+    renderLevelMap();
+    loadLobby();
+
+    setTimeout(() => {
+        openInstructions();
+    }, 400);
+
+    window.addEventListener('resize', () => {
+        const canvas = document.getElementById('confetti-canvas');
+        if (canvas) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+    });
+});
+
+        function openInstructions() {
+            document.getElementById('instructions-modal').classList.add('open');
+        }
+
+        function closeInstructions() {
+            document.getElementById('instructions-modal').classList.remove('open');
+            getAudioContext();
+        }
+
+        // Generate Level Map buttons
+        function renderLevelMap() {
+            const grid = document.getElementById('levels-map-grid');
+            grid.innerHTML = '';
+            
+            levelsData.forEach((level, index) => {
+                const node = document.createElement('div');
+                node.className = 'level-node';
+                node.id = `level-node-${index}`;
+                node.innerText = level.id;
+                node.title = `${level.category} (Lvl ${level.id})`;
+
+                if (index === currentLevelIndex) {
+                    node.classList.add('active');
+                }
+                if (completedLevels.has(index)) {
+                    node.classList.add('completed');
+                }
+
+                node.addEventListener('click', () => {
+                    selectLevel(index);
+                });
+
+                grid.appendChild(node);
+            });
+        }
+
+        function updateLevelMapSelection() {
+            document.querySelectorAll('.level-node').forEach((node, idx) => {
+                node.classList.remove('active');
+                if (idx === currentLevelIndex) {
+                    node.classList.add('active');
+                    node.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+                if (completedLevels.has(idx)) {
+                    node.classList.add('completed');
+                } else {
+                    node.classList.remove('completed');
+                }
+            });
+        }
+
+        function selectLevel(index) {
+            clearInterval(timerInterval);
+            currentLevelIndex = index;
+            updateLevelMapSelection();
+            loadLobby();
+        }
+
+        function loadLobby() {
+            const level = levelsData[currentLevelIndex];
+            const arena = document.getElementById('game-arena');
+            
+            arena.innerHTML = `
+                <div class="screen-intro">
+                    <div class="intro-hero">${level.emoji}</div>
+                    <div class="tagline">Level ${level.id}: ${level.category}</div>
+                    <h2 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 10px;">
+                        Difficulty: <span style="color: ${getDifficultyColor(level.difficulty)}">${level.difficulty}</span>
+                    </h2>
+                    <p class="game-desc">
+                        You will have <strong>${level.viewTime} seconds</strong> to read and memorize a flashcard containing crucial details. Can you retrieve everything perfectly?
+                    </p>
+                    <div class="result-stats" style="margin-bottom: 25px; padding: 12px 24px;">
+                        <div class="stat-item">
+                            <span class="stat-val" style="color: #D4AC0D;">🪙 +${level.reward}</span>
+                            <span class="stat-label">Level Reward</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-val">${level.questions.length}</span>
+                            <span class="stat-label">Questions</span>
+                        </div>
+                    </div>
+                    <button class="btn-large" onclick="startMemorizing()">
+                        <span>Start Level ${level.id}</span> 🚀
+                    </button>
+                </div>
+            `;
+        }
+
+        function getDifficultyColor(diff) {
+            if (diff === 'Easy') return 'var(--success)';
+            if (diff === 'Easy-Medium' || diff === 'Medium') return 'var(--orange)';
+            return 'var(--danger)';
+        }
+
+        function startMemorizing() {
+            getAudioContext();
+
+            const level = levelsData[currentLevelIndex];
+            const arena = document.getElementById('game-arena');
+            
+            let timeLeft = level.viewTime;
+            
+            arena.innerHTML = `
+                <div class="screen-memorize">
+                    <div class="level-header">
+                        <div class="badge-category">${level.emoji} ${level.category} (Level ${level.id})</div>
+                        <div class="badge-reward">🪙 +${level.reward}</div>
+                    </div>
+                    
+                    <div class="timer-container">
+                        <div class="timer-bar-bg">
+                            <div class="timer-bar-fill" id="timer-bar" style="width: 100%;"></div>
+                        </div>
+                        <div class="timer-text-row">
+                            <span style="color: var(--text-muted);">Read and remember!</span>
+                            <span id="timer-text">⏱️ ${timeLeft}s left</span>
+                        </div>
+                    </div>
+
+                    <div class="fact-card-inner">
+                        ${level.fact}
+                    </div>
+
+                    <div class="memorize-actions">
+                        <button class="btn-large" style="background: var(--orange); box-shadow: 0 6px 16px rgba(255,159,67,0.35);" onclick="skipTimer()">
+                            <span>I'm Ready!</span> 🧠
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            const bar = document.getElementById('timer-bar');
+            const txt = document.getElementById('timer-text');
+            const totalDuration = level.viewTime;
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    startQuiz();
+                } else {
+                    const percentage = (timeLeft / totalDuration) * 100;
+                    bar.style.width = `${percentage}%`;
+                    txt.innerText = `⏱️ ${Math.ceil(timeLeft)}s left`;
+                    
+                    if (timeLeft <= 3.1 && Math.abs(timeLeft % 1) < 0.1) {
+                        playSound('tick');
+                    }
+                }
+            }, 100);
+        }
+
+        function skipTimer() {
+            clearInterval(timerInterval);
+            startQuiz();
+        }
+
+        function startQuiz() {
+            activeQuestionIndex = 0;
+            score = 0;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const level = levelsData[currentLevelIndex];
+            const q = level.questions[activeQuestionIndex];
+            const arena = document.getElementById('game-arena');
+
+            let progressDots = '';
+            for (let i = 0; i < level.questions.length; i++) {
+                let statusClass = '';
+                if (i < activeQuestionIndex) statusClass = 'completed';
+                else if (i === activeQuestionIndex) statusClass = 'active';
+                progressDots += `<div class="progress-step ${statusClass}"></div>`;
+            }
+
+            arena.innerHTML = `
+                <div class="screen-quiz">
+                    <div class="level-header">
+                        <div class="badge-category">${level.emoji} Quiz Time!</div>
+                        <div class="badge-reward" style="background: var(--primary-light); color: var(--primary);">Q: ${activeQuestionIndex + 1}/${level.questions.length}</div>
+                    </div>
+
+                    <div class="quiz-progress">
+                        <div class="progress-indicator">
+                            ${progressDots}
+                        </div>
+                        <span class="progress-text">Q ${activeQuestionIndex + 1} of ${level.questions.length}</span>
+                    </div>
+
+                    <div class="question-text">
+                        ${q.text}
+                    </div>
+
+                    <div class="options-list" id="quiz-options-grid">
+                        <!-- Instantiated via loops -->
+                    </div>
+
+                    <div id="feedback-anchor"></div>
+                </div>
+            `;
+
+            const grid = document.getElementById('quiz-options-grid');
+            q.options.forEach((opt, idx) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.innerHTML = `
+                    <span>${opt}</span>
+                    <span class="status-marker" style="font-size: 1.2rem;"></span>
+                `;
+                button.addEventListener('click', () => handleAnswerSelect(idx));
+                grid.appendChild(button);
+            });
+        }
+
+        function handleAnswerSelect(chosenIdx) {
+            const level = levelsData[currentLevelIndex];
+            const q = level.questions[activeQuestionIndex];
+            const options = document.querySelectorAll('.option-btn');
+            const anchor = document.getElementById('feedback-anchor');
+
+            options.forEach(btn => btn.disabled = true);
+
+            const isCorrect = (chosenIdx === q.answer);
+
+            if (isCorrect) {
+                score++;
+                playSound('correct');
+                options[chosenIdx].classList.add('correct');
+                options[chosenIdx].querySelector('.status-marker').innerText = '✅';
+                
+                anchor.innerHTML = `
+                    <div class="feedback-box" style="border-left-color: var(--success);">
+                        <div class="feedback-title correct">✅ That's correct!</div>
+                        <div class="feedback-desc">${q.explanation}</div>
+                    </div>
+                `;
+            } else {
+                playSound('incorrect');
+                options[chosenIdx].classList.add('incorrect');
+                options[chosenIdx].querySelector('.status-marker').innerText = '❌';
+                
+                options[q.answer].classList.add('correct');
+                options[q.answer].querySelector('.status-marker').innerText = '✅';
+
+                anchor.innerHTML = `
+                    <div class="feedback-box" style="border-left-color: var(--danger);">
+                        <div class="feedback-title incorrect">❌ That's incorrect</div>
+                        <div class="feedback-desc">${q.explanation}</div>
+                    </div>
+                `;
+            }
+
+            const isLast = (activeQuestionIndex === level.questions.length - 1);
+            const actionBtn = document.createElement('button');
+            actionBtn.className = 'btn-large m-t-20';
+            actionBtn.style.alignSelf = 'flex-end';
+            actionBtn.innerHTML = isLast ? '<span>Finish Level</span> 🏆' : '<span>Next Question</span> ➡️';
+            actionBtn.onclick = () => {
+                if (isLast) {
+                    evaluateResults();
+                } else {
+                    activeQuestionIndex++;
+                    renderQuestion();
+                }
+            };
+            
+            document.querySelector('.screen-quiz').appendChild(actionBtn);
+            actionBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function evaluateResults() {
+            const level = levelsData[currentLevelIndex];
+            const perfectScore = level.questions.length;
+            const arena = document.getElementById('game-arena');
+
+            if (score === perfectScore) {
+                const firstTimeCompletion = !completedLevels.has(currentLevelIndex);
+                if (firstTimeCompletion) {
+                    completedLevels.add(currentLevelIndex);
+                    coins += level.reward;
+                    updateCoinsWallet(level.reward);
+                }
+
+                playSound('level-win');
+                runConfetti();
+
+                arena.innerHTML = `
+                    <div class="screen-result">
+                        <div class="result-illustration">🎉</div>
+                        <h2 class="result-title txt-success">Level Complete!</h2>
+                        <p class="result-desc">
+                            Awesome job, Explorer! You remembered the details and answered every question correctly.
+                        </p>
+                        
+                        <div class="result-stats">
+                            <div class="stat-item">
+                                <span class="stat-val txt-success">${score}/${perfectScore}</span>
+                                <span class="stat-label">Correct</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-val" style="color: #D4AC0D;">+${level.reward}</span>
+                                <span class="stat-label">Coins Earned</span>
+                            </div>
+                        </div>
+
+                        <div class="result-actions">
+                            <button class="btn-large" style="background: var(--text-muted); box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onclick="loadLobby()">
+                                <span>Play Again</span> 🔄
+                            </button>
+                            ${currentLevelIndex < 29 ? `
+                                <button class="btn-large" onclick="advanceNextLevel()">
+                                    <span>Next Level</span> ➡️
+                                </button>
+                            ` : `
+                                <button class="btn-large" style="background: var(--orange);" onclick="selectLevel(0)">
+                                    <span>Restart from Lvl 1</span> 🔄
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            } else {
+                playSound('level-fail');
+
+                arena.innerHTML = `
+                    <div class="screen-result">
+                        <div class="result-illustration">💡</div>
+                        <h2 class="result-title txt-danger">Nice Attempt!</h2>
+                        <p class="result-desc">
+                            You scored <strong>${score} out of ${perfectScore}</strong>. Keep learning! Let's try once more to lock the memory down.
+                        </p>
+
+                        <div class="result-stats" style="background: var(--danger-light);">
+                            <div class="stat-item">
+                                <span class="stat-val txt-danger">${score}/${perfectScore}</span>
+                                <span class="stat-label">Correct</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-val" style="color: var(--text-muted);">0</span>
+                                <span class="stat-label">Coins Earned</span>
+                            </div>
+                        </div>
+
+                        <div class="result-actions">
+                            <button class="btn-large" style="background: var(--danger);" onclick="startMemorizing()">
+                                <span>Try Again</span> 🔄
+                            </button>
+                            <button class="btn-large" style="background: var(--text-muted); box-shadow: 0 4px 12px rgba(0,0,0,0.1);" onclick="loadLobby()">
+                                <span>Back to Level Overview</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderLevelMap();
+        }
+
+        function advanceNextLevel() {
+            if (currentLevelIndex < 29) {
+                currentLevelIndex++;
+                updateLevelMapSelection();
+                loadLobby();
+            }
+        }
+
+       async function updateCoinsWallet(amount) {
+    let finalBalance = coins;
+
+    try {
+        if (window.gameSDK) {
+            const rewardResult = await window.gameSDK.rewardCoins({
+                amount,
+                description: `Fact Flash Level ${currentLevelIndex + 1} Complete`,
+                game: "fact_flash",
+                level: currentLevelIndex + 1,
+            });
+
+            if (rewardResult && rewardResult.balance !== undefined) {
+                finalBalance = Number(rewardResult.balance);
+            } else {
+                const freshBalance = await window.gameSDK.getBalance();
+                if (freshBalance !== undefined && freshBalance !== null) {
+                    finalBalance = Number(freshBalance);
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Fact Flash reward error:", err);
+    }
+
+    coins = finalBalance;
+    localStorage.setItem("walletCoins", String(coins));
+
+    const balanceEl = document.getElementById('coin-balance');
+    const walletBadge = document.getElementById('wallet-badge');
+    const toast = document.getElementById('coin-toast');
+    const toastText = document.getElementById('toast-text');
+
+    balanceEl.innerText = coins;
+    toastText.innerText = `+${amount} Coins Earned`;
+    toast.classList.add('show');
+    walletBadge.classList.add('pulse');
+
+    saveFactFlashProgress();
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+
+    setTimeout(() => {
+        walletBadge.classList.remove('pulse');
+    }, 500);
+} 
+    </script>
+</body>
+</html>

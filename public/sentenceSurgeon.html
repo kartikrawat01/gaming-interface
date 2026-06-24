@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentence Surgeon - Grammar Lab Game</title>
+  <!-- Google Fonts for rounded child-friendly high-tech look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --hospital-bg: #f0f9ff; /* Soft sky blue */
+      --hospital-sterile-white: #ffffff;
+      --hospital-blue: #0ea5e9; /* Sky blue */
+      --hospital-blue-dark: #0369a1; /* Deep sky blue */
+      --hospital-teal: #0d9488;
+      --hospital-teal-light: #ccfbf1;
+      --hospital-green: #22c55e; /* Friendly green */
+      --hospital-green-light: #dcfce7;
+      --hospital-red: #f97316; /* Soft warm orange/red */
+      --hospital-red-light: #ffedd5;
+      --hospital-yellow: #f59e0b;
+      --hospital-text: #1e293b;
+      --hospital-text-muted: #64748b;
+      --border-radius: 20px; /* Playful round borders */
+      --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+      --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Fredoka', 'Quicksand', sans-serif;
+    }
+
+    body {
+      background-color: var(--hospital-bg);
+      color: var(--hospital-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Confetti Canvas overlay */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* HEADER */
+    .game-header {
+      background-color: var(--hospital-sterile-white);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid #e2e8f0;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .becre8v-logo {
+      height: 48px;
+      max-width: 150px;
+      object-fit: contain;
+    }
+
+    .title-area {
+      text-align: center;
+      flex-grow: 1;
+    }
+
+    .game-title {
+      font-size: 1.8rem;
+      color: var(--hospital-blue-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tagline {
+      font-size: 0.95rem;
+      color: var(--hospital-red);
+      font-weight: 600;
+      text-shadow: 1px 1px 0px rgba(254, 226, 226, 0.5);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .coin-counter {
+      background: #fef08a;
+      border: 2px solid #facc15;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1.1rem;
+    }
+
+    .how-to-play-btn {
+      background-color: var(--hospital-blue);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .how-to-play-btn:hover {
+      background-color: var(--hospital-blue-dark);
+      transform: translateY(-2px);
+    }
+
+    /* LEVEL TRACKER BAR */
+    .level-container {
+      background-color: var(--hospital-sterile-white);
+      padding: 10px 24px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .level-tracker-label {
+      font-weight: 700;
+      color: var(--hospital-text-muted);
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .level-bar {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 8px 4px 12px 4px;
+      scroll-behavior: smooth;
+    }
+
+    .level-bar::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .level-bar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+
+    .level-bar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .level-btn {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .level-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .lvl-easy { background: var(--hospital-green-light); color: #065f46; border-color: #a7f3d0; }
+    .lvl-med { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+    .lvl-hard { background: #ffedd5; color: #9a3412; border-color: #fed7aa; }
+    .lvl-vhard { background: var(--hospital-red-light); color: #991b1b; border-color: #fecaca; }
+
+    .level-btn.lvl-completed {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+      color: white !important;
+      border-color: #d97706 !important;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+    }
+
+    .level-btn.active {
+      transform: scale(1.15);
+      box-shadow: 0 0 14px currentColor;
+      border-width: 4px;
+      z-index: 2;
+    }
+
+    /* MAIN DASHBOARD PANEL */
+    .dashboard {
+      flex-grow: 1;
+      padding: 24px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    /* LEFT COL: PATIENT STATUS */
+    .patient-status-card {
+      background: var(--hospital-sterile-white);
+      border-radius: var(--border-radius);
+      border: 3px solid #e2e8f0;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .panel-section-title {
+      font-size: 1.1rem;
+      color: var(--hospital-blue-dark);
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* EKG MONITOR (Canvas Area) */
+    .ekg-box {
+      background: #0b1329;
+      border-radius: 12px;
+      padding: 8px;
+      border: 2px solid #334155;
+      position: relative;
+    }
+
+    .ekg-label {
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      color: #38bdf8;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #ekgCanvas {
+      width: 100%;
+      height: 70px;
+      display: block;
+    }
+
+    /* HEALTH VITAL BAR */
+    .vital-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .vital-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .vital-bar-bg {
+      background-color: #e2e8f0;
+      height: 18px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1.5px solid #cbd5e1;
+    }
+
+    .vital-bar-fill {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--hospital-green), #34d399);
+      transition: width 0.3s ease;
+    }
+
+    /* TIMER SECTION */
+    .timer-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--hospital-red-light);
+      border: 2px solid #fecaca;
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+
+    .timer-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--hospital-red);
+    }
+
+    .timer-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--hospital-red);
+    }
+
+    /* AI ASSISTANT PANEL */
+    .ai-nurse-container {
+      background: #f0fdfa;
+      border: 2px solid var(--hospital-teal-light);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-top: auto;
+    }
+
+    .nurse-avatar {
+      font-size: 2rem;
+      background: white;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+
+    .nurse-speech {
+      font-size: 0.85rem;
+      line-height: 1.35;
+      color: #0f766e;
+    }
+
+    .nurse-speech strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 0.9rem;
+      color: var(--hospital-teal);
+    }
+
+    /* RIGHT COL: WORKSPACE & SURGERY */
+    .surgery-workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* DIAGNOSIS/PROMPT CARD */
+    .diagnosis-card {
+      background: var(--hospital-sterile-white);
+      border-radius: var(--border-radius);
+      border: 3px solid #e2e8f0;
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .case-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .diagnosis-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 6px;
+      color: var(--hospital-blue-dark);
+    }
+
+    .instructions {
+      font-size: 0.95rem;
+      color: var(--hospital-text-muted);
+    }
+
+    /* LEVEL OVERVIEW CARD */
+    .overview-card {
+      background: #fef8e6;
+      border: 2px dashed #f59e0b;
+      border-radius: var(--border-radius);
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .overview-card h4 {
+      color: #b45309;
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+    .overview-card div {
+      font-size: 0.88rem;
+      color: #78350f;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    /* OPERATING TABLE (Main Drop/Assemble Area) */
+    .operating-table-card {
+      background: var(--hospital-sterile-white);
+      border-radius: var(--border-radius);
+      border: 3px dashed var(--hospital-blue);
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .operating-table-card::before {
+      content: "📖 BUILD YOUR SENTENCE";
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: var(--hospital-blue);
+      color: white;
+      padding: 2px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 10px;
+      letter-spacing: 0.05em;
+    }
+
+    .operating-words-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-table-placeholder {
+      color: var(--hospital-text-muted);
+      font-style: italic;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    /* INSTRUMENT TRAY (Scrambled Words Panel) */
+    .instrument-tray-card {
+      background: #f8fafc;
+      border-radius: var(--border-radius);
+      border: 3px solid #cbd5e1;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tray-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--hospital-text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tray-words-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      min-height: 50px;
+    }
+
+    /* WORD PILLS & BLOCKS */
+    .word-block {
+      background: var(--hospital-sterile-white);
+      border: 2px solid #94a3b8;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      user-select: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .word-block:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+      border-color: var(--hospital-blue);
+    }
+
+    .word-block.selected {
+      border-color: var(--hospital-blue);
+      background: #f0f9ff;
+      box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
+      transform: scale(1.05);
+    }
+
+    .word-block.missing-slot {
+      border-style: dotted;
+      border-color: var(--hospital-yellow);
+      background: #fffbeb;
+      color: #b45309;
+    }
+
+    .remove-word-btn {
+      background: #f1f5f9;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      cursor: pointer;
+      color: #94a3b8;
+      transition: all 0.1s;
+    }
+
+    .remove-word-btn:hover {
+      background: var(--hospital-red-light);
+      color: var(--hospital-red);
+    }
+
+    /* SURGICAL TOOLS CABINET (Instruments panel) */
+    .tools-cabinet {
+      background: var(--hospital-sterile-white);
+      border-radius: var(--border-radius);
+      border: 3px solid #e2e8f0;
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .tool-btn {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .tool-btn:not(:disabled):hover {
+      border-color: var(--hospital-blue);
+      background: #f0f9ff;
+      transform: translateY(-2px);
+    }
+
+    .tool-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .tool-icon {
+      font-size: 1.6rem;
+    }
+
+    /* EXPANDED PUNCTUATION SYSTEM */
+    .punct-cabinet {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      border: 2px solid #cbd5e1;
+    }
+
+    .punct-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .punct-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .punct-tool-btn {
+      background: var(--hospital-sterile-white);
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 8px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .punct-tool-btn:not(:disabled):hover {
+      border-color: var(--hospital-blue);
+      background: #e0f2fe;
+      transform: translateY(-1px);
+    }
+
+    .punct-tool-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .punct-sym {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--hospital-blue-dark);
+    }
+
+    .punct-lbl {
+      font-size: 0.65rem;
+      color: var(--hospital-text-muted);
+      margin-top: 2px;
+    }
+
+    /* GRAFT SYSTEM (For levels with missing words) */
+    .graft-container {
+      margin-top: 12px;
+      background: #fffbeb;
+      border: 2px dashed var(--hospital-yellow);
+      border-radius: 12px;
+      padding: 12px;
+      display: none; /* Triggered dynamically */
+    }
+
+    .graft-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #b45309;
+      margin-bottom: 8px;
+    }
+
+    .graft-options {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .graft-btn {
+      background: white;
+      border: 2px solid #fef08a;
+      border-radius: 16px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.1s;
+    }
+
+    .graft-btn:hover {
+      border-color: var(--hospital-yellow);
+      background: var(--hospital-yellow);
+      color: white;
+    }
+
+    /* ACTION COMMAND CONSOLE */
+    .action-console {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .console-btn {
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 16px 24px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .check-btn {
+      background: linear-gradient(135deg, var(--hospital-green), #16a34a);
+      color: white;
+      flex-grow: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .check-btn:hover {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .reset-btn {
+      background: #f1f5f9;
+      color: var(--hospital-text-muted);
+      border: 2px solid #e2e8f0;
+      flex-grow: 1;
+    }
+
+    .reset-btn:hover {
+      background: #e2e8f0;
+      color: var(--hospital-text);
+    }
+
+    /* POPUP/MODAL OVERLAYS */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: var(--hospital-sterile-white);
+      border-radius: 24px;
+      border: 4px solid var(--hospital-blue);
+      max-width: 520px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      background: var(--hospital-blue);
+      color: white;
+      padding: 16px 24px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-body {
+      padding: 24px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-top: 2px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .modal-close-btn {
+      background: var(--hospital-blue);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 10px 24px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .modal-close-btn:hover {
+      background: var(--hospital-blue-dark);
+    }
+
+    /* SPECIFIC POPUP TEXT ELEMENTS */
+    .popup-section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--hospital-blue-dark);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .popup-list {
+      list-style-type: none;
+      margin-bottom: 16px;
+    }
+
+    .popup-list li {
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .popup-list li::before {
+      content: "✏️";
+      position: absolute;
+      left: 0;
+      top: 1px;
+      font-size: 0.8rem;
+    }
+
+    /* GRID FOR COIN LEGEND IN POPUP */
+    .popup-coin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .popup-coin-item {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 0.85rem;
+    }
+
+    .popup-coin-item strong {
+      color: #15803d;
+      display: block;
+      font-size: 1rem;
+      margin-top: 4px;
+    }
+
+    .popup-footer-promo {
+      background: #fef08a;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.82rem;
+      color: #713f12;
+      line-height: 1.4;
+      border: 1px dashed #ca8a04;
+    }
+
+    /* SUCCESS / FAILURE STATE MODALS */
+    .result-badge {
+      font-size: 4rem;
+      text-align: center;
+      margin-bottom: 12px;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.1); }
+    }
+
+    .result-text {
+      text-align: center;
+      font-size: 1.15rem;
+      color: var(--hospital-text-muted);
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 860px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      .game-header {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Confetti Canvas overlay -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- HEADER -->
+  <header class="game-header">
+    <div class="logo-container">
+      <img src="assets/logocre8v.png" alt="BeCre8v Logo" class="becre8v-logo">
+    </div>
+    <div class="title-area">
+      <h1 class="game-title">Sentence Surgeon 🩺</h1>
+      <p class="tagline">Fix the sentence mistakes before the timer runs out!</p>
+    </div>
+    <div class="header-actions">
+      <div class="coin-badge-display">
+        <div class="coin-counter">
+          <span>🪙</span> <span id="headerCoinCount">0</span>
+        </div>
+      </div>
+      <button class="how-to-play-btn" onclick="openInstructionModal()">❓ How to Play</button>
+    </div>
+  </header>
+
+  <!-- LEVEL TRACKER -->
+  <div class="level-container">
+    <div class="level-tracker-label">
+      <span>CHOOSE A LEVEL (1-30)</span>
+      <span id="difficultyBanner">DIFFICULTY: EASY</span>
+    </div>
+    <div class="level-bar" id="levelTrackBar">
+      <!-- Generated Dynamically -->
+    </div>
+  </div>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="dashboard">
+    
+    <!-- LEFT PANEL: PATIENT MONITORS -->
+    <section class="patient-status-card">
+      <h2 class="panel-section-title">📊 Sentence Progress</h2>
+      
+      <!-- EKG HEART MONITOR (Sentence Flow) -->
+      <div class="ekg-box">
+        <div class="ekg-label">Sentence Rhythm Wave</div>
+        <canvas id="ekgCanvas"></canvas>
+      </div>
+
+      <!-- HEALTH VITAL BAR -->
+      <div class="vital-bar-container">
+        <div class="vital-labels">
+          <span>Grammar Accuracy</span>
+          <span id="vitalStabilityVal">100%</span>
+        </div>
+        <div class="vital-bar-bg">
+          <div class="vital-bar-fill" id="vitalBarFill"></div>
+        </div>
+      </div>
+
+      <!-- DEGRADATION TIMER -->
+      <div class="timer-container">
+        <div class="timer-info">
+          <span>⏰ Time Left:</span>
+        </div>
+        <div class="timer-value" id="timerValue">30s</div>
+      </div>
+
+      <!-- AI ASSISTANT -->
+      <div class="ai-nurse-container">
+        <div class="nurse-avatar" id="nurseAvatar">🤔</div>
+        <div class="nurse-speech">
+          <strong id="nurseName">Tutor AIda 🤔</strong>
+          <span id="nurseSpeechBubble">Setting up the language layout. Tap "How to Play" if you need quick guidance!</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: OPERATING WORKSPACE -->
+    <section class="surgery-workspace">
+      
+      <!-- DIAGNOSIS CARD -->
+      <div class="diagnosis-card">
+        <div class="case-badge" id="caseBadge">EASY</div>
+        <h3 id="currentLevelTitle">Level #1</h3>
+        <p class="instructions" id="levelInstruction">Select raw words from the tray to arrange them on the table.</p>
+        
+        <!-- LEVEL OVERVIEW CHECKLIST -->
+        <div class="overview-card" id="levelOverviewCard">
+          <h4>📚 Level Overview</h4>
+          <div id="levelSkillsList"></div>
+        </div>
+      </div>
+
+      <!-- OPERATING TABLE (Build Area) -->
+      <div class="operating-table-card" id="operatingTable">
+        <div class="operating-words-container" id="operatingWordsTray">
+          <!-- Placed Words Dynamically Go Here -->
+          <span class="empty-table-placeholder">👉 Click words from the Word Bank below to build your sentence here.</span>
+        </div>
+      </div>
+
+      <!-- INSTRUMENT TRAY (SCRAMBLED WORDS) -->
+      <div class="instrument-tray-card">
+        <div class="tray-title">📦 Word Bank</div>
+        <div class="tray-words-container" id="sterileWordsTray">
+          <!-- Scrambled Blocks Dynamically Go Here -->
+        </div>
+      </div>
+
+      <!-- SURGICAL INSTRUMENTS (EDITING CABINET) -->
+      <div class="tools-cabinet">
+        <h2 class="panel-section-title">✏️ Word Editing Tools</h2>
+        
+        <!-- Graft Tool Area (conditional rendering container) -->
+        <div class="graft-container" id="graftInterface">
+          <div class="graft-title">🧪 Missing Word! Choose a word to insert below:</div>
+          <div class="graft-options" id="graftButtonsArea">
+            <!-- Dynamic Buttons -->
+          </div>
+        </div>
+
+        <div class="tools-grid">
+          <button class="tool-btn" id="toolCase" onclick="applyCaseSyringe()" disabled>
+            <span class="tool-icon">🔤</span>
+            <span>Aa Change Case</span>
+          </button>
+          <button class="tool-btn" id="toolReturn" onclick="returnSelectedToTray()" disabled>
+            <span class="tool-icon">↩️</span>
+            <span>Return to Word Bank</span>
+          </button>
+        </div>
+
+        <!-- NEW EXPANDED PUNCTUATION SYSTEM -->
+        <div class="punct-cabinet">
+          <div class="punct-grid">
+            <button class="punct-tool-btn" onclick="applyPunctuation('period')" id="p-period" disabled>
+              <span class="punct-sym">.</span>
+              <span class="punct-lbl">Period</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('comma')" id="p-comma" disabled>
+              <span class="punct-sym">,</span>
+              <span class="punct-lbl">Comma</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('question')" id="p-question" disabled>
+              <span class="punct-sym">?</span>
+              <span class="punct-lbl">Question</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('exclamation')" id="p-exclamation" disabled>
+              <span class="punct-sym">!</span>
+              <span class="punct-lbl">Exclamation</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('colon')" id="p-colon" disabled>
+              <span class="punct-sym">:</span>
+              <span class="punct-lbl">Colon</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('semicolon')" id="p-semicolon" disabled>
+              <span class="punct-sym">;</span>
+              <span class="punct-lbl">Semicolon</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('quotes')" id="p-quotes" disabled>
+              <span class="punct-sym">" "</span>
+              <span class="punct-lbl">Quotes</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('dollar')" id="p-dollar" disabled>
+              <span class="punct-sym">$</span>
+              <span class="punct-lbl">Dollar</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('apostrophe')" id="p-apostrophe" style="display:none;" disabled>
+              <span class="punct-sym">'</span>
+              <span class="punct-lbl">Apostrophe</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('hyphen')" id="p-hyphen" style="display:none;" disabled>
+              <span class="punct-sym">-</span>
+              <span class="punct-lbl">Hyphen</span>
+            </button>
+            <button class="punct-tool-btn" onclick="applyPunctuation('brackets')" id="p-brackets" style="display:none;" disabled>
+              <span class="punct-sym">( )</span>
+              <span class="punct-lbl">Brackets</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS CONSOLE -->
+      <div class="action-console">
+        <button class="console-btn check-btn" onclick="checkSentence()">
+          <span>✅</span> CHECK MY SENTENCE
+        </button>
+        <button class="console-btn reset-btn" onclick="resetActiveWorkspace()">
+          <span>🔄</span> CLEAR TABLE
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- POPUP: HOW TO PLAY / ONLOAD POPUP -->
+  <div class="modal-backdrop" id="instructionModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>📚 Sentence Surgeon Guide</span>
+      </div>
+      <div class="modal-body">
+        <div class="popup-section-title">🩺 How To Play</div>
+        <ul class="popup-list">
+          <li><strong>Assemble:</strong> Click words in the Word Bank to place them on the Build area.</li>
+          <li><strong>Select:</strong> Click a word on the Build table to use the Editing Tools.</li>
+          <li><strong>Change Case:</strong> Use the <strong>🔤 Aa Change Case</strong> button to toggle Capital or lowercase letters.</li>
+          <li><strong>Apply Punctuation:</strong> Select a word and click any of the available punctuation buttons.</li>
+          <li><strong>Graft Words:</strong> For missing word levels, select the <strong>[???]</strong> pill and select the correct word to insert.</li>
+        </ul>
+
+        <div class="popup-section-title">🩹 Punctuation Tools</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 16px; font-size: 0.85rem; background: #f0f9ff; padding: 10px; border-radius: 12px; border: 1px solid #bae6fd;">
+          <div><strong>.</strong> Period</div>
+          <div><strong>,</strong> Comma</div>
+          <div><strong>?</strong> Question Mark</div>
+          <div><strong>!</strong> Exclamation Mark</div>
+          <div><strong>:</strong> Colon</div>
+          <div><strong>;</strong> Semicolon</div>
+          <div><strong>$</strong> Dollar Sign</div>
+          <div><strong>" "</strong> Quotation Marks</div>
+        </div>
+
+        <div class="popup-section-title">🏆 Goal & Vitals</div>
+        <ul class="popup-list">
+          <li>Repair the target sentence grammar correctly.</li>
+          <li>Verify before the timer runs out to win!</li>
+        </ul>
+
+        <div class="popup-section-title">🪙 Level Rewards</div>
+        <div class="popup-coin-grid">
+          <div class="popup-coin-item">
+            Levels 1-5
+            <strong>+10 Coins</strong>
+          </div>
+          <div class="popup-coin-item">
+            Levels 6-15
+            <strong>+15 Coins</strong>
+          </div>
+          <div class="popup-coin-item">
+            Levels 16-20
+            <strong>+20 Coins</strong>
+          </div>
+          <div class="popup-coin-item">
+            Levels 21-30
+            <strong>+30 Coins</strong>
+          </div>
+        </div>
+
+        <div class="popup-footer-promo">
+          💡 <strong>Earn rewards!</strong> Keep accumulating credits to redeem potential savings on elite BeCre8v products like <strong>RoboCoders</strong>, <strong>Spin Genius</strong>, and <strong>Infinity Mirror</strong>.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-close-btn" onclick="closeInstructionModal()">Let's Play! 🩺</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP: NEW SKILL UNLOCKED -->
+  <div class="modal-backdrop" id="newSkillModal" style="display: none;">
+    <div class="modal-card" style="border-color: var(--hospital-yellow);">
+      <div class="modal-header" style="background-color: var(--hospital-yellow);">
+        <span>💡 New Skill Unlocked!</span>
+      </div>
+      <div class="modal-body" id="newSkillModalBody" style="text-align: center;">
+        <!-- Generated dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="modal-close-btn" style="background-color: var(--hospital-yellow);" onclick="closeNewSkillModal()">Let's Practice! 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP: INCORRECT SENTENCE -->
+  <div class="modal-backdrop" id="incorrectModal" style="display: none;">
+    <div class="modal-card" style="border-color: var(--hospital-red);">
+      <div class="modal-header" style="background-color: var(--hospital-red);">
+        <span>❌ Sentence Formation Incorrect</span>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <div class="result-badge">😅</div>
+        <p class="result-text" style="font-weight: 600; color: var(--hospital-text); margin-bottom: 12px;">Please check:</p>
+        <ul class="popup-list" style="text-align: left; max-width: 250px; margin: 0 auto 16px auto; font-size: 1rem;">
+          <li>Word order</li>
+          <li>Capital letters</li>
+          <li>Punctuation</li>
+        </ul>
+        <p style="font-weight: 700; color: var(--hospital-red); font-size: 1.1rem;">Try again!</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-close-btn" style="background-color: var(--hospital-red);" onclick="closeIncorrectModal()">Keep Trying 💪</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP: SUCCESS CELEBRATION -->
+  <div class="modal-backdrop" id="successModal" style="display: none;">
+    <div class="modal-card" style="border-color: var(--hospital-green);">
+      <div class="modal-header" style="background-color: var(--hospital-green);">
+        <span>🎉 Correct Sentence!</span>
+      </div>
+      <div class="modal-body">
+        <div class="result-badge">💖</div>
+        <p class="result-text" id="successFeedback">Great job! You built the sentence correctly and cured its grammar!</p>
+        <div style="text-align: center; font-size: 1.25rem; font-weight: bold; color: var(--hospital-green); margin-bottom: 12px;">
+          🪙 +<span id="rewardCoinsAdded">0</span> Coins Earned
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-close-btn" style="background-color: var(--hospital-green);" onclick="advanceToNextLevel()">Next Level ➡️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP: FAILURE / FLATLINE -->
+  <div class="modal-backdrop" id="failureModal" style="display: none;">
+    <div class="modal-card" style="border-color: var(--hospital-red);">
+      <div class="modal-header" style="background-color: var(--hospital-red);">
+        <span>⚠️ Time's Up!</span>
+      </div>
+      <div class="modal-body">
+        <div class="result-badge">⏰</div>
+        <p class="result-text" style="color: var(--hospital-red);">Oh no! The timer ran out. Let's try building this sentence again!</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-close-btn" style="background-color: var(--hospital-red);" onclick="retryLevel()">Try Again 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME LOGIC / SCRIPTS -->
+  <script>
+    // 30 Levels Configuration
+    const gameLevels = [
+      // Levels 1-5: Rearranging only (baked casing and punctuation)
+      { id: 1, difficulty: "Easy", coins: 10, time: 30, text: "The cat slept.", words: ["slept.", "cat", "The"], type: "Word Order", prompt: "Arrange the words in the correct order to make a proper sentence!" },
+      { id: 2, difficulty: "Easy", coins: 10, time: 30, text: "I went to the park.", words: ["to", "park.", "went", "the", "I"], type: "Word Order", prompt: "Put the words in order to show where we went!" },
+      { id: 3, difficulty: "Easy", coins: 10, time: 30, text: "Space is very dark.", words: ["is", "dark.", "Space", "very"], type: "Word Order", prompt: "Move the words to describe outer space!" },
+      { id: 4, difficulty: "Easy", coins: 10, time: 30, text: "We played soccer.", words: ["soccer.", "played", "We"], type: "Word Order", prompt: "Put the words in order to show what sport we played!" },
+      { id: 5, difficulty: "Easy", coins: 10, time: 30, text: "The music was loud.", words: ["music", "was", "The", "loud."], type: "Word Order", prompt: "Arrange the words to describe the music!" },
+
+      // Levels 6-15: Capital/Lowercase, ending marks (. ? !) - UPDATED WITH GRADUALLY INCREASING MEDIUM-LENGTH SENTENCES
+      { id: 6, difficulty: "Easy-Medium", coins: 15, time: 30, text: "We are planning a picnic in the park tomorrow.", words: ["are", "picnic", "tomorrow", "planning", "the", "park", "we", "in", "a"], type: "Ending Marks & Capitals", prompt: "Start the sentence with a capital letter and add a period to 'tomorrow'!" },
+      { id: 7, difficulty: "Easy-Medium", coins: 15, time: 30, text: "My brother enjoys playing football after school.", words: ["playing", "school", "my", "brother", "football", "after", "enjoys"], type: "Ending Marks & Capitals", prompt: "Capitalize the first word and add a period to 'school'!" },
+      { id: 8, difficulty: "Easy-Medium", coins: 15, time: 30, text: "The colorful birds were sitting on the tall tree.", words: ["sitting", "tree", "birds", "the", "tall", "were", "on", "colorful", "the"], type: "Ending Marks & Capitals", prompt: "Put the words in order, capitalize 'The' at the start, and add a period to 'tree'!" },
+      { id: 9, difficulty: "Easy-Medium", coins: 15, time: 30, text: "Our teacher showed us an interesting science experiment.", words: ["experiment", "showed", "science", "teacher", "an", "interesting", "our", "us"], type: "Ending Marks & Capitals", prompt: "Rearrange the words, capitalize the starting word, and end with a period!" },
+      { id: 10, difficulty: "Easy-Medium", coins: 15, time: 30, text: "Do you want to see a movie on Friday?", words: ["friday", "movie", "do", "you", "to", "want", "on", "see", "a"], type: "Ending Marks & Capitals", prompt: "Turn this into a question! Capitalize 'Do' and 'Friday', and add a question mark to 'Friday'." },
+      { id: 11, difficulty: "Easy-Medium", coins: 15, time: 30, text: "The students worked together to complete the classroom project.", words: ["worked", "students", "project", "the", "classroom", "together", "complete", "to", "the"], type: "Ending Marks & Capitals", prompt: "Capitalize the first word and put a period on 'project'!" },
+      { id: 12, difficulty: "Easy-Medium", coins: 15, time: 30, text: "I borrowed a fascinating book from the school library yesterday.", words: ["borrowed", "book", "library", "yesterday", "i", "school", "the", "from", "[???]", "a"], type: "Missing Word", prompt: "Fill in the blank with 'fascinating', capitalize 'I', and add a period to 'yesterday'!", hasMissing: true, missingOptions: ["fascinating", "boring", "scary"] },
+      { id: 13, difficulty: "Easy-Medium", coins: 15, time: 30, text: "The little puppy followed us while we walked through the garden.", words: ["puppy", "garden", "followed", "through", "walked", "we", "us", "while", "the", "the", "little"], type: "Ending Marks & Capitals", prompt: "Capitalize the first word, order the sentence, and add a period to 'garden'." },
+      { id: 14, difficulty: "Easy-Medium", coins: 15, time: 30, text: "Did you learn about different planets during our science lesson?", words: ["planets", "did", "you", "about", "lesson", "science", "our", "during", "different", "learn"], type: "Ending Marks & Capitals", prompt: "Turn this into a question! Capitalize 'Did' and add a question mark to 'lesson'." },
+      { id: 15, difficulty: "Easy-Medium", coins: 15, time: 30, text: "We must work hard to protect our beautiful environment!", words: ["protect", "must", "hard", "environment", "we", "work", "our", "beautiful", "to"], type: "Ending Marks & Capitals", prompt: "Make this exciting! Capitalize 'We' and add an exclamation mark to 'environment'." },
+
+      // Levels 16-20: Commas and Quotes (, " ") - UPDATED WITH LONGER CHALLENGING SENTENCES
+      { id: 16, difficulty: "Medium", coins: 20, time: 40, text: "My teacher happily remarked, \"Excellent!\"", words: ["remarked", "teacher", "excellent", "happily", "my"], type: "Commas & Quotes", prompt: "Add a comma to 'remarked', capitalize 'My' and 'Excellent', and add quotes and an exclamation mark to 'Excellent'!" },
+      { id: 17, difficulty: "Medium", coins: 20, time: 40, text: "After finishing her homework, Maya helped her younger brother study.", words: ["helped", "brother", "homework", "after", "her", "younger", "study", "finishing", "maya", "her"], type: "Commas & Quotes", prompt: "Capitalize 'After' and 'Maya', add a comma to 'homework', and end with a period!" },
+      { id: 18, difficulty: "Medium", coins: 20, time: 40, text: "The honest boy admitted, \"Sorry.\"", words: ["admitted", "honest", "sorry", "the", "boy"], type: "Commas & Quotes", prompt: "Add a comma to 'admitted', capitalize 'The' and 'Sorry', and add quotes and a period to 'Sorry'!" },
+      { id: 19, difficulty: "Medium", coins: 20, time: 40, text: "While walking through the beautiful forest, we saw many colorful birds.", words: ["forest", "saw", "we", "walking", "beautiful", "many", "birds", "while", "colorful", "through", "the"], type: "Commas & Quotes", prompt: "Capitalize 'While', add a comma to 'forest', and end with a period!" },
+      { id: 20, difficulty: "Medium", coins: 20, time: 40, text: "The energetic, friendly puppy chased the soccer ball across the yard.", words: ["soccer", "friendly", "puppy", "across", "the", "yard", "the", "energetic", "chased", "ball"], type: "Commas & Quotes", prompt: "Add a capital to the start, a comma to 'energetic', and end with a period!" },
+
+      // Levels 21-30: Commas, Semicolons, Colons, Dollar Sign - UPDATED WITH PROGRESSIVELY LONGER AND MULTI-PART SENTENCES
+      { id: 21, difficulty: "Medium-Hard", coins: 30, time: 45, text: "Even though it was raining outside, the players continued practicing for the tournament.", words: ["tournament", "practicing", "raining", "players", "it", "even", "though", "was", "outside", "the", "continued", "for", "the"], type: "Commas & Quotes", prompt: "Capitalize 'Even', add a comma to 'outside', and end with a period on 'tournament'." },
+      { id: 22, difficulty: "Medium-Hard", coins: 30, time: 45, text: "The class carefully observed the experiment and recorded the results in their notebooks.", words: ["experiment", "recorded", "class", "the", "carefully", "observed", "[???]", "and", "results", "in", "their", "notebooks"], type: "Missing Word", prompt: "Fill the blank with 'the', capitalize the first word, and add a period to 'notebooks'!", hasMissing: true, missingOptions: ["the", "a", "one"] },
+      { id: 23, difficulty: "Medium-Hard", coins: 30, time: 45, text: "During our amazing trip, we visited London, Paris, and Rome.", words: ["visited", "london", "paris", "rome", "we", "and", "during", "our", "amazing", "trip"], type: "Commas & Quotes", prompt: "Capitalize 'During' and all proper city names, add commas after 'trip', 'London', and 'Paris', and end with a period!" },
+      { id: 24, difficulty: "Medium-Hard", coins: 30, time: 45, text: "When the bell rang for lunch, the hungry students excitedly rushed to the cafeteria.", words: ["hungry", "bell", "rang", "for", "lunch", "the", "rushed", "to", "cafeteria", "students", "excitedly", "the", "when"], type: "Commas & Quotes", prompt: "Capitalize 'When', add a comma to 'lunch', and put a period on 'cafeteria'!" },
+      { id: 25, difficulty: "Medium-Hard", coins: 30, time: 45, text: "Although the puzzle was extremely difficult, we worked together to solve it.", words: ["puzzle", "difficult", "together", "to", "solve", "it", "although", "the", "was", "extremely", "we", "worked"], type: "Commas & Quotes", prompt: "Capitalize 'Although', add a comma to 'difficult', and end with a period on 'it'!" },
+      { id: 26, difficulty: "Very Hard", coins: 30, time: 60, text: "For our school project, we need these materials: cardboard, scissors, and glue.", words: ["materials", "cardboard", "scissors", "glue", "for", "our", "school", "project", "we", "need", "these", "and"], type: "Lists & Colons", prompt: "Use a comma on 'project', a colon on 'materials' to list items, commas on 'cardboard' and 'scissors', capitalize 'For', and end with a period!" },
+      { id: 27, difficulty: "Very Hard", coins: 30, time: 60, text: "The colorful textbook costs $15; it teaches many interesting facts about space.", words: ["colorful", "textbook", "costs", "the", "space", "it", "teaches", "many", "interesting", "facts", "about", "15"], type: "Semicolons & Dollars", prompt: "Add a dollar sign and semicolon to '15', capitalize 'The', and add a period to 'space'!" },
+      { id: 28, difficulty: "Very Hard", coins: 30, time: 60, text: "Our brand new science kit costs $45; the cool experiments are very exciting.", words: ["brand", "new", "science", "kit", "costs", "our", "the", "cool", "experiments", "are", "very", "exciting", "45"], type: "Semicolons & Dollars", prompt: "Add a dollar sign and semicolon to '45', capitalize 'Our', and put a period on 'exciting'!" },
+      { id: 29, difficulty: "Very Hard", coins: 30, time: 60, text: "The young inventor presented her project confidently; she had spent several weeks improving it.", words: ["young", "inventor", "presented", "confidently", "she", "had", "spent", "weeks", "improving", "it", "the", "her", "project", "several"], type: "Semicolons & Dollars", prompt: "Connect these related thoughts with a semicolon on 'confidently', capitalize 'The', and end with a period on 'it'!" },
+      { id: 30, difficulty: "Very Hard", coins: 30, time: 60, text: "The school library saved $95; they used the money to buy interesting new books.", words: ["saved", "they", "used", "money", "to", "buy", "interesting", "new", "books", "the", "school", "the", "library", "95"], type: "Semicolons & Dollars", prompt: "Add a dollar sign and semicolon to '95', capitalize the first 'The', and end 'books' with a period!" }
+    ];
+
+    // Core Game State
+    let currentLevelIdx = 0;
+    let coins = 0;
+    let secondsLeft = 30;
+    let timerInterval = null;
+    let patientHealth = 100;
+    let gameActive = false;
+    let isFlatlined = false;
+    let isPopupOpen = true; // Block interaction initially
+
+    // Set of completed levels indexes
+    let completedLevels = new Set();
+
+    // Word blocks arrays
+    let trayWords = [];  
+    let tableWords = []; 
+    let selectedWordIdx = null; 
+
+    // Native audio framework
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    let continuousBuzzer = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new AudioCtx();
+      }
+    }
+
+    function playTone(type) {
+      initAudio();
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+
+      if (type === 'click') {
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+        gainNode.gain.setValueAtTime(0.08, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'success') {
+        const notes = [261.63, 329.63, 392.00, 523.25]; // C, E, G, C
+        notes.forEach((freq, i) => {
+          const oscSeq = audioCtx.createOscillator();
+          const gainSeq = audioCtx.createGain();
+          oscSeq.connect(gainSeq);
+          gainSeq.connect(audioCtx.destination);
+          oscSeq.frequency.setValueAtTime(freq, now + i * 0.1);
+          gainSeq.gain.setValueAtTime(0.12, now + i * 0.1);
+          gainSeq.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+          oscSeq.start(now + i * 0.1);
+          oscSeq.stop(now + i * 0.1 + 0.35);
+        });
+      } else if (type === 'failure') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.linearRampToValueAtTime(70, now + 0.6);
+        gainNode.gain.setValueAtTime(0.15, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc.start(now);
+        osc.stop(now + 0.6);
+      } else if (type === 'tick') {
+        osc.frequency.setValueAtTime(450, now);
+        gainNode.gain.setValueAtTime(0.04, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
+    }
+
+    function startFlatlineSound() {
+      initAudio();
+      if (!audioCtx || continuousBuzzer) return;
+      continuousBuzzer = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      continuousBuzzer.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      continuousBuzzer.frequency.setValueAtTime(320, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      continuousBuzzer.start();
+    }
+
+    function stopFlatlineSound() {
+      if (continuousBuzzer) {
+        try {
+          continuousBuzzer.stop();
+        } catch(e) {}
+        continuousBuzzer = null;
+      }
+    }
+
+    function nurseSay(text, state = 'thinking') {
+      const nurseNameEl = document.getElementById('nurseName');
+      const speechEl = document.getElementById('nurseSpeechBubble');
+      const avatarEl = document.getElementById('nurseAvatar');
+
+      let emoji = '🤔';
+      let titleText = 'Tutor AIda 🤔';
+
+      if (state === 'happy') {
+        emoji = '😊';
+        titleText = 'Tutor AIda 😊';
+      } else if (state === 'worried') {
+        emoji = '😰';
+        titleText = 'Tutor AIda 😰';
+      } else if (state === 'celebrating') {
+        emoji = '🎉';
+        titleText = 'Tutor AIda 🎉';
+      }
+
+      avatarEl.textContent = emoji;
+      nurseNameEl.textContent = titleText;
+      speechEl.textContent = text;
+    }
+
+    function openInstructionModal() {
+      playTone('click');
+      document.getElementById('instructionModal').style.display = 'flex';
+      isPopupOpen = true;
+    }
+
+    function closeInstructionModal() {
+      playTone('click');
+      document.getElementById('instructionModal').style.display = 'none';
+      isPopupOpen = false;
+      if (!gameActive) {
+        startGame();
+      }
+    }
+
+    function showNewSkillPopup(levelId) {
+      const body = document.getElementById('newSkillModalBody');
+      let content = '';
+      if (levelId === 6) {
+        content = `
+          <div style="font-size: 1.1rem; font-weight: 600; color: var(--hospital-blue-dark); margin-bottom: 12px;">Today you'll learn:</div>
+          <ul class="popup-list" style="text-align: left; max-width: 350px; margin: 0 auto 16px auto;">
+            <li><strong>Capital Letters:</strong> Start sentences with a capital!</li>
+            <li><strong>Periods (.):</strong> End basic statements.</li>
+            <li><strong>Question Marks (?):</strong> Use when asking things.</li>
+            <li><strong>Exclamation Marks (!):</strong> For exciting sentences!</li>
+          </ul>
+          <div style="background: #fef08a; border-radius: 12px; padding: 10px; font-size: 0.9rem; color: #713f12; font-weight: 600;">
+            Example:<br>i like books &rarr; I like books.
+          </div>
+        `;
+      } else if (levelId === 16) {
+        content = `
+          <div style="font-size: 1.1rem; font-weight: 600; color: var(--hospital-blue-dark); margin-bottom: 12px;">Today you'll learn:</div>
+          <ul class="popup-list" style="text-align: left; max-width: 350px; margin: 0 auto 16px auto;">
+            <li><strong>Commas (,):</strong> Use to pause or separate list items.</li>
+            <li><strong>Quotation Marks (" "):</strong> Wrap around spoken words.</li>
+          </ul>
+          <div style="background: #fef08a; border-radius: 12px; padding: 10px; font-size: 0.9rem; color: #713f12; font-weight: 600;">
+            Example:<br>She said, "Hello."
+          </div>
+        `;
+      } else if (levelId === 26) {
+        content = `
+          <div style="font-size: 1.1rem; font-weight: 600; color: var(--hospital-blue-dark); margin-bottom: 12px;">Today you'll learn:</div>
+          <ul class="popup-list" style="text-align: left; max-width: 350px; margin: 0 auto 16px auto;">
+            <li><strong>Semicolons (;):</strong> Connect two related sentences.</li>
+            <li><strong>Colons (:):</strong> Introduce a list.</li>
+            <li><strong>Dollar Sign ($):</strong> Place before a price number!</li>
+          </ul>
+          <div style="background: #fef08a; border-radius: 12px; padding: 10px; font-size: 0.9rem; color: #713f12; font-weight: 600;">
+            Example:<br>The total is $30; it is cheap.
+          </div>
+        `;
+      }
+      body.innerHTML = content;
+      document.getElementById('newSkillModal').style.display = 'flex';
+      isPopupOpen = true; 
+    }
+
+    function closeNewSkillModal() {
+      playTone('click');
+      document.getElementById('newSkillModal').style.display = 'none';
+      isPopupOpen = false; 
+    }
+
+    function showIncorrectModal() {
+      document.getElementById('incorrectModal').style.display = 'flex';
+      isPopupOpen = true; 
+      nurseSay("The sentence isn't quite right yet. Check capital letters, word order, or punctuation!", 'worried');
+    }
+
+    function closeIncorrectModal() {
+      playTone('click');
+      document.getElementById('incorrectModal').style.display = 'none';
+      isPopupOpen = false; 
+    }
+
+    function buildLevelSelectors() {
+      const container = document.getElementById('levelTrackBar');
+      container.innerHTML = '';
+      
+      gameLevels.forEach((level, idx) => {
+        const btn = document.createElement('button');
+        btn.classList.add('level-btn');
+        btn.textContent = level.id;
+        
+        if (level.id <= 5) btn.classList.add('lvl-easy');
+        else if (level.id <= 15) btn.classList.add('lvl-med');
+        else if (level.id <= 25) btn.classList.add('lvl-hard');
+        else btn.classList.add('lvl-vhard');
+
+        if (completedLevels.has(idx)) {
+          btn.classList.add('lvl-completed');
+        }
+
+        btn.onclick = () => {
+          selectLevel(idx);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function selectLevel(idx) {
+      if (isPopupOpen) return;
+      playTone('click');
+      currentLevelIdx = idx;
+      loadLevel(gameLevels[idx]);
+    }
+
+    function renderLevelOverview(level) {
+      const list = document.getElementById('levelSkillsList');
+      let skills = [];
+      if (level.id <= 5) {
+        skills = [
+          "🧩 Rearrange words to build a proper sentence.",
+          "⭐ No editing tools needed! Just move the blocks."
+        ];
+      } else if (level.id <= 15) {
+        skills = [
+          "🔠 Capital Letters: Every sentence starts with a capital letter.",
+          "✏️ Ending Marks: Add a period (.), question mark (?), or exclamation mark (!)."
+        ];
+      } else if (level.id <= 25) {
+        skills = [
+          "🔠 Capital Letters & Lowercase Letters.",
+          "💬 Quotation Marks (\" \") for spoken words.",
+          "⏸️ Commas (,) to pause or separate words."
+        ];
+      } else {
+        skills = [
+          "💰 Dollar Sign ($) for prices.",
+          "🔗 Semicolons (;) to connect short sentences.",
+          "🏷️ Colons (:) to list items."
+        ];
+      }
+      list.innerHTML = skills.map(skill => `<div>${skill}</div>`).join("");
+    }
+
+    function loadLevel(level) {
+      stopFlatlineSound();
+      isFlatlined = false;
+      selectedWordIdx = null;
+
+      const btns = document.querySelectorAll('.level-btn');
+      btns.forEach((btn, idx) => {
+        if (idx === currentLevelIdx) {
+          btn.classList.add('active');
+          btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      const difficultyBanner = document.getElementById('difficultyBanner');
+      difficultyBanner.textContent = `DIFFICULTY: ${level.difficulty.toUpperCase()} (${level.coins} Coins)`;
+      
+      const badge = document.getElementById('caseBadge');
+      badge.textContent = level.difficulty;
+      badge.className = 'case-badge';
+      if (level.id <= 5) badge.classList.add('lvl-easy');
+      else if (level.id <= 15) badge.classList.add('lvl-med');
+      else if (level.id <= 25) badge.classList.add('lvl-hard');
+      else badge.classList.add('lvl-vhard');
+
+      document.getElementById('currentLevelTitle').textContent = `Level #${level.id}: ${level.type}`;
+      document.getElementById('levelInstruction').textContent = level.prompt;
+
+      secondsLeft = level.time;
+      document.getElementById('timerValue').textContent = `${secondsLeft}s`;
+      document.getElementById('timerValue').style.color = 'var(--hospital-red)';
+
+      patientHealth = 100;
+      updateVitalsUI();
+
+      trayWords = level.words.map((w, index) => {
+        return {
+          id: index,
+          original: w,
+          text: w,
+          isMissing: w === "[???]",
+          chosenGraft: ""
+        };
+      });
+      tableWords = [];
+
+      renderWorkspace();
+      nurseSay("Let's build a correct sentence! Place the words in order and check for capitals and punctuation.", 'thinking');
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (isFlatlined || isPopupOpen) return;
+        secondsLeft--;
+        document.getElementById('timerValue').textContent = `${secondsLeft}s`;
+        
+        if (secondsLeft <= 0) {
+          triggerFlatline();
+        } else if (secondsLeft <= 10) {
+          playTone('tick');
+          nurseSay("Hurry! The timer is running low!", 'worried');
+        }
+      }, 1000);
+
+      // Trigger popups
+      if (level.id === 6 || level.id === 16 || level.id === 26) {
+        showNewSkillPopup(level.id);
+      }
+    }
+
+    function renderWorkspace() {
+      const tableContainer = document.getElementById('operatingWordsTray');
+      tableContainer.innerHTML = '';
+
+      if (tableWords.length === 0) {
+        tableContainer.innerHTML = `<span class="empty-table-placeholder">👉 Click words from the Word Bank below to build your sentence here.</span>`;
+      } else {
+        tableWords.forEach((word, idx) => {
+          const pill = document.createElement('div');
+          pill.className = 'word-block';
+          if (word.isMissing && word.text === "[???]") {
+            pill.classList.add('missing-slot');
+          }
+          if (selectedWordIdx === idx) {
+            pill.classList.add('selected');
+          }
+
+          pill.onclick = (e) => selectWordOnTable(idx, e);
+
+          const textSpan = document.createElement('span');
+          textSpan.textContent = word.text;
+          pill.appendChild(textSpan);
+
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-word-btn';
+          removeBtn.textContent = '×';
+          removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            returnWordToTrayByIndex(idx);
+          };
+          pill.appendChild(removeBtn);
+
+          tableContainer.appendChild(pill);
+        });
+      }
+
+      const trayContainer = document.getElementById('sterileWordsTray');
+      trayContainer.innerHTML = '';
+
+      trayWords.forEach((word) => {
+        const pill = document.createElement('div');
+        pill.className = 'word-block';
+        if (word.isMissing && word.text === "[???]") {
+          pill.classList.add('missing-slot');
+        }
+        pill.textContent = word.text;
+        pill.onclick = () => transferToTable(word);
+        trayContainer.appendChild(pill);
+      });
+
+      const lvlNum = gameLevels[currentLevelIdx].id;
+      const toolCabinet = document.querySelector('.tools-cabinet');
+      const caseBtn = document.getElementById('toolCase');
+      const punctCabinet = document.querySelector('.punct-cabinet');
+      const toolReturn = document.getElementById('toolReturn');
+      const graftArea = document.getElementById('graftInterface');
+
+      if (lvlNum <= 5) {
+        toolCabinet.style.display = 'none';
+      } else {
+        toolCabinet.style.display = 'block';
+        caseBtn.style.display = 'inline-flex';
+        punctCabinet.style.display = 'block';
+
+        const pPeriod = document.getElementById('p-period');
+        const pComma = document.getElementById('p-comma');
+        const pQuestion = document.getElementById('p-question');
+        const pExclamation = document.getElementById('p-exclamation');
+        const pColon = document.getElementById('p-colon');
+        const pSemicolon = document.getElementById('p-semicolon');
+        const pQuotes = document.getElementById('p-quotes');
+        const pDollar = document.getElementById('p-dollar');
+
+        const allPunctBtns = [pPeriod, pComma, pQuestion, pExclamation, pColon, pSemicolon, pQuotes, pDollar];
+        allPunctBtns.forEach(btn => { if (btn) btn.style.display = 'none'; });
+
+        if (lvlNum >= 6 && lvlNum <= 15) {
+          pPeriod.style.display = 'flex';
+          pQuestion.style.display = 'flex';
+          pExclamation.style.display = 'flex';
+        } else if (lvlNum >= 16 && lvlNum <= 25) {
+          pPeriod.style.display = 'flex';
+          pQuestion.style.display = 'flex';
+          pExclamation.style.display = 'flex';
+          pComma.style.display = 'flex';
+          pQuotes.style.display = 'flex';
+        } else if (lvlNum >= 26) {
+          pPeriod.style.display = 'flex';
+          pQuestion.style.display = 'flex';
+          pExclamation.style.display = 'flex';
+          pComma.style.display = 'flex';
+          pQuotes.style.display = 'flex';
+          pColon.style.display = 'flex';
+          pSemicolon.style.display = 'flex';
+          pDollar.style.display = 'flex';
+        }
+
+        if (selectedWordIdx !== null) {
+          const activeWord = tableWords[selectedWordIdx];
+          caseBtn.disabled = false;
+          toolReturn.disabled = false;
+          allPunctBtns.forEach(btn => { if (btn) btn.disabled = false; });
+
+          if (activeWord.isMissing) {
+            graftArea.style.display = 'block';
+            setupGraftButtons(activeWord);
+          } else {
+            graftArea.style.display = 'none';
+          }
+        } else {
+          caseBtn.disabled = true;
+          toolReturn.disabled = true;
+          graftArea.style.display = 'none';
+          allPunctBtns.forEach(btn => { if (btn) btn.disabled = true; });
+        }
+      }
+
+      renderLevelOverview(gameLevels[currentLevelIdx]);
+    }
+
+    function transferToTable(wordObj) {
+      if (isPopupOpen) return;
+      playTone('click');
+      trayWords = trayWords.filter(w => w.id !== wordObj.id);
+      tableWords.push(wordObj);
+      selectedWordIdx = tableWords.length - 1;
+      renderWorkspace();
+      nurseSay(`Selected: "${wordObj.text}". Check your editing tools to adjust capitalization or symbols!`, 'thinking');
+    }
+
+    function selectWordOnTable(idx, event) {
+      if (isPopupOpen) return;
+      playTone('click');
+      selectedWordIdx = idx;
+      renderWorkspace();
+      const wordObj = tableWords[idx];
+      if (wordObj.isMissing) {
+        nurseSay("This is a missing word gap. Click a word below to insert it!", "thinking");
+      } else {
+        nurseSay(`Selected: "${wordObj.text}". You can change case or add punctuation.`, "thinking");
+      }
+    }
+
+    function returnWordToTrayByIndex(idx) {
+      if (isPopupOpen) return;
+      playTone('click');
+      const wordObj = tableWords[idx];
+      
+      if (wordObj.isMissing) {
+        wordObj.text = "[???]";
+        wordObj.chosenGraft = "";
+      }
+
+      tableWords.splice(idx, 1);
+      trayWords.push(wordObj);
+
+      if (selectedWordIdx === idx) {
+        selectedWordIdx = null;
+      } else if (selectedWordIdx > idx) {
+        selectedWordIdx--;
+      }
+
+      renderWorkspace();
+    }
+
+    function returnSelectedToTray() {
+      if (selectedWordIdx !== null) {
+        returnWordToTrayByIndex(selectedWordIdx);
+      }
+    }
+
+    function cycleWordCase(wordStr) {
+      if (!wordStr || wordStr === "[???]") return wordStr;
+      
+      let prefix = "";
+      let suffix = "";
+      let base = wordStr;
+
+      if (base.startsWith('$')) {
+        prefix += '$';
+        base = base.slice(1);
+      }
+      
+      if (base.startsWith('(') && base.endsWith(')')) {
+        prefix += '(';
+        suffix = ')' + suffix;
+        base = base.slice(1, -1);
+      }
+      if (base.startsWith('"') && base.endsWith('"')) {
+        prefix += '"';
+        suffix = '"' + suffix;
+        base = base.slice(1, -1);
+      }
+      
+      let pSuffix = "";
+      while (base.length > 0 && ['.', ',', '?', '!', ':', ';', "'", '*'].includes(base.slice(-1))) {
+        pSuffix = base.slice(-1) + pSuffix;
+        base = base.slice(0, -1);
+      }
+      suffix = pSuffix + suffix;
+      
+      let cycled = "";
+      if (base === base.toLowerCase()) {
+        cycled = base.charAt(0).toUpperCase() + base.slice(1).toLowerCase();
+      } else if (base === base.charAt(0).toUpperCase() + base.slice(1).toLowerCase()) {
+        cycled = base.toUpperCase();
+      } else {
+        cycled = base.toLowerCase();
+      }
+      
+      return prefix + cycled + suffix;
+    }
+
+    function applyCaseSyringe() {
+      if (selectedWordIdx === null || isPopupOpen) return;
+      playTone('click');
+      const wordObj = tableWords[selectedWordIdx];
+      wordObj.text = cycleWordCase(wordObj.text);
+      renderWorkspace();
+      nurseSay(`Capitalization toggled! Modified word to: "${wordObj.text}".`, 'happy');
+    }
+
+    function togglePunctuation(wordStr, type) {
+      if (!wordStr) return wordStr;
+      
+      if (type === 'brackets') {
+        const hasLead = wordStr.startsWith('(');
+        const hasTrail = wordStr.endsWith(')');
+        if (!hasLead && !hasTrail) {
+          return '(' + wordStr;
+        } else if (hasLead && !hasTrail) {
+          return wordStr.slice(1) + ')';
+        } else if (!hasLead && hasTrail) {
+          return '(' + wordStr;
+        } else {
+          return wordStr.slice(1, -1);
+        }
+      }
+      
+      if (type === 'quotes') {
+        const hasLead = wordStr.startsWith('"');
+        const hasTrail = wordStr.endsWith('"');
+        if (!hasLead && !hasTrail) {
+          return '"' + wordStr + '"';
+        } else if (hasLead && hasTrail) {
+          return wordStr.slice(1, -1);
+        }
+        return wordStr;
+      }
+
+      if (type === 'dollar') {
+        if (wordStr.startsWith('$')) {
+          return wordStr.slice(1);
+        } else {
+          return '$' + wordStr;
+        }
+      }
+      
+      const charMap = {
+        'period': '.',
+        'comma': ',',
+        'question': '?',
+        'exclamation': '!',
+        'colon': ':',
+        'semicolon': ';'
+      };
+      
+      const char = charMap[type];
+      if (!char) return wordStr;
+      
+      if (wordStr.endsWith(char)) {
+        return wordStr.slice(0, -1);
+      } else {
+        let base = wordStr;
+        while (base.length > 0 && ['.', ',', '?', '!', ':', ';'].includes(base.slice(-1))) {
+          base = base.slice(0, -1);
+        }
+        return base + char;
+      }
+    }
+
+    function applyPunctuation(type) {
+      if (selectedWordIdx === null || isPopupOpen) return;
+      playTone('click');
+      const wordObj = tableWords[selectedWordIdx];
+      wordObj.text = togglePunctuation(wordObj.text, type);
+      renderWorkspace();
+      nurseSay(`Applied punctuation! Modified to: "${wordObj.text}".`, 'happy');
+    }
+
+    function setupGraftButtons(wordObj) {
+      const container = document.getElementById('graftButtonsArea');
+      container.innerHTML = '';
+      const currentLevel = gameLevels[currentLevelIdx];
+
+      if (currentLevel.missingOptions) {
+        currentLevel.missingOptions.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.className = 'graft-btn';
+          btn.textContent = opt;
+          btn.onclick = () => {
+            if (isPopupOpen) return;
+            playTone('click');
+            wordObj.text = opt;
+            renderWorkspace();
+            nurseSay(`Inserted "${opt}" safely! You can now adjust its casing or add symbols.`, 'happy');
+          };
+          container.appendChild(btn);
+        });
+      }
+    }
+
+    function updateVitalsUI() {
+      const fill = document.getElementById('vitalBarFill');
+      const val = document.getElementById('vitalStabilityVal');
+      fill.style.width = `${patientHealth}%`;
+      val.textContent = `${patientHealth}%`;
+
+      if (patientHealth > 60) {
+        fill.style.background = 'linear-gradient(90deg, var(--hospital-green), #4ade80)';
+      } else if (patientHealth > 30) {
+        fill.style.background = 'linear-gradient(90deg, var(--hospital-yellow), #fde047)';
+      } else {
+        fill.style.background = 'linear-gradient(90deg, var(--hospital-red), #fca5a5)';
+      }
+    }
+
+    function resetActiveWorkspace() {
+      if (isPopupOpen) return;
+      playTone('click');
+      loadLevel(gameLevels[currentLevelIdx]);
+    }
+
+    function checkSentence() {
+      if (isPopupOpen) return;
+      const currentLevel = gameLevels[currentLevelIdx];
+      const joinedUser = tableWords.map(w => w.text).join(" ").trim();
+      const targetCorrect = currentLevel.text.trim();
+
+      if (joinedUser === targetCorrect) {
+        triggerSuccess();
+      } else {
+        playTone('failure');
+        patientHealth -= 25;
+        if (patientHealth <= 0) {
+          patientHealth = 0;
+          updateVitalsUI();
+          triggerFlatline();
+        } else {
+          updateVitalsUI();
+          showIncorrectModal();
+        }
+      }
+    }
+
+    function triggerSuccess() {
+      clearInterval(timerInterval);
+      playTone('success');
+      patientHealth = 100;
+      updateVitalsUI();
+      nurseSay("Brilliant! This sentence is perfectly correct!", 'celebrating');
+      
+      const currentLevel = gameLevels[currentLevelIdx];
+      const rewardAmount = currentLevel.coins || 0;
+      
+      if (!completedLevels.has(currentLevelIdx)) {
+        coins += rewardAmount;
+        completedLevels.add(currentLevelIdx);
+      }
+      
+      document.getElementById('headerCoinCount').textContent = coins;
+      document.getElementById('rewardCoinsAdded').textContent = rewardAmount;
+
+      buildLevelSelectors();
+
+      document.getElementById('successModal').style.display = 'flex';
+      isPopupOpen = true; 
+      triggerConfetti();
+    }
+
+    function triggerFlatline() {
+      clearInterval(timerInterval);
+      isFlatlined = true;
+      patientHealth = 0;
+      updateVitalsUI();
+      startFlatlineSound();
+      nurseSay("Oh no! The timer ran out. Let's try building this sentence again!", 'worried');
+
+      document.getElementById('failureModal').style.display = 'flex';
+      isPopupOpen = true;
+    }
+
+    function retryLevel() {
+      stopFlatlineSound();
+      document.getElementById('failureModal').style.display = 'none';
+      isPopupOpen = false;
+      loadLevel(gameLevels[currentLevelIdx]);
+    }
+
+    function advanceToNextLevel() {
+      document.getElementById('successModal').style.display = 'none';
+      isPopupOpen = false;
+      if (currentLevelIdx < gameLevels.length - 1) {
+        currentLevelIdx++;
+      } else {
+        currentLevelIdx = 0; 
+      }
+      loadLevel(gameLevels[currentLevelIdx]);
+    }
+
+    // Confetti Engine Canvas Setup
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cfCtx = confettiCanvas.getContext('2d');
+    let confettiActive = false;
+    let confettiParticles = [];
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+
+    function createConfetti() {
+      confettiParticles = [];
+      for (let i = 0; i < 110; i++) {
+        confettiParticles.push({
+          x: Math.random() * confettiCanvas.width,
+          y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * confettiCanvas.height,
+          color: `hsl(${Math.random() * 360}, 80%, 60%)`,
+          tilt: Math.random() * 10 - 5,
+          tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+          tiltAngle: 0
+        });
+      }
+    }
+
+    function drawConfetti() {
+      if (!confettiActive) return;
+      cfCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiParticles.forEach((p, index) => {
+        p.tiltAngle += p.tiltAngleIncremental;
+        p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+        p.x += Math.sin(p.tiltAngle);
+        p.tilt = Math.sin(p.tiltAngle - index / 3) * 15;
+
+        cfCtx.beginPath();
+        cfCtx.lineWidth = p.r;
+        cfCtx.strokeStyle = p.color;
+        cfCtx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+        cfCtx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+        cfCtx.stroke();
+
+        if (p.y > confettiCanvas.height) {
+          confettiParticles[index] = p;
+          p.x = Math.random() * confettiCanvas.width;
+          p.y = -20;
+        }
+      });
+      requestAnimationFrame(drawConfetti);
+    }
+
+    function triggerConfetti() {
+      resizeConfetti();
+      createConfetti();
+      confettiActive = true;
+      drawConfetti();
+      setTimeout(() => {
+        confettiActive = false;
+        cfCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }, 3500);
+    }
+
+    // Dynamic EKG Monitor loop
+    const ekgCanvas = document.getElementById('ekgCanvas');
+    const ekgCtx = ekgCanvas.getContext('2d');
+
+    function resizeEkgCanvas() {
+      const box = ekgCanvas.parentElement;
+      ekgCanvas.width = box.clientWidth - 16;
+      ekgCanvas.height = 70;
+    }
+    window.addEventListener('resize', resizeEkgCanvas);
+
+    function initEkg() {
+      resizeEkgCanvas();
+      let step = 0;
+      function animateEkg() {
+        ekgCtx.fillStyle = 'rgba(11, 19, 41, 0.18)';
+        ekgCtx.fillRect(0, 0, ekgCanvas.width, ekgCanvas.height);
+
+        ekgCtx.strokeStyle = 'rgba(16, 185, 129, 0.03)';
+        ekgCtx.lineWidth = 1;
+        for (let i = 0; i < ekgCanvas.width; i += 15) {
+          ekgCtx.beginPath(); ekgCtx.moveTo(i, 0); ekgCtx.lineTo(i, ekgCanvas.height); ekgCtx.stroke();
+        }
+        for (let i = 0; i < ekgCanvas.height; i += 15) {
+          ekgCtx.beginPath(); ekgCtx.moveTo(0, i); ekgCtx.lineTo(ekgCanvas.width, i); ekgCtx.stroke();
+        }
+
+        ekgCtx.beginPath();
+        ekgCtx.lineWidth = 2.5;
+
+        if (isFlatlined) {
+          ekgCtx.strokeStyle = 'var(--hospital-red)';
+          ekgCtx.moveTo(0, ekgCanvas.height / 2);
+          ekgCtx.lineTo(ekgCanvas.width, ekgCanvas.height / 2);
+          ekgCtx.stroke();
+        } else {
+          if (secondsLeft <= 10) {
+            ekgCtx.strokeStyle = '#f97316'; 
+          } else {
+            ekgCtx.strokeStyle = '#0ea5e9'; 
+          }
+
+          step += (secondsLeft <= 10) ? 0.22 : 0.12;
+          
+          for (let x = 0; x < ekgCanvas.width; x++) {
+            let y = ekgCanvas.height / 2;
+            const pulsePeriod = (secondsLeft <= 10) ? 25 : 55;
+            const phase = (x - step * 12) % pulsePeriod;
+            
+            if (phase > 0 && phase < 4) {
+              y -= 4;
+            } else if (phase >= 4 && phase < 6) {
+              y += 6;
+            } else if (phase >= 6 && phase < 9) {
+              y -= 26;
+            } else if (phase >= 9 && phase < 12) {
+              y += 18;
+            } else if (phase >= 14 && phase < 20) {
+              y -= 6;
+            }
+
+            if (x === 0) ekgCtx.moveTo(x, y);
+            else ekgCtx.lineTo(x, y);
+          }
+          ekgCtx.stroke();
+        }
+
+        requestAnimationFrame(animateEkg);
+      }
+      animateEkg();
+    }
+
+    function startGame() {
+      gameActive = true;
+      buildLevelSelectors();
+      loadLevel(gameLevels[0]);
+      initEkg();
+    }
+
+    window.onload = () => {
+      document.getElementById('instructionModal').style.display = 'flex';
+      isPopupOpen = true;
+    };
+  </script>
+</body>
+</html>

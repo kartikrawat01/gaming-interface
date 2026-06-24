@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pattern Prophet 🔮✨ | See the Pattern. Predict the Future.</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #6A5AE0;
+      --primary-light: #F0EDFF;
+      --primary-dark: #4D3EC4;
+      --secondary: #FFB627;
+      --secondary-glow: rgba(255, 182, 39, 0.4);
+      --accent: #00D2C4;
+      --bg: #F5F3FA;
+      --card-bg: #FFFFFF;
+      --text: #2D235C;
+      --text-muted: #7E72B5;
+      --success: #2EC4B6;
+      --danger: #FF5B8C;
+      --shadow-sm: 0 6px 12px rgba(106, 90, 224, 0.04);
+      --shadow-md: 0 12px 24px rgba(106, 90, 224, 0.08);
+      --shadow-lg: 0 20px 40px rgba(106, 90, 224, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(106, 90, 224, 0.06), transparent 400px),
+        radial-gradient(circle at 90% 80%, rgba(0, 210, 196, 0.06), transparent 400px),
+        radial-gradient(circle at 50% 50%, rgba(255, 182, 39, 0.03), transparent 300px),
+        radial-gradient(rgba(106, 90, 224, 0.1) 1.5px, transparent 1.5px),
+        radial-gradient(rgba(0, 210, 196, 0.08) 1.5px, transparent 1.5px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 60px 60px;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      background-color: var(--card-bg);
+      padding: 14px 28px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 3px solid var(--primary-light);
+      background-image: linear-gradient(to right, #ffffff, #faf9ff);
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo-img {
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-tagline {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-badge {
+      background-color: var(--primary-light);
+      padding: 8px 16px;
+      border-radius: 50px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--primary);
+      box-shadow: inset 0 2px 4px rgba(106, 90, 224, 0.05);
+    }
+
+    .stat-badge.coins {
+      background-color: #FFF9E6;
+      color: #D48C00;
+      border: 1px solid #FFE9B3;
+    }
+
+    .btn-how-to {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 10px rgba(106, 90, 224, 0.2);
+    }
+
+    .btn-how-to:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .game-wrapper {
+      max-width: 880px;
+      width: 100%;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex: 1;
+    }
+
+    .chamber-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .levels-board {
+      background-color: var(--card-bg);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      border: 2px solid var(--primary-light);
+      background-image: radial-gradient(circle at top right, rgba(106, 90, 224, 0.02), transparent 150px);
+      position: relative;
+    }
+
+    .levels-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .levels-title::before {
+      content: '✨ ';
+      color: var(--secondary);
+    }
+
+    .levels-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+    }
+
+    .level-bubble {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffffff, #f1edff);
+      border: 2px solid #d4ccfc;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      box-shadow: inset 0 -3px 6px rgba(106, 90, 224, 0.05), 0 3px 6px rgba(106, 90, 224, 0.03);
+    }
+
+    .level-bubble:hover {
+      transform: scale(1.15);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(106, 90, 224, 0.15);
+    }
+
+    .level-bubble.active {
+      background: linear-gradient(135deg, #e3dcff, #c3b7ff);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      box-shadow: 0 0 12px rgba(106, 90, 224, 0.35);
+    }
+
+    .level-bubble.completed {
+      background: linear-gradient(135deg, #ffde6a, #ffa600);
+      border-color: #e08b00;
+      color: white;
+      box-shadow: 0 4px 10px rgba(255, 166, 0, 0.25);
+    }
+
+    .level-bubble.completed::after {
+      content: '★';
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: white;
+      color: var(--secondary);
+      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      font-size: 0.55rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .prophecy-slate {
+      background-color: var(--card-bg);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: var(--shadow-lg);
+      border: 2px solid var(--primary-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      background-image: 
+        radial-gradient(circle at top left, rgba(106, 90, 224, 0.03), transparent 200px),
+        radial-gradient(circle at bottom right, rgba(0, 210, 196, 0.03), transparent 200px);
+    }
+
+    .slate-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 15px;
+    }
+
+    .slate-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .slate-level-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .slate-level-name::before {
+      content: '🔮 ';
+      color: var(--secondary);
+    }
+
+    .slate-level-name::after {
+      content: ' 🔮';
+      color: var(--secondary);
+    }
+
+    .slate-difficulty-tag {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+    }
+
+    .slate-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .progress-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--primary-light);
+      transition: all 0.3s ease;
+    }
+
+    .progress-dot.active {
+      background-color: var(--accent);
+      transform: scale(1.2);
+    }
+
+    .progress-dot.completed {
+      background-color: var(--primary);
+    }
+
+    .timer-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .timer-bar-outer {
+      width: 120px;
+      height: 8px;
+      background-color: var(--primary-light);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .timer-bar-inner {
+      height: 100%;
+      width: 100%;
+      background-color: var(--accent);
+      border-radius: 10px;
+      transition: width 1s linear, background-color 0.3s ease;
+    }
+
+    .timer-bar-inner.warning {
+      background-color: var(--danger);
+    }
+
+    .pattern-sequence {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin: 20px 0;
+      width: 100%;
+    }
+
+    .pattern-token {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ffffff, #f7f6fd);
+      border: 3px solid #dfd8fc;
+      box-shadow: var(--shadow-sm), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      user-select: none;
+    }
+
+    .pattern-token.text-token {
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, white, var(--primary-light));
+      border-color: #d1c8fc;
+      padding: 5px;
+      white-space: nowrap;
+    }
+
+    .pattern-token.target-token {
+      border: 3px dashed var(--primary);
+      background-color: rgba(106, 90, 224, 0.05);
+      animation: pulseTarget 1.5s infinite ease-in-out;
+      color: var(--primary);
+    }
+
+    @keyframes pulseTarget {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(106, 90, 224, 0.4);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px 5px rgba(106, 90, 224, 0.2);
+      }
+    }
+
+    .answers-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .answers-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .option-button {
+      background: linear-gradient(to bottom, #ffffff, #faf9ff);
+      border: 3px solid #e1dbfc;
+      border-radius: 20px;
+      padding: 18px;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 10px rgba(106, 90, 224, 0.04);
+    }
+
+    .option-button:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      background: linear-gradient(to bottom, #f2efff, #e8e2ff);
+      box-shadow: 0 8px 20px rgba(106, 90, 224, 0.15);
+    }
+
+    .option-button:active {
+      transform: translateY(1px);
+    }
+
+    .option-button.correct {
+      background-color: rgba(46, 196, 182, 0.15);
+      border-color: var(--success);
+      color: var(--success);
+      box-shadow: 0 0 20px rgba(46, 196, 182, 0.3);
+      animation: crystalGlow 0.5s ease-out;
+    }
+
+    .option-button.wrong {
+      background-color: rgba(255, 91, 140, 0.15);
+      border-color: var(--danger);
+      color: var(--danger);
+      animation: patternBroken 0.5s ease-in-out;
+    }
+
+    .option-button.disabled {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .option-button.correct-highlight {
+      background-color: rgba(46, 196, 182, 0.1);
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    @keyframes crystalGlow {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 196, 182, 0.7); }
+      50% { transform: scale(1.05); box-shadow: 0 0 25px 10px rgba(46, 196, 182, 0.4); }
+      100% { transform: scale(1); box-shadow: 0 0 15px 5px rgba(46, 196, 182, 0.2); }
+    }
+
+    @keyframes patternBroken {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    .explanation-panel {
+      width: 100%;
+      background-color: var(--primary-light);
+      border-radius: 18px;
+      padding: 16px 20px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      border-left: 5px solid var(--primary);
+      animation: slideDown 0.3s ease-out forwards;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .explanation-title {
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .explanation-text {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .explanation-action {
+      align-self: flex-end;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(0, 210, 196, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .explanation-action:hover {
+      background-color: #00b0a4;
+      transform: translateY(-2px);
+    }
+
+    .promo-banner {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 20px;
+      padding: 20px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow-md);
+      width: 100%;
+    }
+
+    .promo-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .promo-text {
+      font-size: 0.8rem;
+      line-height: 1.4;
+      opacity: 0.9;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(45, 35, 92, 0.4);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 520px;
+      padding: 32px;
+      box-shadow: 0 20px 50px rgba(106, 90, 224, 0.25);
+      border: 2px solid var(--primary-light);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transform: translateY(-20px);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.2s ease;
+    }
+
+    .modal-close:hover {
+      color: var(--danger);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      color: var(--text);
+    }
+
+    .modal-scroll-area {
+      max-height: 350px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .modal-scroll-area::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .modal-scroll-area::-webkit-scrollbar-track,
+    body::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    .modal-scroll-area::-webkit-scrollbar-thumb,
+    body::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 10px;
+    }
+
+    .modal-scroll-area::-webkit-scrollbar-thumb:hover,
+    body::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    .rules-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rules-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .rules-list li::before {
+      content: '✦';
+      color: var(--secondary);
+      font-weight: bold;
+    }
+
+    .coin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+
+    .coin-table th, .coin-table td {
+      border: 1px solid var(--primary-light);
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .coin-table th {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .coin-table td {
+      font-weight: 600;
+    }
+
+    .modal-footer-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 15px rgba(106, 90, 224, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .modal-footer-btn:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    .completion-badge {
+      font-size: 4rem;
+      align-self: center;
+      margin-bottom: 10px;
+      animation: bounceComplete 1s infinite alternate;
+    }
+
+    @keyframes bounceComplete {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    #confetti-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* --- MOBILE ALIGNMENT FIXES --- */
+    @media (max-width: 768px) {
+      header {
+        padding: 10px 16px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+        text-align: center;
+      }
+
+      .brand-container {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .logo-img {
+        height: 36px;
+      }
+
+      .brand-title {
+        font-size: 1.25rem;
+        justify-content: center;
+      }
+
+      .brand-tagline {
+        font-size: 0.7rem;
+      }
+
+      .header-stats {
+        width: 100%;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .stat-badge {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+      }
+
+      .btn-how-to {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+      }
+
+      .game-wrapper {
+        margin: 12px auto;
+        padding: 0 12px;
+        gap: 16px;
+      }
+
+      .levels-board {
+        padding: 14px;
+        border-radius: 18px;
+      }
+
+      .levels-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+      }
+
+      .level-bubble {
+        font-size: 0.8rem;
+      }
+
+      .prophecy-slate {
+        padding: 16px;
+        border-radius: 18px;
+        gap: 16px;
+      }
+
+      .slate-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        padding-bottom: 12px;
+      }
+
+      .slate-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .slate-level-name {
+        font-size: 1.1rem;
+      }
+
+      .slate-difficulty-tag {
+        font-size: 0.75rem;
+      }
+
+      .slate-progress {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        font-size: 0.85rem;
+      }
+
+      .timer-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        font-size: 0.85rem;
+      }
+
+      .timer-bar-outer {
+        flex: 1;
+        max-width: 120px;
+      }
+
+      .pattern-sequence {
+        gap: 10px;
+        margin: 12px 0;
+      }
+
+      .pattern-token {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        font-size: 1.3rem;
+        border-width: 2px;
+      }
+
+      .pattern-token.text-token {
+        font-size: 0.95rem;
+        padding: 4px;
+      }
+
+      .answers-grid {
+        gap: 10px;
+      }
+
+      .option-button {
+        padding: 12px 8px;
+        font-size: 1.1rem;
+        border-radius: 14px;
+        border-width: 2px;
+      }
+
+      .explanation-panel {
+        padding: 12px 14px;
+        border-radius: 14px;
+      }
+
+      .explanation-text {
+        font-size: 0.85rem;
+      }
+
+      .explanation-action {
+        padding: 8px 18px;
+        font-size: 0.9rem;
+      }
+
+      .promo-banner {
+        padding: 16px;
+        border-radius: 16px;
+        gap: 8px;
+      }
+
+      .promo-title {
+        font-size: 1rem;
+      }
+
+      .promo-text {
+        font-size: 0.75rem;
+      }
+
+      .modal-card {
+        padding: 20px;
+        border-radius: 20px;
+        gap: 14px;
+      }
+
+      .modal-header {
+        font-size: 1.3rem;
+      }
+
+      .rules-list li {
+        font-size: 0.85rem;
+      }
+
+      .coin-table th, .coin-table td {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+      }
+
+      .modal-footer-btn {
+        padding: 10px;
+        font-size: 0.95rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .levels-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      
+      .pattern-token {
+        width: 46px;
+        height: 46px;
+        font-size: 1.1rem;
+        border-radius: 10px;
+      }
+
+      .pattern-token.text-token {
+        font-size: 0.8rem;
+      }
+      
+      .option-button {
+        font-size: 1rem;
+        padding: 10px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="confetti-canvas" style="display:none;"></canvas>
+
+  <header>
+    <div class="brand-container">
+      <img src="assets/logocre8v.png" alt="BeCre8v Logo" class="logo-img" onerror="this.onerror=null; this.src='https://placehold.co/150x45/6A5AE0/ffffff?text=BeCre8v';">
+      <div class="brand-text">
+        <span class="brand-title">Pattern Prophet 🔮✨</span>
+        <span class="brand-tagline">"See the Pattern. Predict the Future."</span>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-badge coins">
+        <span>🪙</span> <span id="coin-counter">0</span> Gold
+      </div>
+      <button class="btn-how-to" onclick="openHowToPlay()">
+        <span>📖</span> How to Play
+      </button>
+    </div>
+  </header>
+
+  <main class="game-wrapper">
+    <div class="chamber-container">
+      
+      <section class="levels-board">
+        <h3 class="levels-title">🔮 Mystical Levels Map (Choose Any)</h3>
+        <div class="levels-grid" id="levels-grid-container"></div>
+      </section>
+
+      <section class="prophecy-slate">
+        <div class="slate-header">
+          <div class="slate-info">
+            <h2 class="slate-level-name" id="level-display-name">Level 1</h2>
+            <span class="slate-difficulty-tag" id="level-difficulty-tag">EASY</span>
+          </div>
+          <div class="slate-progress">
+            <span id="question-progress-text">Question 1 of 2</span>
+            <div class="progress-dots" id="progress-dots-container"></div>
+          </div>
+          <div class="timer-container">
+            <span>⏱️</span>
+            <span id="timer-text">15s</span>
+            <div class="timer-bar-outer">
+              <div class="timer-bar-inner" id="timer-bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pattern-sequence" id="pattern-sequence-container"></div>
+
+        <div class="answers-container">
+          <h3 style="text-align: center; color: var(--text-muted); font-size: 0.95rem; margin-bottom: 8px;">
+            Choose the correct shape, number or icon to complete the sequence!
+          </h3>
+          <div class="answers-grid" id="answers-grid-container"></div>
+        </div>
+
+        <div class="explanation-panel" id="explanation-panel">
+          <div class="explanation-title">
+            <span id="explanation-status-icon">💡</span>
+            <span id="explanation-title-text">Prophecy Complete!</span>
+          </div>
+          <p class="explanation-text" id="explanation-content-text"></p>
+          <button class="explanation-action" id="explanation-next-btn" onclick="nextQuestion()">
+            <span>Next Step 🔮</span>
+          </button>
+        </div>
+      </section>
+
+      <div class="promo-banner">
+        <span class="promo-title">Become a Prophet of Logic! 🧠🌟</span>
+        <p class="promo-text">
+          By practicing pattern prediction, children improve structural analysis, logical induction, mathematical computation, and sequencing skills crucial for advanced coding and computational science.
+        </p>
+        <span class="promo-text" style="font-weight: 700;">
+          Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius and Infinity Mirror.
+        </span>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="how-to-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>🔮</span> Game Instructions
+      </div>
+      <div class="modal-body">
+        <div class="modal-scroll-area">
+          <ul class="rules-list">
+            <li><strong>Observe Carefully:</strong> Look closely at the sequence inside the chamber.</li>
+            <li><strong>Find the Secret Pattern:</strong> Look for alternating colors, shapes, letters, mathematical increments, or rotations.</li>
+            <li><strong>Predict:</strong> Choose the best item to replace the ❓ before time runs out!</li>
+            <li><strong>Pass and Gain:</strong> Complete all questions in a level to claim your reward of Gold Coins.</li>
+          </ul>
+
+          <h4 style="margin-top: 20px; color: var(--primary); font-size: 1rem;">🪙 Prophecy Rewards Table:</h4>
+          <table class="coin-table">
+            <thead>
+              <tr>
+                <th>Levels</th>
+                <th>Difficulty</th>
+                <th>Time Per Q</th>
+                <th>Completion Reward</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1–5</td>
+                <td>Easy</td>
+                <td>15 seconds</td>
+                <td><strong>+10 Coins</strong></td>
+              </tr>
+              <tr>
+                <td>6–10</td>
+                <td>Easy to Medium</td>
+                <td>15 seconds</td>
+                <td><strong>+15 Coins</strong></td>
+              </tr>
+              <tr>
+                <td>11–15</td>
+                <td>Medium to Hard</td>
+                <td>20 seconds</td>
+                <td><strong>+20 Coins</strong></td>
+              </tr>
+              <tr>
+                <td>16–20</td>
+                <td>Medium to Hard</td>
+                <td>20 seconds</td>
+                <td><strong>+30 Coins</strong></td>
+              </tr>
+              <tr>
+                <td>21–30</td>
+                <td>Hard to Very Hard</td>
+                <td>30 seconds</td>
+                <td><strong>+40 Coins</strong></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p style="font-size: 0.8rem; margin-top: 15px; color: var(--text-muted); line-height: 1.4;">
+            Earn coins and redeem them for discounts on BeCre8v products like RoboCoders, Spin Genius and Infinity Mirror.
+          </p>
+        </div>
+      </div>
+      <button class="modal-footer-btn" onclick="closeHowToPlay()">
+        <span>🔮 Open the Prophecy Chamber</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="level-complete-modal">
+    <div class="modal-card" style="text-align: center;">
+      <div class="completion-badge" id="modal-completion-badge">👑✨</div>
+      <h2 style="color: var(--primary); font-size: 1.8rem;" id="modal-completion-title">Prophecy Complete!</h2>
+      <p style="font-size: 1.05rem; color: var(--text-muted);" id="modal-completion-subtitle">
+        You read the pattern perfectly and solved this challenge!
+      </p>
+      
+      <div id="modal-reward-box" style="background-color: #FFF9E6; border: 2px solid #FFE9B3; border-radius: 16px; padding: 15px; margin: 10px 0;">
+        <span style="font-size: 1rem; font-weight: 700; color: #D48C00;">Coins Earned:</span>
+        <div style="font-size: 2rem; font-weight: 800; color: #FFB627; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px;">
+          <span>🪙</span> <span id="modal-coins-earned">+0</span>
+        </div>
+      </div>
+
+      <div class="modal-body" id="modal-complete-info-text"></div>
+
+      <button class="modal-footer-btn" id="modal-action-btn" onclick="proceedToNextLevelFromModal()">
+        <span>Advance to Next Level 🚀</span>
+      </button>
+      <button class="modal-close" onclick="closeCompleteModal()">✕</button>
+    </div>
+  </div>
+
+  <script>
+    const AudioEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+      playClick() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.1);
+      },
+      playSuccess() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        let now = this.ctx.currentTime;
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.08);
+        osc.frequency.setValueAtTime(783.99, now + 0.16);
+        osc.frequency.setValueAtTime(1046.50, now + 0.24);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+        osc.start();
+        osc.stop(now + 0.45);
+      },
+      playFail() {
+        this.init();
+        if (!this.ctx) return;
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        let now = this.ctx.currentTime;
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.3);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+        osc.start();
+        osc.stop(now + 0.45);
+      },
+      playComplete() {
+        this.init();
+        if (!this.ctx) return;
+        let now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+          let osc = this.ctx.createOscillator();
+          let gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.08);
+          gain.gain.setValueAtTime(0.1, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.4);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.4);
+        });
+      }
+    };
+  </script>
+
+  <script>
+    const levels = [
+      {
+        id: 1, difficulty: "Beginner", coins: 10, timer: 15,
+        questions: [
+          { sequence: ["🔺", "🟦", "🔺", "🟦", "❓"], options: ["🔺", "🟦", "🟡", "⭐"], answer: "🔺", explanation: "The shapes alternate back and forth between Triangle 🔺 and Square 🟦." },
+          { sequence: ["2", "4", "6", "8", "❓"], options: ["9", "10", "11", "12"], answer: "10", explanation: "The values increase by skip-counting by +2 (even numbers)." }
+        ]
+      },
+      {
+        id: 2, difficulty: "Beginner", coins: 10, timer: 15,
+        questions: [
+          { sequence: ["🟢", "🟡", "🟢", "🟡", "❓"], options: ["🟢", "🟡", "🔴", "🔵"], answer: "🟢", explanation: "The colors switch continuously between Green and Yellow." },
+          { sequence: ["A", "C", "E", "G", "❓"], options: ["H", "I", "J", "K"], answer: "I", explanation: "The alphabetical hops skip one letter each time: A (B) C (D) E (F) G (H) I." }
+        ]
+      },
+      {
+        id: 3, difficulty: "Easy", coins: 10, timer: 15,
+        questions: [
+          { sequence: ["🔴", "🔴", "🔵", "🔴", "🔴", "❓"], options: ["🔴", "🔵", "🟢", "🟡"], answer: "🔵", explanation: "The sequence alternates structured blocks of two Reds followed by one Blue." },
+          { sequence: ["3", "6", "5", "8", "7", "❓"], options: ["8", "9", "10", "11"], answer: "10", explanation: "The mathematical rule alternates steps of adding 3 and subtracting 1 (+3, -1)." }
+        ]
+      },
+      {
+        id: 4, difficulty: "Easy", coins: 10, timer: 15,
+        questions: [
+          { sequence: ["⭐", "🌙", "⭐", "🌙", "🌙", "⭐", "🌙", "🌙", "❓"], options: ["⭐", "🌙", "☀️", "🪐"], answer: "🌙", explanation: "The moons grow by one in each section: [1 star, 1 moon], [1 star, 2 moons], [1 star, 3 moons]." },
+          { sequence: ["A", "B", "D", "G", "❓"], options: ["H", "I", "J", "K"], answer: "K", explanation: "The gaps between alphabetical leaps increase by one step: +1, +2, +3, +4 letters." }
+        ]
+      },
+      {
+        id: 5, difficulty: "Easy", coins: 10, timer: 15,
+        questions: [
+          { sequence: ["🍎", "🍌", "🍇", "🍎", "🍌", "❓"], options: ["🍎", "🍌", "🍇", "🍊"], answer: "🍇", explanation: "A three-step loop of fruits: Apple, Banana, and Grape repeating in cycles." },
+          { sequence: ["5", "9", "13", "17", "❓"], options: ["19", "20", "21", "22"], answer: "21", explanation: "The arithmetic rule adds a constant value of +4 at every step." }
+        ]
+      },
+      {
+        id: 6, difficulty: "Medium", coins: 15, timer: 15,
+        questions: [
+          { sequence: ["⬆️", "↗️", "➡️", "❓"], options: ["↘️", "⬇️", "↙️", "↖️"], answer: "↘️", explanation: "The arrow rotates clockwise by exactly 45 degrees each turn." },
+          { sequence: ["10", "12", "9", "11", "8", "❓"], options: ["6", "7", "10", "12"], answer: "10", explanation: "The steps alternate between adding 2 and subtracting 3 (+2, -3)." },
+          { sequence: ["🔴", "🟡", "🔵", "🟡", "🔴", "🟡", "❓"], options: ["🔴", "🟡", "🔵", "🟢"], answer: "🔵", explanation: "The pattern oscillates symmetrically back and forth: Red, Yellow, Blue, Yellow, Red, Yellow, Blue." }
+        ]
+      },
+      {
+        id: 7, difficulty: "Medium", coins: 15, timer: 15,
+        questions: [
+          { sequence: ["30", "29", "27", "24", "20", "❓"], options: ["14", "15", "16", "17"], answer: "15", explanation: "The values decrease by progressively larger integers: -1, -2, -3, -4, -5." },
+          { sequence: ["🟥", "🟢", "🟥", "🟢", "🟢", "🟥", "❓"], options: ["🟥", "🟢", "🟡", "🟦"], answer: "🟢", explanation: "The Green blocks grow in size while the Red block acts as a static divider." },
+          { sequence: ["40", "38", "35", "31", "❓"], options: ["25", "26", "27", "28"], answer: "26", explanation: "The subtraction increment increases by one step each time: -2, -3, -4, -5." }
+        ]
+      },
+      {
+        id: 8, difficulty: "Medium", coins: 15, timer: 15,
+        questions: [
+          { sequence: ["AZ", "BY", "CX", "❓"], options: ["DW", "EV", "DU", "CW"], answer: "DW", explanation: "Dual alphabets: First letters advance (A, B, C, D), second letters reverse (Z, Y, X, W)." },
+          { sequence: ["3", "7", "15", "31", "❓"], options: ["60", "62", "63", "64"], answer: "63", explanation: "Each number is multiplied by 2 and increased by 1 (x2 + 1)." },
+          { sequence: ["⭐", "⭐", "🌙", "⭐", "⭐", "⭐", "🌙", "❓"], options: ["⭐", "🌙", "☀️", "🪐"], answer: "⭐", explanation: "The stars grow progressively: 2 stars + 1 moon, then 3 stars + 1 moon, then 4 stars." }
+        ]
+      },
+      {
+        id: 9, difficulty: "Medium", coins: 15, timer: 15,
+        questions: [
+          { sequence: ["1", "3", "6", "10", "15", "❓"], options: ["20", "21", "22", "23"], answer: "21", explanation: "This is a sequence of triangular numbers; the additions grow by +1 each step (+2, +3, +4, +5, +6)." },
+          { sequence: ["🕛", "🕒", "🕕", "❓"], options: ["🕖", "⑧", "⑨", "⑩"], answer: "🕘", explanation: "The hands on the clock rotate clockwise by exactly 3 hours per step." },
+          { sequence: ["🌸", "🌸", "💮", "🌸", "🌸", "💮", "❓"], options: ["🌸", "💮", "🌹", "🌻"], answer: "🌸", explanation: "The system repeats a set block of two Cherry Blossoms followed by one White Rosette." }
+        ]
+      },
+      {
+        id: 10, difficulty: "Medium", coins: 15, timer: 15,
+        questions: [
+          { sequence: ["2", "6", "18", "❓"], options: ["36", "48", "54", "72"], answer: "54", explanation: "Geometric progression where each term is multiplied by a constant factor of 3." },
+          { sequence: ["Z", "W", "T", "Q", "❓"], options: ["N", "O", "P", "M"], answer: "N", explanation: "Reverse alphabetical hops skipping two characters in between each step." },
+          { sequence: ["🔴", "🔵", "🔵", "🔴", "🔴", "🔵", "❓"], options: ["🔴", "🔵", "🟢", "🟡"], answer: "🔵", explanation: "The segment follows a cycling pattern of one Red, two Blues, and then duplicates to two Reds, two Blues." }
+        ]
+      },
+      {
+        id: 11, difficulty: "Medium to Hard", coins: 20, timer: 20,
+        questions: [
+          { sequence: ["A1", "C4", "E9", "❓"], options: ["G12", "G16", "F16", "H25"], answer: "G16", explanation: "The letter skips one space (A, C, E, G) and the digit is the square of the position (1, 4, 9, 16)." },
+          { sequence: ["2", "3", "5", "8", "13", "❓"], options: ["18", "20", "21", "22"], answer: "21", explanation: "Fibonacci sequence: Every number is derived from the sum of the two previous terms." },
+          { sequence: ["⬆️", "🔴", "➡️", "🔵", "⬇️", "❓"], options: ["🟢", "🔴", "🔵", "⬅️"], answer: "🟢", explanation: "Dual alternation: Clockwise arrow rotations alternate with colors progressing through Red, Blue, Green." },
+          { sequence: ["50", "43", "38", "35", "❓"], options: ["31", "32", "33", "34"], answer: "33", explanation: "The sequence subtracts consecutive decreasing prime numbers starting with 7 (-7, -5, -3, -2)." }
+        ]
+      },
+      {
+        id: 12, difficulty: "Medium to Hard", coins: 20, timer: 20,
+        questions: [
+          { sequence: ["A10", "D9", "G8", "❓"], options: ["I7", "J7", "J6", "K7"], answer: "J7", explanation: "The letter skips ahead by +3 while the trailing count decreases by 1." },
+          { sequence: ["2", "4", "3", "6", "5", "❓"], options: ["8", "9", "10", "11"], answer: "10", explanation: "The operations alternate steps: Multiply by 2, then subtract 1 (x2, -1)." },
+          { sequence: ["🔺", "🟦", "⬠", "❓"], options: ["⬡", "🟢", "⭐", "🟡"], answer: "⬡", explanation: "The geometric shapes increase their side counts in succession: 3, 4, 5, and then 6 sides (Hexagon ⬡)." },
+          { sequence: ["1", "2", "4", "8", "16", "❓"], options: ["24", "30", "32", "64"], answer: "32", explanation: "A binary growth progression where each term is twice the previous value." }
+        ]
+      },
+      {
+        id: 13, difficulty: "Medium to Hard", coins: 20, timer: 20,
+        questions: [
+          { sequence: ["A", "Z", "C", "X", "E", "❓"], options: ["V", "W", "T", "U"], answer: "V", explanation: "Two separate streams: A, C, E increments by 2, while Z, X, V decrements by 2." },
+          { sequence: ["1", "2", "6", "24", "❓"], options: ["48", "96", "120", "144"], answer: "120", explanation: "Factorial growth where we multiply sequentially by growing factors: x2, x3, x4, x5." },
+          { sequence: ["↖️", "↗️", "↘️", "❓"], options: ["↖️", "↙️", "↗️", "⬇️"], answer: "↙️", explanation: "The active pointer follows the perimeter corners clockwise: Top-Left, Top-Right, Bottom-Right, Bottom-Left." },
+          { sequence: ["🔴", "🔵", "🔴", "🔴", "🔵", "🔵", "🔴", "🔴", "❓"], options: ["🔴", "🔵", "🟢", "🟡"], answer: "🔴", explanation: "The pattern sets groups of growing size: 1 of each (R, B), then 2 of each (R, R, B, B), then 3 of each (R, R, R)." }
+        ]
+      },
+      {
+        id: 14, difficulty: "Medium to Hard", coins: 20, timer: 20,
+        questions: [
+          { sequence: ["ZA", "YB", "XC", "❓"], options: ["WD", "VE", "UD", "WE"], answer: "WD", explanation: "Dual outer-inner steps: Left letters count backwards (Z, Y, X, W) and right letters go forward (A, B, C, D)." },
+          { sequence: ["1", "8", "27", "❓"], options: ["36", "45", "64", "125"], answer: "64", explanation: "These represent cubes of consecutive integers: 1³, 2³, 3³, and next is 4³ = 64." },
+          { sequence: ["🟢", "🟡", "🟢", "🟡", "🟡", "🟢", "🟡", "🟡", "❓"], options: ["🟢", "🟡", "🔴", "🔵"], answer: "🟡", explanation: "The number of Yellow nodes grows in each section: [1 green, 1 yellow], [1 green, 2 yellows], [1 green, 3 yellows]." },
+          { sequence: ["2", "6", "12", "20", "❓"], options: ["25", "30", "32", "36"], answer: "30", explanation: "The algebraic formula of n² + n is applied to positive integers: (1+1, 4+2, 9+3, 16+4, 25+5)." }
+        ]
+      },
+      {
+        id: 15, difficulty: "Medium to Hard", coins: 20, timer: 20,
+        questions: [
+          { sequence: ["A", "B", "E", "J", "❓"], options: ["O", "P", "Q", "R"], answer: "Q", explanation: "Alphabet spaces between hops increase based on consecutive odd counts: +1, +3, +5, +7 steps." },
+          { sequence: ["240", "120", "40", "10", "❓"], options: ["2", "3", "4", "5"], answer: "2", explanation: "The division denominators rise sequentially: divide by 2, then by 3, by 4, and by 5." },
+          { sequence: ["⚠️", "⚡", "⚙️", "⚠️", "⚡", "❓"], options: ["⚠️", "⚡", "⚙️", "🔧"], answer: "⚙️", explanation: "A three-element repeating symbol loop: Warning, Lightning, Gear." },
+          { sequence: ["oox", "oxo", "xoo", "❓"], options: ["oox", "oxo", "xox", "xxo"], answer: "oox", explanation: "The character 'x' shifts position leftwards by one space, wrapping around when it reaches the edge." }
+        ]
+      },
+      {
+        id: 16, difficulty: "Medium to Hard", coins: 30, timer: 20,
+        questions: [
+          { sequence: ["3", "6", "18", "36", "108", "❓"], options: ["110", "216", "150", "324"], answer: "216", explanation: "The operators alternate multiplication factors: multiply by 2, then multiply by 3." },
+          { sequence: ["ZY", "WV", "TS", "❓"], options: ["RQ", "QP", "PO", "PM"], answer: "QP", explanation: "Each group skips two spaces backward: ZY [XW omitted] WV [UT omitted] TS [SR omitted] QP." },
+          { sequence: ["⭐", "⭐⭐", "⭐⭐⭐", "⭐", "⭐⭐", "❓"], options: ["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐"], answer: "⭐⭐⭐", explanation: "A cyclical modulo 3 progression of star icons: 1, 2, 3, and then resetting." },
+          { sequence: ["1.5", "3.0", "4.5", "6.0", "❓"], options: ["7.0", "7.5", "8.0", "8.5"], answer: "7.5", explanation: "An arithmetic series where we consistently add a fractional increment of +1.5." }
+        ]
+      },
+      {
+        id: 17, difficulty: "Medium to Hard", coins: 30, timer: 20,
+        questions: [
+          { sequence: ["5", "10", "12", "24", "26", "❓"], options: ["28", "50", "52", "54"], answer: "52", explanation: "The pattern alternates operators: multiply by 2, then add 2 (x2, +2)." },
+          { sequence: ["A", "Z", "D", "W", "G", "❓"], options: ["T", "U", "S", "R"], answer: "T", explanation: "First stream jumps +3 (A, D, G) while the second reverse stream subtracts 3 (Z, W, T)." },
+          { sequence: ["🔴⬆️", "🔵➡️", "🔴⬇️", "❓"], options: ["🔴⬅️", "🔵⬅️", "🔵⬆️", "🔴⬆️"], answer: "🔵⬅️", explanation: "Colors alternate between Red and Blue while arrow indicators shift clockwise 90 degrees." },
+          { sequence: ["1", "1", "2", "4", "7", "13", "❓"], options: ["20", "22", "24", "26"], answer: "24", explanation: "Tribonacci rules: Each successive number is the sum of the previous three terms." }
+        ]
+      },
+      {
+        id: 18, difficulty: "Medium to Hard", coins: 30, timer: 20,
+        questions: [
+          { sequence: ["2", "3", "6", "11", "18", "❓"], options: ["25", "27", "29", "31"], answer: "27", explanation: "The increments between values grow by successive odd integers: +1, +3, +5, +7, +9." },
+          { sequence: ["ABC", "BCD", "CDE", "❓"], options: ["DEF", "EFG", "FGH", "DFF"], answer: "DEF", explanation: "Each overlapping letter grouping advances the alphabet indices by +1." },
+          { sequence: ["⚫⚪⚪", "⚪⚫⚪", "⚪⚪⚫", "❓"], options: ["⚫⚪⚪", "⚪⚫⚪", "⚫⚫⚪", "⚪⚪⚫"], answer: "⚫⚪⚪", explanation: "The dark pointer orb rotates rightwards and cycles back to the first place." },
+          { sequence: ["5", "25", "125", "❓"], options: ["250", "500", "625", "750"], answer: "625", explanation: "Exponential series multiplying by 5 at each level (powers of 5)." }
+        ]
+      },
+      {
+        id: 19, difficulty: "Medium to Hard", coins: 30, timer: 20,
+        questions: [
+          { sequence: ["120", "60", "20", "5", "❓"], options: ["1", "1.25", "2.5", "0"], answer: "1", explanation: "The division scaling factors grow progressively: divide by 2, 3, 4, then by 5." },
+          { sequence: ["A", "B", "Y", "Z", "C", "D", "❓"], options: ["W", "X", "U", "V"], answer: "W", explanation: "Alternates pairs of letters: two from the front (A, B), two from the back (Y, Z), next is (C, D) then (W, X)." },
+          { sequence: ["🕛", "🕓", "🕗", "❓"], options: ["🕛", "🕘", "🕙", "🕚"], answer: "🕛", explanation: "The hours clock face rotates forward by exactly 4 hours each time, returning to 12." },
+          { sequence: ["3🔺", "4🟦", "5⬠", "❓"], options: ["6⬡", "6⬠", "7⬡", "5🔺"], answer: "6⬡", explanation: "The numeric prefix exactly matches the side counts of the accompanying geometric polygon." }
+        ]
+      },
+      {
+        id: 20, difficulty: "Medium to Hard", coins: 30, timer: 20,
+        questions: [
+          { sequence: ["1", "3", "7", "15", "31", "❓"], options: ["50", "60", "63", "64"], answer: "63", explanation: "The values follow the mathematical progression (2ⁿ - 1)." },
+          { sequence: ["AB", "CD", "EF", "GH", "❓"], options: ["IJ", "JI", "KL", "LK"], answer: "IJ", explanation: "Adjacent pairs of letters from the alphabet moving forward continuously." },
+          { sequence: ["↖️", "↗️", "↘️", "↙️", "❓"], options: ["↖️", "↗️", "↘️", "↙️"], answer: "↖️", explanation: "The corner direction loops clockwise and wraps back to start." },
+          { sequence: ["10", "20", "19", "29", "28", "❓"], options: ["30", "38", "39", "40"], answer: "38", explanation: "The equations alternate operations of adding 10 and subtracting 1 (+10, -1)." }
+        ]
+      },
+      {
+        id: 21, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["1", "9", "25", "49", "❓"], options: ["64", "81", "100", "121"], answer: "81", explanation: "The mathematical progression represents squares of consecutive odd integers: 1², 3², 5², 7², and next is 9² = 81." },
+          { sequence: ["AC", "EG", "IK", "MO", "❓"], options: ["PQ", "QS", "PR", "RT"], answer: "QS", explanation: "Each group contains a letter pair skipping one, and the groups themselves skip one letter: AC [DF] EG [HJ] IK [LN] MO [P] QS." },
+          { sequence: ["3", "4", "7", "11", "18", "❓"], options: ["25", "27", "29", "31"], answer: "29", explanation: "Lucas numbers series where each subsequent term is derived from the sum of the previous two (3+4=7, 4+7=11, 7+11=18, 11+18=29)." },
+          { sequence: ["🔴🔵", "🔵🟢", "🟢🟡", "🟡🔴", "❓"], options: ["🔴🔵", "🔵🟢", "🟢🔴", "🔴🟡"], answer: "🔴🔵", explanation: "The trailing orb color of a pair becomes the leading color of the next, cycling: Red->Blue->Green->Yellow->Red." },
+          { sequence: ["100", "50", "48", "24", "22", "❓"], options: ["10", "11", "12", "20"], answer: "11", explanation: "The mathematical operations alternate between dividing by 2 and subtracting 2 (/2, -2)." }
+        ]
+      },
+      {
+        id: 22, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["3", "4", "6", "8", "12", "❓"], options: ["13", "14", "15", "16"], answer: "14", explanation: "This represents prime numbers sequentially offset by adding 1: (2+1, 3+1, 5+1, 7+1, 11+1, 13+1)." },
+          { sequence: ["A", "C", "F", "J", "O", "❓"], options: ["T", "U", "V", "W"], answer: "T", explanation: "The alphabetical hops expand cumulatively by +2, +3, +4, +5, and then +6 steps." },
+          { sequence: ["🍱", "🍥", "🍤", "🍣", "❓"], options: ["🍙", "🍡", "🍵", "🍶"], answer: "🍙", explanation: "A rotating sequence of standard traditional Japanese dishes and items." },
+          { sequence: ["🔼⏺️", "⏺️🔽", "🔽⏺️", "❓"], options: ["⏺️🔼", "🔼⏺️", "⏺️🔽", "🔽⏺️"], answer: "⏺️🔼", explanation: "The triangle alternates vertical directions (Up/Down) while the circle swaps places (Right/Left)." },
+          { sequence: ["2", "5", "11", "23", "47", "❓"], options: ["90", "94", "95", "96"], answer: "95", explanation: "Each number doubles and increments by 1 (x2 + 1)." }
+        ]
+      },
+      {
+        id: 23, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["0", "2", "5", "9", "14", "❓"], options: ["18", "19", "20", "21"], answer: "20", explanation: "The progression additions increase sequentially by one step: +2, +3, +4, +5, +6." },
+          { sequence: ["Z", "X", "U", "Q", "L", "❓"], options: ["F", "G", "H", "I"], answer: "F", explanation: "Alphabetical jumps subtract growing spaces backwards: -2, -3, -4, -5, -6 letters." },
+          { sequence: ["🟥🟩", "🟦🟥", "🟩🟦", "🟥🟩", "❓"], options: ["🟩🟦", "🟦🟥", "🟥🟩", "🟦🟩"], answer: "🟦🟥", explanation: "A dual-color block pattern that cycles three combined states: (Red/Green, Blue/Red, Green/Blue)." },
+          { sequence: ["0", "7", "26", "63", "❓"], options: ["99", "124", "125", "150"], answer: "124", explanation: "These values represent perfect integer cubes subtracted by 1: (1³-1, 2³-1, 3³-1, 4³-1, 5³-1)." },
+          { sequence: ["⬆️➡️", "➡️⬇️", "⬇️⬅️", "❓"], options: ["⬅️⬆️", "⬆️➡️", "⬇️⬅️", "⬅️⬇️"], answer: "⬅️⬆️", explanation: "Each of the two directions rotates clockwise by 90 degrees simultaneously." }
+        ]
+      },
+      {
+        id: 24, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["1", "2", "3", "6", "11", "20", "❓"], options: ["31", "35", "37", "40"], answer: "37", explanation: "Tribonacci sequence: Every subsequent value is the sum of the preceding three terms (6+11+20 = 37)." },
+          { sequence: ["AbC", "BcD", "CdE", "❓"], options: ["DeF", "DEF", "deF", "Def"], answer: "DeF", explanation: "Overlapping groups of three letters that follow an Upper-lower-Upper case cycle." },
+          { sequence: ["🌑", "🌒", "🌓", "🌔", "❓"], options: ["🌕", "🌘", "🌑", "🌙"], answer: "🌕", explanation: "Astronomical progression representing the phases of the waxing moon." },
+          { sequence: ["3", "6", "4", "8", "6", "❓"], options: ["10", "12", "14", "16"], answer: "12", explanation: "The arithmetic operations alternate between multiplying by 2 and subtracting 2 (x2, -2)." },
+          { sequence: ["1x1", "2x2", "3x3", "4x4", "❓"], options: ["5x5", "5x6", "6x6", "4x5"], answer: "5x5", explanation: "Consecutive square coordinate scaling pairs: 1x1, 2x2, 3x3, 4x4, next is 5x5." }
+        ]
+      },
+      {
+        id: 25, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["1", "2", "8", "48", "384", "❓"], options: ["1000", "1920", "3840", "4120"], answer: "3840", explanation: "The multiplication factors grow by even steps: x2, x4, x6, x8, and next is x10." },
+          { sequence: ["AZ", "CX", "EV", "GT", "❓"], options: ["HS", "IR", "KP", "JQ"], answer: "IR", explanation: "Left letter counts forward by 2, right letter counts backward by 2." },
+          { sequence: ["🔴🔵🔴", "🔵🟢🔵", "🟢🟡🟢", "❓"], options: ["🟡🔴🟡", "🟡🟢🟡", "🔴🔵🔴", "🟢🔴🟢"], answer: "🟡🔴🟡", explanation: "Three-tiered brackets cycling colors (Red->Blue->Green->Yellow->Red) with symmetric outer/inner boundaries." },
+          { sequence: ["64", "32", "16", "8", "❓"], options: ["2", "4", "6", "0"], answer: "4", explanation: "A halving progression where each value is divided by 2." },
+          { sequence: ["⬆️🔴", "➡️🔵", "⬇️🟢", "❓"], options: ["⬅️🟡", "⬅️🔴", "⬆️🟡", "➡️🟡"], answer: "⬅️🟡", explanation: "The directional indicator rotates clockwise 90 degrees while the color orb advances: Red->Blue->Green->Yellow." }
+        ]
+      },
+      {
+        id: 26, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["1", "10", "3", "8", "5", "6", "❓"], options: ["5", "6", "7", "8"], answer: "7", explanation: "Two interlocking streams: Odd terms add 2 (1, 3, 5, 7), even terms subtract 2 (10, 8, 6)." },
+          { sequence: ["A", "D", "H", "M", "S", "❓"], options: ["X", "Y", "Z", "A"], answer: "Z", explanation: "The gap between alphabetical jumps rises by one each step: +3, +4, +5, +6, and +7 letters." },
+          { sequence: ["🔺🔺", "🟦🟦🟦", "⬠⬠⬠⬠", "❓"], options: ["⬡⬡⬡⬡⬡", "⬡⬡⬡⬡", "🟦🟦🟦🟦", "🔺🔺🔺🔺🔺"], answer: "⬡⬡⬡⬡⬡", explanation: "Both shape sides (3, 4, 5, 6) and the count of the shapes (2, 3, 4, 5) increase sequentially." },
+          { sequence: ["96", "48", "24", "12", "❓"], options: ["3", "4", "6", "8"], answer: "6", explanation: "A division sequence where each step is halved." },
+          { sequence: ["ABxx", "xABx", "xxAB", "❓"], options: ["ABxx", "BxAx", "xBAx", "xxBA"], answer: "ABxx", explanation: "The paired characters 'AB' shift rightwards together, wrapping around to the start upon reaching the edge." }
+        ]
+      },
+      {
+        id: 27, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["1", "2", "5", "10", "17", "❓"], options: ["24", "25", "26", "27"], answer: "26", explanation: "The additions grow as consecutive odd numbers: +1, +3, +5, +7, and next is +9. 17+9 = 26." },
+          { sequence: ["9A", "8B", "7C", "6D", "❓"], options: ["5E", "5F", "4E", "6E"], answer: "5E", explanation: "The leading integers count down (9, 8, 7, 6, 5) while alphabets advance (A, B, C, D, E)." },
+          { sequence: ["◰", "◳", "◲", "❓"], options: ["◱", "◰", "◳", "◲"], answer: "◱", explanation: "The shaded segment of the square rotates clockwise by exactly 90 degrees." },
+          { sequence: ["2", "9", "28", "65", "❓"], options: ["125", "126", "127", "128"], answer: "126", explanation: "The mathematical rule represents integer cubes increased by 1: (1³+1, 2³+1, 3³+1, 4³+1, 5³+1)." },
+          { sequence: ["ABC", "CDE", "EFG", "❓"], options: ["GHI", "HIJ", "FGH", "IJK"], answer: "GHI", explanation: "The final character of each group becomes the starting character of the next." }
+        ]
+      },
+      {
+        id: 28, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["2", "6", "15", "35", "❓"], options: ["55", "77", "91", "143"], answer: "77", explanation: "Each number is the product of two adjacent prime numbers: (2x3, 3x5, 5x7, 7x11)." },
+          { sequence: ["AAB", "CCD", "EEF", "❓"], options: ["GGH", "HHG", "GGI", "FFG"], answer: "GGH", explanation: "Alphabetical sequence grouping doubles of odd terms with single even terms: (AA-B, CC-D, EE-F, GG-H)." },
+          { sequence: ["⬆️⬇️", "➡️⬅️", "⬇️⬆️", "❓"], options: ["⬅️➡️", "⬆️⬇️", "⬇️⬆️", "➡️⬅️"], answer: "⬅️➡️", explanation: "Both opposing arrows rotate clockwise by 90 degrees at each step." },
+          { sequence: ["2", "8", "26", "80", "❓"], options: ["240", "242", "243", "244"], answer: "242", explanation: "The sequence tracks powers of 3 subtracted by 1: (3¹-1, 3²-1, 3³-1, 3⁴-1, 3⁵-1)." },
+          { sequence: ["🔺in🟦", "🟦in🟢", "🟢in🔺", "❓"], options: ["🔺in🟦", "🟦in🟢", "🟢in🔺", "🔺in🟢"], answer: "🔺in🟦", explanation: "A nested cyclic shape relationship: Triangle in Square, Square in Circle, Circle in Triangle, then looping." }
+        ]
+      },
+      {
+        id: 29, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["5", "6", "8", "12", "20", "❓"], options: ["30", "32", "34", "36"], answer: "36", explanation: "The differences between numbers double at each step: +1, +2, +4, +8, +16." },
+          { sequence: ["z", "Y", "x", "W", "v", "❓"], options: ["u", "U", "t", "T"], answer: "U", explanation: "Counting backwards through the alphabet while alternating lowercase and uppercase." },
+          { sequence: ["⭐🔴", "⭐⭐🔵", "⭐⭐⭐🟢", "❓"], options: ["⭐⭐⭐⭐🟡", "⭐⭐⭐⭐🔴", "⭐⭐⭐🟡", "⭐⭐⭐⭐⭐🟡"], answer: "⭐⭐⭐⭐🟡", explanation: "Stars increase by 1, and accompanying orbs progress: Red->Blue->Green->Yellow." },
+          { sequence: ["1", "2", "6", "24", "120", "❓"], options: ["240", "500", "720", "1440"], answer: "720", explanation: "Sequential factorial progression: (1!, 2!, 3!, 4!, 5!, 6! = 720)." },
+          { sequence: ["▲", "▶", "▼", "❓"], options: ["◀", "▲", "▼", "◆"], answer: "◀", explanation: "The solid triangle rotates clockwise by 90 degrees." }
+        ]
+      },
+      {
+        id: 30, difficulty: "Hard to Very Hard", coins: 40, timer: 30,
+        questions: [
+          { sequence: ["1", "2", "3", "6", "11", "20", "37", "❓"], options: ["57", "68", "72", "65"], answer: "68", explanation: "Tribonacci sequence: Each subsequent number is the sum of the preceding three terms (11+20+37 = 68)." },
+          { sequence: ["AZ", "BY", "CX", "DW", "❓"], options: ["EV", "FU", "EU", "FV"], answer: "EV", explanation: "Dual convergence: Left letter goes forward (A, B, C, D, E), right letter goes backward (Z, Y, X, W, V)." },
+          { sequence: ["🔮", "✨", "🔮", "✨", "❓"], options: ["🔮", "✨", "🌟", "⭐"], answer: "🔮", explanation: "Alternates back and forth between Prophecy Crystal and Magic Sparkles." },
+          { sequence: ["0", "2", "6", "12", "20", "❓"], options: ["25", "30", "32", "36"], answer: "30", explanation: "Formulated by n² - n applied to integers: (1-1, 4-2, 9-3, 16-4, 25-5, 36-6)." },
+          { sequence: ["🍱", "🍥", "🍤", "🍣", "❓"], options: ["🍙", "🍡", "🍵", "🍶"], answer: "🍙", explanation: "The food symbols rotate forward by increasing intervals." }
+        ]
+      }
+    ];
+
+    let currentLevelIndex = 0;
+    let currentQuestionIndex = 0;
+    let currentLevelWrongCount = 0;
+    let coins = 0;
+    let completedLevels = new Set();
+    
+    let timerInterval = null;
+    let timeLeft = 15;
+    let gameActive = false;
+    let hasAnswered = false;
+
+    window.onload = function() {
+      buildLevelRibbon();
+      loadLevel(0);
+      openHowToPlay();
+    };
+
+    function buildLevelRibbon() {
+      const container = document.getElementById("levels-grid-container");
+      container.innerHTML = "";
+      
+      levels.forEach((lvl, idx) => {
+        const bubble = document.createElement("div");
+        bubble.className = "level-bubble";
+        if (idx === currentLevelIndex) bubble.classList.add("active");
+        if (completedLevels.has(idx)) bubble.classList.add("completed");
+        
+        bubble.textContent = lvl.id;
+        bubble.onclick = () => {
+          AudioEngine.playClick();
+          loadLevel(idx);
+        };
+        container.appendChild(bubble);
+      });
+    }
+
+    function loadLevel(idx) {
+      currentLevelIndex = idx;
+      currentQuestionIndex = 0;
+      currentLevelWrongCount = 0;
+      hasAnswered = false;
+      
+      const bubbles = document.querySelectorAll(".level-bubble");
+      bubbles.forEach((b, bIdx) => {
+        b.classList.remove("active");
+        if (bIdx === idx) b.classList.add("active");
+      });
+
+      const levelData = levels[currentLevelIndex];
+      document.getElementById("level-display-name").textContent = `Level ${levelData.id}`;
+      document.getElementById("level-difficulty-tag").textContent = levelData.difficulty;
+      
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const levelData = levels[currentLevelIndex];
+      const question = levelData.questions[currentQuestionIndex];
+      hasAnswered = false;
+
+      document.getElementById("question-progress-text").textContent = `Question ${currentQuestionIndex + 1} of ${levelData.questions.length}`;
+      
+      const dotsContainer = document.getElementById("progress-dots-container");
+      dotsContainer.innerHTML = "";
+      for (let i = 0; i < levelData.questions.length; i++) {
+        const dot = document.createElement("div");
+        dot.className = "progress-dot";
+        if (i < currentQuestionIndex) dot.classList.add("completed");
+        if (i === currentQuestionIndex) dot.classList.add("active");
+        dotsContainer.appendChild(dot);
+      }
+
+      document.getElementById("explanation-panel").style.display = "none";
+
+      const sequenceContainer = document.getElementById("pattern-sequence-container");
+      sequenceContainer.innerHTML = "";
+      
+      question.sequence.forEach(val => {
+        const token = document.createElement("div");
+        token.className = "pattern-token";
+        if (val === "❓") {
+          token.classList.add("target-token");
+        } else if (val.length > 1) {
+          token.classList.add("text-token");
+        }
+        token.innerHTML = val;
+        sequenceContainer.appendChild(token);
+      });
+
+      const optionsContainer = document.getElementById("answers-grid-container");
+      optionsContainer.innerHTML = "";
+      
+      question.options.forEach(opt => {
+        const optBtn = document.createElement("button");
+        optBtn.className = "option-button";
+        optBtn.innerHTML = opt;
+        optBtn.onclick = () => selectOption(opt, optBtn);
+        optionsContainer.appendChild(optBtn);
+      });
+
+      timeLeft = levelData.timer;
+      document.getElementById("timer-text").textContent = `${timeLeft}s`;
+      const bar = document.getElementById("timer-bar");
+      bar.style.width = "100%";
+      bar.classList.remove("warning");
+
+      if (gameActive) {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!gameActive || hasAnswered) {
+          clearInterval(timerInterval);
+          return;
+        }
+
+        timeLeft--;
+        document.getElementById("timer-text").textContent = `${timeLeft}s`;
+        
+        const levelData = levels[currentLevelIndex];
+        const pct = (timeLeft / levelData.timer) * 100;
+        const bar = document.getElementById("timer-bar");
+        bar.style.width = `${pct}%`;
+
+        if (timeLeft <= 5) {
+          bar.classList.add("warning");
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          timeOutAnswer();
+        }
+      }, 1000);
+    }
+
+    function selectOption(selectedVal, element) {
+      if (hasAnswered) return;
+      hasAnswered = true;
+      clearInterval(timerInterval);
+
+      const levelData = levels[currentLevelIndex];
+      const question = levelData.questions[currentQuestionIndex];
+      const optionsButtons = document.querySelectorAll(".option-button");
+
+      optionsButtons.forEach(btn => btn.classList.add("disabled"));
+
+      if (selectedVal === question.answer) {
+        element.classList.add("correct");
+        AudioEngine.playSuccess();
+        
+        document.getElementById("explanation-status-icon").textContent = "✨";
+        document.getElementById("explanation-title-text").textContent = "Prophecy True!";
+        document.getElementById("explanation-title-text").style.color = "var(--success)";
+      } else {
+        element.classList.add("wrong");
+        currentLevelWrongCount++;
+        AudioEngine.playFail();
+
+        optionsButtons.forEach(btn => {
+          if (btn.textContent === question.answer) {
+            btn.classList.add("correct-highlight");
+          }
+        });
+
+        document.getElementById("explanation-status-icon").textContent = "❌";
+        document.getElementById("explanation-title-text").textContent = "Pattern Broken!";
+        document.getElementById("explanation-title-text").style.color = "var(--danger)";
+      }
+
+      document.getElementById("explanation-content-text").innerHTML = question.explanation;
+      
+      const isLastQuestion = (currentQuestionIndex === levelData.questions.length - 1);
+      const nextBtnText = isLastQuestion ? "Claim Rewards 🎉" : "Next Question 🔮";
+      document.getElementById("explanation-next-btn").querySelector("span").textContent = nextBtnText;
+      
+      document.getElementById("explanation-panel").style.display = "flex";
+    }
+
+    function timeOutAnswer() {
+      if (hasAnswered) return;
+      hasAnswered = true;
+      clearInterval(timerInterval);
+
+      currentLevelWrongCount++;
+      AudioEngine.playFail();
+      
+      const levelData = levels[currentLevelIndex];
+      const question = levelData.questions[currentQuestionIndex];
+      const optionsButtons = document.querySelectorAll(".option-button");
+
+      optionsButtons.forEach(btn => {
+        btn.classList.add("disabled");
+        if (btn.textContent === question.answer) {
+          btn.classList.add("correct-highlight");
+        }
+      });
+
+      document.getElementById("explanation-status-icon").textContent = "⏱️";
+      document.getElementById("explanation-title-text").textContent = "Time Ran Out!";
+      document.getElementById("explanation-title-text").style.color = "var(--danger)";
+      document.getElementById("explanation-content-text").innerHTML = `You ran out of time! ${question.explanation}`;
+
+      const isLastQuestion = (currentQuestionIndex === levelData.questions.length - 1);
+      const nextBtnText = isLastQuestion ? "Claim Rewards 🎉" : "Next Question 🔮";
+      document.getElementById("explanation-next-btn").querySelector("span").textContent = nextBtnText;
+
+      document.getElementById("explanation-panel").style.display = "flex";
+    }
+
+    function nextQuestion() {
+      AudioEngine.playClick();
+      const levelData = levels[currentLevelIndex];
+
+      if (currentQuestionIndex < levelData.questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        completeCurrentLevel();
+      }
+    }
+
+    function completeCurrentLevel() {
+      const levelData = levels[currentLevelIndex];
+      const badge = document.getElementById("modal-completion-badge");
+      const title = document.getElementById("modal-completion-title");
+      const subtitle = document.getElementById("modal-completion-subtitle");
+      const rewardBox = document.getElementById("modal-reward-box");
+      const infoTextContainer = document.getElementById("modal-complete-info-text");
+      const actionBtn = document.getElementById("modal-action-btn");
+
+      if (currentLevelWrongCount === 0) {
+        if (!completedLevels.has(currentLevelIndex)) {
+          coins += levelData.coins;
+          document.getElementById("coin-counter").textContent = coins;
+          document.getElementById("modal-coins-earned").textContent = `+${levelData.coins}`;
+        } else {
+          document.getElementById("modal-coins-earned").textContent = `+0 (Already Earned)`;
+        }
+        
+        completedLevels.add(currentLevelIndex);
+        buildLevelRibbon();
+        AudioEngine.playComplete();
+
+        badge.textContent = "👑✨";
+        title.textContent = "Prophecy Complete!";
+        title.style.color = "var(--primary)";
+        subtitle.textContent = "You read the pattern perfectly and solved this challenge!";
+        rewardBox.style.display = "block";
+
+        if (currentLevelIndex < levels.length - 1) {
+          infoTextContainer.innerHTML = `<p style="font-size:0.95rem;">You are doing great! Next up is <strong>Level ${levels[currentLevelIndex + 1].id}</strong>. Ready to test your foresight?</p>`;
+        } else {
+          infoTextContainer.innerHTML = `<p style="font-size:0.95rem; color:var(--success); font-weight:700;">Amazing! You have successfully mastered all 30 Prediction Chamber levels!</p>`;
+        }
+
+        actionBtn.onclick = proceedToNextLevelFromModal;
+        actionBtn.querySelector("span").textContent = "Advance to Next Level 🚀";
+
+        openCompleteModal();
+        triggerConfetti();
+      } else {
+        AudioEngine.playFail();
+
+        badge.textContent = "🔮💥";
+        title.textContent = "Prophecy Failed!";
+        title.style.color = "var(--danger)";
+        subtitle.textContent = "The future remains clouded. The pattern was not predicted fully correctly.";
+        rewardBox.style.display = "none";
+
+        const wrongText = currentLevelWrongCount === 1 ? "1 Question Wrong" : `${currentLevelWrongCount} Questions Wrong`;
+        infoTextContainer.innerHTML = `<p style="font-size:1.1rem; color:var(--danger); font-weight:700; margin-bottom: 5px;">${wrongText}</p><p style="font-size:0.95rem;">You answered ${currentLevelWrongCount} question${currentLevelWrongCount > 1 ? 's' : ''} incorrectly in this level. Try again to claim the crystal rewards!</p>`;
+
+        actionBtn.onclick = retryCurrentLevel;
+        actionBtn.querySelector("span").textContent = "Retry Level 🔮";
+
+        openCompleteModal();
+      }
+    }
+
+    function retryCurrentLevel() {
+      closeCompleteModal();
+      loadLevel(currentLevelIndex);
+    }
+
+    function openHowToPlay() {
+      AudioEngine.playClick();
+      gameActive = false;
+      clearInterval(timerInterval);
+      document.getElementById("how-to-modal").classList.add("active");
+    }
+
+    function closeHowToPlay() {
+      AudioEngine.playClick();
+      document.getElementById("how-to-modal").classList.remove("active");
+      
+      gameActive = true;
+      startTimer();
+    }
+
+    function openCompleteModal() {
+      document.getElementById("level-complete-modal").classList.add("active");
+    }
+
+    function closeCompleteModal() {
+      AudioEngine.playClick();
+      document.getElementById("level-complete-modal").classList.remove("active");
+    }
+
+    function proceedToNextLevelFromModal() {
+      closeCompleteModal();
+      if (currentLevelIndex < levels.length - 1) {
+        loadLevel(currentLevelIndex + 1);
+      } else {
+        loadLevel(0);
+      }
+    }
+
+    function triggerConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      canvas.style.display = "block";
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      let particles = [];
+      const colors = ['#6A5AE0', '#FFB627', '#00D2C4', '#FF5B8C', '#9F5BFF'];
+      for(let i=0; i<100; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2 - 50,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 0.5) * 12 - 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 8 + 4,
+          alpha: 1,
+          decay: Math.random() * 0.015 + 0.008
+        });
+      }
+      
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        particles.forEach(p => {
+          if (p.alpha > 0) {
+            active = true;
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.alpha;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.12;
+            p.alpha -= p.decay;
+          }
+        });
+        if (active) {
+          requestAnimationFrame(draw);
+        } else {
+          canvas.style.display = "none";
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      draw();
+    }
+  </script>
+</body>
+</html>
