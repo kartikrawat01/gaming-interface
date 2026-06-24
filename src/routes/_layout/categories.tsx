@@ -409,6 +409,30 @@ const emojiDecoderProgress =
   Number(localStorage.getItem("emojiDecoderProgress")) ||
   Math.round((emojiDecoderCompleted / 20) * 100) ||
   0;
+  
+  const factFlashCompleted =
+  Number(localStorage.getItem("factFlashCompleted")) || 0;
+
+const factFlashProgress =
+  Number(localStorage.getItem("factFlashProgress")) ||
+  Math.round((factFlashCompleted / 20) * 100) ||
+  0;
+
+const patternProphetCompleted =
+  Number(localStorage.getItem("patternProphetCompleted")) || 0;
+
+const patternProphetProgress =
+  Number(localStorage.getItem("patternProphetProgress")) ||
+  Math.round((patternProphetCompleted / 30) * 100) ||
+  0;
+
+const sentenceSurgeonCompleted =
+  Number(localStorage.getItem("sentenceSurgeonCompleted")) || 0;
+
+const sentenceSurgeonProgress =
+  Number(localStorage.getItem("sentenceSurgeonProgress")) ||
+  Math.round((sentenceSurgeonCompleted / 30) * 100) ||
+  0;
 
     setGameProgress({
       "Logic Maze": Math.min(logicMazeProgress, 100),
@@ -427,6 +451,9 @@ const emojiDecoderProgress =
 "Help The Bee": Math.min(beeProgress, 100),
 "Sequencer Builder": Math.min(sequenceBuilderProgress, 100),
 "Emoji Decoder": Math.min(emojiDecoderProgress, 100),
+"Fact Flash": Math.min(factFlashProgress, 100),
+"Pattern Prophet": Math.min(patternProphetProgress, 100),
+"Sentence Surgeon": Math.min(sentenceSurgeonProgress, 100),
     });
   };
 
