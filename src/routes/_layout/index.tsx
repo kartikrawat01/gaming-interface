@@ -1686,6 +1686,51 @@ useEffect(() => {
   };
 }, []);
 
+useEffect(() => {
+  const loadSentenceSurgeonProgress = () => {
+    const completed =
+      Number(localStorage.getItem("sentenceSurgeonCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("sentenceSurgeonProgress")) ||
+      Math.round((completed / 30) * 100) ||
+      0;
+
+    setSentenceSurgeonStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+      coins: Number(localStorage.getItem("sentenceSurgeonCoins")) || prev.coins,
+    }));
+  };
+
+  loadSentenceSurgeonProgress();
+
+  const handleSentenceSurgeonMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "sentence_surgeon"
+    ) {
+      setSentenceSurgeonStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+      }));
+    }
+  };
+
+  window.addEventListener("focus", loadSentenceSurgeonProgress);
+  window.addEventListener("storage", loadSentenceSurgeonProgress);
+  window.addEventListener("message", handleSentenceSurgeonMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadSentenceSurgeonProgress);
+    window.removeEventListener("storage", loadSentenceSurgeonProgress);
+    window.removeEventListener("message", handleSentenceSurgeonMessage);
+  };
+}, []);
+
   return (
     <div className="min-h-screen text-foreground bg-background">
       {showAuth && (
