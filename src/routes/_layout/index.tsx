@@ -573,6 +573,13 @@ const [sequenceBuilderStats, setSequenceBuilderStats] = useState({
   time: "0 min",
 });
 
+const [factFlashStats, setFactFlashStats] = useState({
+  progress: 0,
+  coins: 0,
+  completed: 0,
+  time: "0 min",
+});
+
 const [emojiDecoderStats, setEmojiDecoderStats] = useState({
   progress: 0,
   coins: 0,
@@ -1651,6 +1658,53 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
+  const loadFactFlashProgress = () => {
+    const completed =
+      Number(localStorage.getItem("factFlashCompleted")) || 0;
+
+    const progress =
+      Number(localStorage.getItem("factFlashProgress")) ||
+      Math.round((completed / 30) * 100) ||
+      0;
+
+    setFactFlashStats((prev) => ({
+      ...prev,
+      progress: Math.min(progress, 100),
+      completed,
+      coins: Number(localStorage.getItem("factFlashCoins")) || prev.coins,
+    }));
+  };
+
+  loadFactFlashProgress();
+
+  const handleFactFlashMessage = (event: MessageEvent) => {
+    if (
+      event.data?.type === "GAME_PROGRESS_UPDATE" &&
+      event.data?.game === "fact_flash"
+    ) {
+      setFactFlashStats((prev) => ({
+        ...prev,
+        progress: Math.min(Number(event.data.progress) || 0, 100),
+        completed: Number(event.data.completed) || 0,
+        coins: Number(event.data.coins) || prev.coins,
+      }));
+
+      fetchWallet();
+    }
+  };
+
+  window.addEventListener("focus", loadFactFlashProgress);
+  window.addEventListener("storage", loadFactFlashProgress);
+  window.addEventListener("message", handleFactFlashMessage);
+
+  return () => {
+    window.removeEventListener("focus", loadFactFlashProgress);
+    window.removeEventListener("storage", loadFactFlashProgress);
+    window.removeEventListener("message", handleFactFlashMessage);
+  };
+}, []);
+
+useEffect(() => {
   const loadEmojiDecoderProgress = () => {
     const completed =
       Number(localStorage.getItem("emojiDecoderCompleted")) || 0;
@@ -1897,6 +1951,7 @@ useEffect(() => {
   bubbleMathStats={bubbleMathStats}
   beeStats={beeStats}
   sequenceBuilderStats={sequenceBuilderStats}
+  factFlashStats={factFlashStats}
   emojiDecoderStats={emojiDecoderStats}
   colorSortStats={colorSortStats}
   trafficStats={trafficStats}
@@ -2342,6 +2397,7 @@ const GamesSection = memo(function GamesSection({
   bubbleMathStats,
   beeStats,
   sequenceBuilderStats,
+  factFlashStats,
   emojiDecoderStats,
   colorSortStats,
   trafficStats,
@@ -2459,6 +2515,13 @@ const filteredGames = games.filter((g) =>
     progress: sequenceBuilderStats.progress,
     xp: sequenceBuilderStats.coins,
     time: sequenceBuilderStats.time,
+  }
+  : g.title === "Fact Flash"
+? {
+    ...g,
+    progress: factFlashStats.progress,
+    xp: factFlashStats.coins,
+    time: factFlashStats.time,
   }
   : g.title === "Sentence Surgeon"
 ? {

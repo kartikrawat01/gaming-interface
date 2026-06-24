@@ -2764,7 +2764,7 @@ async function syncFactFlashWalletBalance() {
             actionBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        function evaluateResults() {
+        async function evaluateResults() {
             const level = levelsData[currentLevelIndex];
             const perfectScore = level.questions.length;
             const arena = document.getElementById('game-arena');
@@ -2773,8 +2773,7 @@ async function syncFactFlashWalletBalance() {
                 const firstTimeCompletion = !completedLevels.has(currentLevelIndex);
                 if (firstTimeCompletion) {
                     completedLevels.add(currentLevelIndex);
-                    coins += level.reward;
-                    updateCoinsWallet(level.reward);
+await updateCoinsWallet(level.reward);
                 }
 
                 playSound('level-win');
